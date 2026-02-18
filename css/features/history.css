@@ -1,0 +1,226 @@
+/* Phase 2 - features/history.css
+   历史回顾模态（#history-modal）专属样式
+   从 css/guixu.css 迁移，保持选择器与声明一致，避免特异性变化
+*/
+
+/* --- 桌面端：紧凑按钮与布局 --- */
+/* 动作按钮维持紧凑尺寸且允许换行，不被强制拉伸 */
+.guixu-root-container:not(.mobile-view) #history-modal .interaction-btn.btn-compact,
+.guixu-root-container:not(.mobile-view) #history-modal .danger-btn.btn-compact,
+.guixu-root-container:not(.mobile-view) #history-modal .primary-btn.btn-compact {
+  min-width: 0 !important;
+  flex: 0 0 auto !important;
+}
+
+/* 桌面端：紧凑按钮尺寸（覆盖全局32px统一规则） */
+.guixu-root-container:not(.mobile-view) #history-modal .interaction-btn.btn-compact,
+.guixu-root-container:not(.mobile-view) #history-modal .danger-btn.btn-compact,
+.guixu-root-container:not(.mobile-view) #history-modal .primary-btn.btn-compact {
+  height: 28px !important;
+  padding: 0 10px !important;
+  font-size: 12px !important;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+/* --- 移动端：头部换行与搜索栏自适应，防止“清除”溢出 --- */
+.guixu-root-container.mobile-view #history-modal .modal-header {
+  flex-wrap: wrap !important;
+  gap: 8px !important;
+}
+.guixu-root-container.mobile-view #history-modal #history-modal-actions {
+  order: 2 !important;
+  flex: 1 1 100% !important;
+  display: flex !important;
+  gap: 8px !important;
+  flex-wrap: wrap !important; /* 允许换行，避免溢出 */
+  margin-left: 0 !important;  /* 覆盖内联 margin-left:auto，防止动作区被推到面板外 */
+}
+.guixu-root-container.mobile-view #history-modal .history-search {
+  flex: 1 1 100% !important;    /* 独占一行 */
+  min-width: 0 !important;
+  margin-left: 0 !important;    /* 移除左侧间距，防止被挤出 */
+}
+.guixu-root-container.mobile-view #history-modal .history-search input#history-search-input {
+  flex: 1 1 auto !important;
+  min-width: 0 !important;
+  width: auto !important;
+}
+.guixu-root-container.mobile-view #history-modal .history-search #history-search-clear {
+  flex: 0 0 auto !important;
+  min-width: 72px !important;
+}
+
+/* =========================
+   仙途轨迹面板（Destiny Track）专属布局升级
+   - 统一使用全局变量与组件（紫金琉璃）
+   - 设置卡片区放在标签页上方（浅金边框包裹）
+   - 标签页一行两列铺满
+   - 搜索栏在标签页下方，独占一行
+   ========================= */
+
+/* 根容器：采用列布局并统一垂直间距（对齐人物关系 .rel-layout 的 gap:12px） */
+.guixu-root-container #history-modal .destiny-track-root {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* 设置卡片区（浅金边框 + 毛玻璃表层） */
+.guixu-root-container #history-modal .dt-settings-card {
+  /* 改为纵向分组卡片，容纳“今生/前世”两组设置，共用同一设置面板 */
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: stretch;
+  margin: 6px 0 8px;
+  padding: 10px;
+  background: var(--gx-input-bg, rgba(26,26,46,0.5));
+  border: 1px solid var(--gx-input-border-color, rgba(201,170,113,0.35));
+  border-radius: var(--gx-input-radius, 8px);
+  color: var(--gx-accent, #c9aa71);
+  box-sizing: border-box;
+}
+/* 设置分组：标题 + 行 */
+.guixu-root-container #history-modal .dt-settings-card .dt-group {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 8px;
+}
+@media (min-width: 700px) {
+  .guixu-root-container #history-modal .dt-settings-card .dt-group {
+    grid-template-columns: 1fr;
+  }
+}
+.guixu-root-container #history-modal .dt-settings-card .dt-group-title {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--gx-accent, #c9aa71);
+  letter-spacing: 0.3px;
+  border-bottom: 1px solid rgba(var(--gx-accent-rgb, 201,170,113), 0.2);
+  padding-bottom: 4px;
+}
+.guixu-root-container #history-modal .dt-settings-card .dt-group-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 10px;
+  align-items: center;
+}
+/* 开关行：桌面端保持单行不换行（显示标签/地点/详细/自动修剪 同一行） */
+.guixu-root-container:not(.mobile-view) #history-modal .dt-settings-card .dt-group-row.switches {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 10px;
+  align-items: center;
+}
+/* 移动端：开关行使用 2x2 网格排列（两行两列） */
+.guixu-root-container.mobile-view #history-modal .dt-settings-card .dt-group-row.switches {
+  display: grid !important;
+  grid-template-columns: 1fr 1fr;
+  grid-auto-rows: minmax(28px, auto);
+  gap: 8px 10px;
+}
+.guixu-root-container.mobile-view #history-modal .dt-settings-card .dt-group-row.switches .dt-setting-item {
+  min-width: 0;
+}
+
+/* 显示选项开关：按面板作用域隐藏元素 */
+.guixu-root-container #history-modal #dt-panel-current.opt-hide-tags .timeline-tags { display: none !important; }
+.guixu-root-container #history-modal #dt-panel-current.opt-hide-location .timeline-location { display: none !important; }
+.guixu-root-container #history-modal #dt-panel-current.opt-hide-details .timeline-detailed-info { display: none !important; }
+
+.guixu-root-container #history-modal #dt-panel-past.opt-hide-tags .timeline-tags { display: none !important; }
+.guixu-root-container #history-modal #dt-panel-past.opt-hide-details .past-life-details { display: none !important; }
+
+/* 设置项（自动修剪复选 + 文案） */
+.guixu-root-container #history-modal .dt-setting-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--gx-accent, #c9aa71);
+}
+
+/* 标签页：改为两列栅格，按钮自适应铺满 */
+.guixu-root-container #history-modal .dt-tabs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  /* 与人物关系面板保持一致：为底部指示器和搜索栏留出统一间距 */
+  padding-bottom: 8px;
+  border-bottom: none;
+}
+.guixu-root-container #history-modal .dt-tabs .gx-tab {
+  width: 100%;
+  min-width: 0;
+}
+
+/* 今生印记子标签页：一行三列，铺满整行（复用全局 gx-tabs/gx-tab 视觉） */
+.guixu-root-container #history-modal .dt-subtabs {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  padding-bottom: 8px;
+  border-bottom: none;
+}
+.guixu-root-container #history-modal .dt-subtabs .gx-tab {
+  width: 100%;
+  min-width: 0;
+}
+
+/* 搜索栏：独占一行，宽度铺满 */
+.guixu-root-container #history-modal .dt-search {
+  /* 顶部不再额外加间距，统一由 .dt-tabs 的 padding-bottom 提供 */
+  margin: 0 0 10px;
+}
+.guixu-root-container #history-modal .dt-search .gx-input {
+  width: 100%;
+}
+
+/* 移动端小屏：强制头部不换行，保证“左上=设置，右上=关闭” */
+.guixu-root-container.mobile-view #history-modal .modal-header {
+  flex-wrap: nowrap !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+}
+.guixu-root-container.mobile-view #history-modal .head-left-actions {
+  order: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.guixu-root-container.mobile-view #history-modal .modal-title { order: 1; }
+.guixu-root-container.mobile-view #history-modal .header-actions {
+  order: 2;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto !important; /* 关闭按钮始终靠右 */
+}
+/* 避免历史老规则影响：移动端隐藏动作区容器不会影响关闭按钮的对齐 */
+.guixu-root-container.mobile-view #history-modal #history-modal-actions {
+  order: 0; /* 留在容器开头，但被我们在 JS 中隐藏，不影响布局 */
+}
+
+/* 移动端：设置区纵向分组堆叠（两个模块上下排列），并允许组内换行）
+   注意：不强制控制 display，保持由 JS 按钮决定开/关状态 */
+.guixu-root-container.mobile-view #history-modal .dt-settings-card {
+  flex-direction: column;
+  gap: 10px;
+}
+.guixu-root-container.mobile-view #history-modal .dt-settings-card .dt-group {
+  grid-template-columns: 1fr; /* 组内单列 */
+}
+.guixu-root-container.mobile-view #history-modal .dt-settings-card .dt-group-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 10px;
+}
+
+/* 桌面端：压缩按钮尺寸（与 relationships 面板一致的紧凑视觉） */
+.guixu-root-container:not(.mobile-view) #history-modal .dt-settings-card .interaction-btn {
+  height: 28px !important;
+  padding: 0 10px !important;
+  font-size: 12px !important;
+  min-width: 0;
+}

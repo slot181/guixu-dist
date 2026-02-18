@@ -1,0 +1,413 @@
+/* Phase 1 - views/desktop.css
+   视图：桌面端样式（.guixu-root-container:not(.mobile-view) 与 .force-desktop）
+   仅包含“桌面视图”相关规则；全屏/非全屏状态在 states/*.css
+*/
+
+/* 桌面端通用按钮统一尺寸（不影响移动端），一次性修复“大小不一/四字拥挤/被行内样式压缩”等问题 */
+.guixu-root-container:not(.mobile-view) .interaction-btn:not(.worldline-btn):not(.action-guideline-btn),
+.guixu-root-container:not(.mobile-view) .primary-btn:not(.worldline-btn),
+.guixu-root-container:not(.mobile-view) .danger-btn:not(.worldline-btn),
+.guixu-root-container:not(.mobile-view) .clear-saves-btn {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+
+  /* 统一高度与内边距，覆盖行内样式 */
+  height: 32px !important;
+  padding: 0 12px !important;
+
+  /* 统一文本呈现，避免中文拥挤与上下裁切 */
+  font-size: 12px !important;
+  line-height: normal !important;
+  letter-spacing: normal !important;
+  white-space: nowrap !important;
+  word-break: keep-all !important;
+
+  /* 盒模型统一，避免不同容器出现视觉高度不一致 */
+  box-sizing: border-box !important;
+
+  /* 给足四字中文的最小宽度，但不作用于 worldline-btn（防止右侧窄栏再次溢出） */
+  min-width: 96px;
+}
+
+/* 桌面端背包：操作按钮靠右下并紧凑排列 */
+.guixu-root-container:not(.mobile-view) .inventory-item .item-row--actions {
+  align-self: flex-end;      /* 靠右 */
+  justify-content: flex-end; /* 靠右 */
+  gap: 6px;                  /* 缩小按钮间距 */
+  flex-wrap: wrap;           /* 空间不足时折行，但保持靠右 */
+  margin-top: 4px;           /* 与上方分隔略小 */
+}
+
+/* 桌面端：人物关系操作按钮紧凑化（与背包面板一致） */
+@media (min-width: 901px) {
+  .guixu-root-container:not(.mobile-view) #relationships-modal .relationship-header .rel-actions {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .guixu-root-container:not(.mobile-view) #relationships-modal .relationship-header .rel-actions > button,
+  .guixu-root-container:not(.mobile-view) .relationship-card .btn-delete-relationship {
+    height: 26px !important;     /* 与背包操作按钮接近的高度（背包常见 ~24-26px） */
+    padding: 0 8px !important;   /* 缩小左右内边距，视觉更紧凑 */
+    min-width: 0;
+    box-sizing: border-box;
+    flex: 0 0 auto;              /* 阻止按钮在窄宽度下被拉伸成“超宽” */
+  }
+}
+
+/* 强制桌面视图（小屏但强制桌面）同样紧凑化 */
+.guixu-root-container.force-desktop #relationships-modal .relationship-header .rel-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.guixu-root-container.force-desktop #relationships-modal .relationship-header .rel-actions > button,
+.guixu-root-container.force-desktop .relationship-card .btn-delete-relationship {
+  height: 26px !important;
+  padding: 0 8px !important;
+  min-width: 0;
+  box-sizing: border-box;
+  flex: 0 0 auto;              /* 防止在强制桌面下被拉伸 */
+}
+
+/* ================= 强制桌面视图覆盖（小屏时也可强制桌面布局） ================= */
+/* 当 JS 添加 .force-desktop 到根容器/viewport 时，覆盖移动端的媒体查询与 .mobile-view 样式 */
+
+/* 强制桌面：覆盖小屏兜底与 viewport 定位，恢复绝对定位与固定基准尺寸 */
+.guixu-root-container.force-desktop {
+  width: 100% !important;
+  height: 100% !important;
+}
+#guixu-viewport.force-desktop {
+  width: 100% !important;
+  height: 100% !important;
+  overflow: auto !important;
+}
+#guixu-viewport.force-desktop .guixu-root-container {
+  position: relative !important;
+  left: 0 !important;
+  top: 0 !important;
+}
+
+/* 明确三栏网格区域，防止主内容误入右栏 */
+.guixu-root-container.force-desktop .character-panel { grid-column: 1 !important; grid-row: 2 !important; }
+.guixu-root-container.force-desktop .main-content { grid-column: 2 !important; grid-row: 2 !important; }
+.guixu-root-container.force-desktop .interaction-panel { grid-column: 3 !important; grid-row: 2 !important; }
+
+/* 恢复桌面网格布局与整体高度 */
+.guixu-root-container.force-desktop .game-container {
+  display: grid !important;
+  grid-template-rows: 65px 1fr auto !important;
+  grid-template-columns: 220px 1fr 160px !important;
+  height: 100% !important;
+  min-height: 0 !important;
+  gap: 1px !important;
+  /* 定义侧栏宽度变量，供开合按钮定位使用（默认未折叠） */
+  --left-pane-w: 220px;
+  --right-pane-w: 160px;
+}
+
+/* 桌面端（含强制桌面）默认变量，非折叠状态 */
+.guixu-root-container:not(.mobile-view) .game-container {
+  --left-pane-w: 220px;
+  --right-pane-w: 160px;
+}
+
+/* 顶部/正文/底部恢复网格区域行为 */
+.guixu-root-container.force-desktop .top-status { grid-column: 1 / -1 !important; }
+.guixu-root-container.force-desktop .bottom-status { grid-column: 1 / -1 !important; }
+
+/* 左右侧栏恢复显示（取消移动端浮层/隐藏） */
+.guixu-root-container.force-desktop .character-panel,
+.guixu-root-container.force-desktop .interaction-panel {
+  display: block !important;
+  position: static !important;
+  width: auto !important;
+  height: auto !important;
+  overflow-y: auto !important;
+  /* 已移除：旧的 background: transparent !important; 规则，由下方更具体的规则接管 */
+  padding: 10px;
+  border-radius: 0;
+  box-shadow: none;
+  transform: none !important;
+}
+
+/* 桌面端（非移动视图）兜底：视觉升级 */
+.guixu-root-container:not(.mobile-view) .character-panel {
+  /* 桌面端左侧栏：仅保留毛玻璃，不设底色，避免淡紫背景（与右侧一致） */
+  background: transparent !important;
+  backdrop-filter: var(--gx-background-blur);
+  -webkit-backdrop-filter: var(--gx-background-blur);
+}
+.guixu-root-container:not(.mobile-view) .interaction-panel {
+  /* 视觉升级：应用毛玻璃效果 (已在 interaction-panel.css 中处理，此处保留兜底) */
+  background: transparent !important; /* 保留此处的透明以避免冲突，主样式在 feature css 中 */
+}
+
+
+/* 左侧栏边框回归 */
+.guixu-root-container.force-desktop .character-panel {
+  border-right: 1px solid var(--gx-border) !important; /* 使用变量 */
+  border-bottom: none !important;
+}
+
+/* 右侧栏边框回归，方向回到列 */
+.guixu-root-container.force-desktop .interaction-panel {
+  border-left: 1px solid #c9aa71 !important;
+  border-top: none !important;
+  flex-direction: column !important;
+  flex-wrap: nowrap !important;
+  justify-content: flex-start !important;
+}
+
+/* 正文区回到网格中间列（由 grid 定位，不需要额外 order/flex） */
+.guixu-root-container.force-desktop .main-content {
+  flex: 0 1 auto !important;
+  min-height: 0 !important;
+  overflow-y: auto !important;
+}
+
+/* 隐藏任何移动端浮层状态类的影响 */
+.guixu-root-container.force-desktop.show-character-panel .character-panel,
+.guixu-root-container.force-desktop.show-interaction-panel .interaction-panel {
+  position: static !important;
+  width: auto !important;
+  height: auto !important;
+  transform: none !important;
+}
+
+/* 桌面端右侧功能按钮固定尺寸布局（改为 Flex 以保留底部“世界线”模块，并确保滚动条可见） */
+.guixu-root-container.force-desktop .interaction-panel {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 8px;
+  align-content: stretch !important;
+  justify-content: flex-start !important;
+  overflow-y: auto !important;
+}
+/* 仅限制“右侧功能面板”内的按钮拉满宽度，避免影响各模态框按钮（例如历史面板） */
+.guixu-root-container.force-desktop .interaction-panel .interaction-btn {
+  width: 100% !important;
+  flex: 0 0 40px !important;
+  height: 40px !important;          /* 固定按钮高度 */
+  display: flex;
+  align-items: center;
+  justify-content: center;          /* 文本居中 */
+  white-space: nowrap;              /* 单行显示 */
+  overflow: hidden;                 /* 超出隐藏 */
+  text-overflow: ellipsis;          /* 省略号 */
+  padding: 0 10px;
+  box-sizing: border-box;
+  letter-spacing: normal;           /* 修复部分环境中文字间距异常 */
+  word-break: keep-all;             /* 不拆分中文，避免拥挤/换行 */
+  min-width: 0;                     /* 允许 Flex 子项在窄栏中正确收缩 */
+}
+/* 将世界书等底部区固定在面板底部，不与按钮挤在一起 */
+.guixu-root-container.force-desktop .world-line-section {
+  margin-top: auto !important;
+  border-top: 1px solid rgba(201, 170, 113, 0.5);
+  padding-top: 10px;
+}
+/* 强制桌面视图下，右侧面板对按钮的统一尺寸不影响世界线回顾两键 */
+/* 修正：使用宽度自适应且保持等分，不再强制 100% 导致溢出 */
+.guixu-root-container.force-desktop .world-line-section .worldline-btn {
+  width: auto !important;
+  height: 34px !important;
+  flex: 1 1 0 !important;
+  box-sizing: border-box;
+}
+/*（已移除强制纵排，保持并排但自适应等分，避免出界）*/
+
+/* 在强制桌面视图下，确保移动端FAB不可见 */
+.guixu-root-container.force-desktop #fab-character,
+.guixu-root-container.force-desktop #fab-functions {
+  display: none !important;
+}
+
+/* 桌面端：历史面板头部换行布局与工具栏 */
+.guixu-root-container:not(.mobile-view) #history-modal .modal-header {
+  flex-wrap: wrap !important;
+  gap: 8px !important;            /* 与移动端保持一致的间距 */
+  align-items: center !important;
+}
+.guixu-root-container:not(.mobile-view) #history-modal .history-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;              /* 窄宽度下允许换行，防止溢出到面板外 */
+  width: 100%;
+  max-width: 100%;
+}
+.guixu-root-container:not(.mobile-view) #history-modal .history-toolbar .interaction-btn,
+.guixu-root-container:not(.mobile-view) #history-modal .history-search .interaction-btn {
+  width: auto !important;
+  flex: 0 0 auto !important;
+}
+/* 将动作区置于第二行并允许换行；覆盖 inline 的 margin-left:auto */
+.guixu-root-container:not(.mobile-view) #history-modal #history-modal-actions {
+  order: 2 !important;
+  flex: 1 1 100% !important;
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: 8px !important;
+  margin-left: 0 !important;      /* 取消被推到最右侧，避免撑出面板 */
+  align-items: center !important;
+}
+/* 搜索区域自适应占位：不足时换行，充足时在同一行靠右展开 */
+.guixu-root-container:not(.mobile-view) #history-modal .history-search {
+  flex: 1 1 100% !important;      /* 桌面端采用与移动端一致的全宽单行搜索区 */
+  width: 100% !important;
+  min-width: 0 !important;
+  margin-left: 0 !important;      /* 覆盖基础的 margin-left:10px，防止被挤出 */
+  margin-top: 6px;
+}
+.guixu-root-container:not(.mobile-view) #history-modal .history-search input#history-search-input {
+  flex: 1 1 auto !important;      /* 输入框随容器伸缩，跟随移动端布局 */
+  width: auto !important;
+  min-width: 0 !important;        /* 取消基础最小宽度限制，避免与清除按钮一起溢出 */
+}
+.guixu-root-container:not(.mobile-view) #history-modal .history-search #history-search-clear {
+  flex: 0 0 auto !important;
+  min-width: 72px !important;
+}
+
+/* 动作按钮维持紧凑尺寸且允许换行，不被强制拉伸 */
+.guixu-root-container:not(.mobile-view) #history-modal .interaction-btn.btn-compact,
+.guixu-root-container:not(.mobile-view) #history-modal .danger-btn.btn-compact,
+.guixu-root-container:not(.mobile-view) #history-modal .primary-btn.btn-compact {
+  min-width: 0 !important;
+  flex: 0 0 auto !important;
+}
+/* 桌面端：紧凑按钮尺寸（覆盖全局32px统一规则） */
+.guixu-root-container:not(.mobile-view) #history-modal .interaction-btn.btn-compact,
+.guixu-root-container:not(.mobile-view) #history-modal .danger-btn.btn-compact,
+.guixu-root-container:not(.mobile-view) #history-modal .primary-btn.btn-compact {
+  height: 28px !important;
+  padding: 0 10px !important;
+  font-size: 12px !important;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+/* ================= 桌面端左右侧栏：可折叠开合（非移动端） ================= */
+
+/* 折叠类：通过变量与网格列宽回收空间（左 220px / 右 160px 为默认宽度） */
+.guixu-root-container:not(.mobile-view).left-pane-collapsed .game-container {
+  --left-pane-w: 0px;
+  grid-template-columns: var(--left-pane-w) 1fr var(--right-pane-w) !important;
+}
+.guixu-root-container:not(.mobile-view).right-pane-collapsed .game-container {
+  --right-pane-w: 0px;
+  grid-template-columns: var(--left-pane-w) 1fr var(--right-pane-w) !important;
+}
+.guixu-root-container:not(.mobile-view).left-pane-collapsed.right-pane-collapsed .game-container {
+  --left-pane-w: 0px;
+  --right-pane-w: 0px;
+  grid-template-columns: var(--left-pane-w) 1fr var(--right-pane-w) !important;
+}
+
+/* 折叠时取消边框与内边距，避免残影；并限制滚动以免空区域占位 */
+.guixu-root-container:not(.mobile-view).left-pane-collapsed .character-panel {
+  padding: 0 !important;
+  border-right: none !important;
+  overflow: hidden !important;
+}
+.guixu-root-container:not(.mobile-view).right-pane-collapsed .interaction-panel {
+  padding: 0 !important;
+  border-left: none !important;
+  overflow: hidden !important;
+}
+
+/* 侧栏开合按钮（仅桌面端显示），定位在各自侧栏“内侧靠近正文”的中部；仅显示 «/» 文本，无边框与底色 */
+.guixu-root-container:not(.mobile-view) .game-container .pane-toggle-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 1001;
+  /* 仅文本，但保留较大点击热区 */
+  padding: 6px 8px;
+  border: none;
+  background: transparent;
+  color: #c9aa71;
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+  user-select: none;
+  box-shadow: none;
+}
+/* 左侧按钮：位于左侧栏的“内侧边缘”附近；当左侧折叠时退回到容器内侧 6px */
+.guixu-root-container:not(.mobile-view) .game-container .pane-toggle-left {
+  left: max(6px, calc(var(--left-pane-w, 220px) - 12px));
+}
+/* 右侧按钮：位于右侧栏的“内侧边缘”附近；当右侧折叠时退回到容器内侧 6px */
+.guixu-root-container:not(.mobile-view) .game-container .pane-toggle-right {
+  right: max(6px, calc(var(--right-pane-w, 160px) - 12px));
+}
+
+.guixu-root-container:not(.mobile-view) .game-container .pane-toggle-btn:hover {
+  transform: translateY(-50%) scale(1.08);
+  text-shadow: 0 0 6px rgba(201, 170, 113, 0.6);
+}
+
+/* 移动端：不显示开合按钮（已移除横屏全屏模式支持） */
+.guixu-root-container.mobile-view .game-container .pane-toggle-btn {
+  display: none !important;
+}
+
+/* ================= 变量编辑器（桌面端）布局优化 ================= */
+/* 1) 组内“新增XX/添加XX”等操作条统一靠左（覆盖组件内联/内置样式） */
+.guixu-root-container:not(.mobile-view) #variable-manager-modal .vm-group .vm-actions {
+  margin-left: 0 !important;
+  justify-content: flex-start !important;
+}
+
+/* 2) 条目摘要（summary）：标题在左，删除按钮靠右（与原先位置对调） */
+.guixu-root-container:not(.mobile-view) #variable-manager-modal details.vm-details > summary {
+  flex-wrap: wrap; /* 宽度不足时允许换行 */
+}
+.guixu-root-container:not(.mobile-view) #variable-manager-modal details.vm-details > summary .vm-actions {
+  order: 0;                           /* 恢复默认顺序，置于右侧 */
+  margin-left: auto !important;       /* 推到最右侧 */
+  display: inline-flex;
+  justify-content: flex-end;
+  gap: 6px;
+}
+
+/* 3) 子组对象（如“词条”组）内的键编辑行：输入与删除按钮并排且不互相挤压变形 */
+.guixu-root-container:not(.mobile-view) #variable-manager-modal .attributes-list .attribute-item {
+  align-items: center;
+  gap: 8px;
+}
+.guixu-root-container:not(.mobile-view) #variable-manager-modal .attributes-list .attribute-item .attribute-value {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  max-width: none !important;   /* 覆盖模板里的 max-width:70% 限制 */
+  flex: 1 1 auto !important;
+  width: auto !important;
+}
+.guixu-root-container:not(.mobile-view) #variable-manager-modal .attributes-list .attribute-item .attribute-value .gx-input,
+.guixu-root-container:not(.mobile-view) #variable-manager-modal .attributes-list .attribute-item .attribute-value .kv-input,
+.guixu-root-container:not(.mobile-view) #variable-manager-modal .attributes-list .attribute-item .attribute-value .kv-textarea,
+.guixu-root-container:not(.mobile-view) #variable-manager-modal .attributes-list .attribute-item .attribute-value textarea,
+.guixu-root-container:not(.mobile-view) #variable-manager-modal .attributes-list .attribute-item .attribute-value input[type="text"],
+.guixu-root-container:not(.mobile-view) #variable-manager-modal .attributes-list .attribute-item .attribute-value input[type="number"] {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.guixu-root-container:not(.mobile-view) #variable-manager-modal .attributes-list .attribute-item .interaction-btn,
+.guixu-root-container:not(.mobile-view) #variable-manager-modal .attributes-list .attribute-item .danger-btn {
+  flex: 0 0 auto;              /* 删除按钮不拉伸、不挤压输入 */
+  height: 28px;
+  padding: 0 10px;
+  min-width: 72px;             /* 保证点击面积 */
+  box-sizing: border-box;
+}
+
+/* 新增：精确控制主界面左右面板内卡片的背景透明度，响应设置滑块 */
+.guixu-root-container:not(.mobile-view) .character-panel .panel-section,
+.guixu-root-container:not(.mobile-view) .interaction-panel .panel-section {
+  /* 使用 --gx-section-opacity 变量，使其受设置中心滑块控制 (增加 !important 确保覆盖基础样式) */
+  background: rgba(var(--gx-mask-rgb), var(--gx-section-opacity, 0.62)) !important;
+}

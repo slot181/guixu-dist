@@ -1,0 +1,230 @@
+/* Phase 1 - features/story-text.css
+   正文容器与染色样式（从 css/guixu.css 迁移）
+   注意：移动端字号覆盖位于 views/mobile.css 中，这里仅放通用规则 */
+
+/* 正文文本容器 */
+.game-text-container {
+  font-size: var(--guixu-story-font-size, 14px);
+  line-height: 1.8;
+  /* 基础正文色：统一由变量驱动（默认烟雨灰） */
+  color: var(--guixu-story-color, #9CA3AF);
+  white-space: pre-wrap;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.7);
+}
+/* 默认正文颜色（未被特殊着色包裹的文本） */
+#game-text-display {
+  color: var(--guixu-story-default-color, var(--guixu-story-color, #DEDEE6)) !important;
+}
+
+/* 取消宿主站点段落首行缩进对正文的影响（防御宿主页面 p{text-indent} 规则） */
+.game-text-container,
+.game-text-container gametxt,
+.game-text-container p,
+#game-text-display,
+#game-text-display gametxt,
+#game-text-display p {
+  text-indent: 0 !important; /* 统一取消首行缩进 */
+  margin-left: 0 !important;
+  padding-left: 0 !important;
+}
+
+/* 文本染色（语言/心理/景物） */
+.text-language {
+  /* 引号文本（「角色语言」）：辰星金 */
+  color: var(--guixu-story-quote-color, #EAB308) !important;
+  font-style: italic;
+}
+.text-psychology,
+.text-scenery {
+  /* 心理与景语：统一随方括号文本颜色（烟雨灰） */
+  color: var(--guixu-story-color, #9CA3AF) !important;
+  font-style: italic;
+}
+
+/* ================= 行动选项按钮：悬停/按下动态效果（桌面端优先） ================= */
+/* 说明：
+   - 作用于正文中的“行动选项”按钮（#guixu-action-guidelines .action-guideline-btn）
+   - 与 JS 动态注入的基础视觉（背景/边框）配合，增加 hover/active 动效
+   - 不影响移动端（移动端无 hover），保持全局视觉一致 */
+#guixu-action-guidelines .action-guideline-btn {
+  transition: transform 0.15s ease, box-shadow 0.15s ease, background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+  will-change: transform, box-shadow, background-color;
+  /* 使行动选项按钮底色与文字完全受设置中心控制（默认主题） */
+  background: rgba(var(--gx-mask-rgb, 15, 15, 35), var(--guixu-guideline-bg-opacity, 0.6)) !important;
+  color: var(--guixu-guideline-text-color, #e0dcd1) !important;
+}
+#guixu-action-guidelines .action-guideline-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 14px rgba(201, 170, 113, 0.22);
+  border-color: #daa520 !important;
+  /* 悬停不改变背景与文字颜色，保持设置中心的可配置性 */
+  background: rgba(var(--gx-mask-rgb, 15, 15, 35), var(--guixu-guideline-bg-opacity, 0.6)) !important;
+  color: var(--guixu-guideline-text-color, #e0dcd1) !important;
+}
+#guixu-action-guidelines .action-guideline-btn:active {
+  transform: translateY(0);
+  box-shadow: inset 0 2px 8px rgba(201, 170, 113, 0.18);
+  /* 按下也不覆盖透明度/文字颜色，避免与设置中心冲突 */
+  background: rgba(var(--gx-mask-rgb, 15, 15, 35), var(--guixu-guideline-bg-opacity, 0.6)) !important;
+  color: var(--guixu-guideline-text-color, #e0dcd1) !important;
+}
+#guixu-action-guidelines .action-guideline-btn:focus-visible {
+  outline: 2px solid rgba(218, 165, 32, 0.55);
+  outline-offset: 2px;
+}
+
+/* 桌面端正文行动选项：长文本自适应换行与高度（避免文字溢出按钮） */
+.guixu-root-container:not(.mobile-view) #guixu-action-guidelines .action-guideline-btn {
+  height: auto !important;        /* 覆盖桌面端统一按钮高度 */
+  min-height: 32px;               /* 基础触达高度 */
+  white-space: normal !important; /* 允许换行 */
+  overflow-wrap: anywhere;        /* 超长英文/无空格字符串也可断行 */
+  word-break: break-word;         /* 兼容性兜底 */
+  box-sizing: border-box;         /* 包含内边距 */
+}
+/* 降低动画：尊重系统“减少动态效果”偏好 */
+@media (prefers-reduced-motion: reduce) {
+  #guixu-action-guidelines .action-guideline-btn {
+    transition: none;
+  }
+}
+
+/* 全局默认：统一淡浅金色描边（与“思维链折叠窗口”一致） */
+/* 思维链内容折叠窗口边框（默认主题） */
+#guixu-thinking-content.thinking-box {
+  border: 1px solid rgba(201, 170, 113, 0.35) !important; /* 淡浅金色描边 */
+  border-radius: 10px; /* 与卡片圆角一致 */
+}
+
+/* 思维链按钮芯片边框（默认主题） */
+#guixu-thinking-panel .thinking-chip-btn {
+  border: 1px solid rgba(201, 170, 113, 0.35) !important;
+}
+
+/* 正文“行动选项”按钮边框（默认主题） */
+#guixu-action-guidelines .action-guideline-btn {
+  border: 1px solid rgba(201, 170, 113, 0.35) !important;
+}
+#guixu-action-guidelines .action-guideline-btn:hover {
+  border-color: rgba(201, 170, 113, 0.45) !important; /* 悬停略微加强 */
+}
+
+/* 将 <gametxt> 作为块级元素渲染，避免受上方思维链按钮影响换行布局 */
+.game-text-container gametxt {
+  display: block !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+/* 正文块容器：包裹渲染后的正文，彻底屏蔽首行缩进与左右内边距 */
+.game-text-container .story-paragraph {
+  display: block !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  text-indent: 0 !important;
+}
+
+/* 思维链按钮条：右上角对齐，更加圆润小巧 */
+#guixu-thinking-panel {
+  margin-bottom: 2px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 6px;
+  float: none !important;      /* 明确不参与浮动 */
+  width: 100% !important;      /* 占满一行，后续正文不会环绕 */
+}
+
+/* 芯片按钮风格，遵循主色调 */
+.thinking-chip-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 28px;
+  padding: 0 10px;
+  border-radius: 16px;
+  border: 1px solid var(--gx-accent, #c9aa71);
+  background: var(--gx-btn-bg, linear-gradient(45deg, #8b4513, #cd853f));
+  color: #fff;
+  font-size: 12px;
+  box-shadow: 0 3px 8px rgba(0,0,0,0.35);
+  transition: transform .15s ease, box-shadow .15s ease, background .2s ease;
+  /* 防止在移动端被通用按钮样式拉伸为整行 */
+  flex: 0 0 auto;
+  width: auto;
+  min-width: 28px;
+  align-self: flex-start;
+  white-space: nowrap;
+  max-width: 50vw;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+/* 强制覆盖可能的通用 .interaction-btn 宽度规则 */
+#guixu-thinking-panel .thinking-chip-btn.interaction-btn {
+  width: auto !important;
+  flex: 0 0 auto !important;
+  display: inline-flex !important;
+}
+.thinking-chip-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.45);
+  background: var(--gx-btn-bg-hover, var(--gx-btn-bg, linear-gradient(45deg, #cd853f, #daa520)));
+}
+.thinking-chip-text {
+  font-weight: 600;
+  letter-spacing: .5px;
+}
+/* 移动端：缩短芯片按钮并隐藏文字，避免过长 */
+.guixu-root-container.mobile-view #guixu-thinking-panel .thinking-chip-btn {
+  height: 24px;
+  padding: 0 8px;
+  font-size: 11px;
+  width: auto !important;
+  flex: 0 0 auto !important;
+  max-width: 60vw;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.guixu-root-container.mobile-view #guixu-thinking-panel .thinking-chip-text {
+  display: inline;
+}
+
+/* 折叠面板：圆润卡片样式（背景/阴影/颜色） */
+#guixu-thinking-content.thinking-box {
+  display: none;
+  margin-top: 2px;
+  background: rgba(15, 15, 35, var(--guixu-thinking-bg-opacity, 0.85));
+  border-radius: 10px;
+  padding: 12px;
+  max-height: 280px;
+  overflow: auto;
+  color: var(--guixu-thinking-color, #e0dcd1) !important;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.45);
+  backdrop-filter: blur(1px);
+}
+#guixu-thinking-content pre {
+  white-space: pre-wrap;
+  word-break: break-word;
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+/* 行动方针容器与标签（与 JS 注入保持一致） */
+#guixu-action-guidelines {
+  margin-top: 8px;
+  border-top: 1px solid rgba(201, 170, 113, 0.3);
+  padding-top: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+#guixu-action-guidelines .guideline-label {
+  font-size: 12px;
+  color: #8b7355;
+}
+
+/* 新增：用户偏好隐藏“行动选项”（仅隐藏正文下方操作按钮区，不影响其他面板） */
+.guixu-root-container.hide-guidelines #guixu-action-guidelines {
+  display: none !important;
+}

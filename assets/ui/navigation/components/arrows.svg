@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 归墟 · 翻页箭头（和谐极简风）· 静态版 -->
+<svg xmlns="http://www.w3.org/2000/svg" width="128" height="48" viewBox="0 0 128 48" fill="none">
+  <title>归墟 · 翻页箭头（和谐极简风）</title>
+  <desc>与UI面板风格匹配的纤细线条箭头。角度更舒展，线条更纤细。</desc>
+  <style>
+    .hit { 
+      fill: transparent; 
+      pointer-events: all; 
+    }
+    .arrow-line {
+      fill: none;
+      stroke: currentColor; /* 完美继承面板的金线颜色 */
+      stroke-width: 1.5;   /* 关键：降低线宽，使其更纤细、更精致 */
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+  </style>
+
+  <!-- 左：上一页 -->
+  <g id="prev" class="group" tabindex="0" role="button" aria-label="上一页">
+    <rect class="hit" x="4" y="6" width="56" height="36" rx="6"/>
+    <!-- 路径优化：角度更开阔，更稳定 -->
+    <path class="arrow-line" d="M41 15 L32 24 L41 33"/>
+  </g>
+
+  <!-- 右：下一页 -->
+  <g id="next" class="group" tabindex="0" role="button" aria-label="下一页">
+    <rect class="hit" x="68" y="6" width="56" height="36" rx="6"/>
+    <!-- 镜像的优化路径 -->
+    <path class="arrow-line" d="M87 15 L96 24 L87 33"/>
+  </g>
+  
+  <metadata>
+    <![CDATA[
+设计说明：此版本专为匹配特定UI面板而优化。通过调整线宽与角度，实现视觉和谐。
+    ]]>
+  </metadata>
+</svg>

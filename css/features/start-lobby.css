@@ -1,0 +1,1442 @@
+/* 菜单大厅（全屏覆盖容器）
+   - 桌面端/移动端通用
+   - 仅针对默认紫金琉璃主题优化可读性（不考虑其它主题）
+   - 所有文字颜色遵循全局变量，确保与深色背景有足够对比度
+*/
+.cw-wb-list-container{
+  /* 绑定世界书条目列表容器：
+   * 目的：避免条目过多时撑高整个大厅页面，导致外层主滚动条过长
+   * 做法：在内部容器中滚动查看
+   */
+  width: 100%;
+  max-height: 360px;
+  overflow: auto;
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,0.18);
+  background: rgba(0,0,0,0.18);
+}
+
+/* 桌面端可给更大的可视区域 */
+@media (min-width: 900px){
+  .cw-wb-list-container{
+    max-height: 420px;
+  }
+}
+
+/* 移动端需要更紧凑的高度，避免挤占表单其它区域 */
+@media (max-width: 899px){
+  .cw-wb-list-container{
+    max-height: 300px;
+  }
+}
+
+/* 创意工坊：静态数据库表格布局（替代原卡片网格） */
+.cw-db-table-wrap{
+  width: 100%;
+  overflow: auto;
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,0.18);
+  background: rgba(0,0,0,0.16);
+}
+
+.cw-db-table{
+  width: 100%;
+  border-collapse: collapse;
+  /* 关键策略（已验证更稳）：
+   * - 不再用 min-width 强行撑表格，否则在移动端会不可避免地产生横向溢出
+   * - 让表格固定布局，列宽由 CSS 控制，避免内容把列撑开
+   */
+  table-layout: fixed;
+  min-width: 0;
+}
+
+.cw-db-th,
+.cw-db-td{
+  padding: 10px 10px;
+  border-bottom: 1px solid rgba(255,255,255,0.10);
+  font-size: 13px;
+  text-align: left;
+  vertical-align: middle;
+}
+
+/* 表格单元格内容过长时不允许撑破布局 */
+.cw-db-td{
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cw-db-th{
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: rgba(0,0,0,0.35);
+  font-weight: 600;
+}
+
+.cw-db-th-drag,
+.cw-db-drag{
+  width: 56px;
+  text-align: center;
+  user-select: none;
+  cursor: grab;
+  opacity: 0.9;
+}
+
+.cw-db-th-check,
+.cw-db-check{
+  width: 56px;
+  text-align: center;
+}
+
+tr.cw-db-tr.selected{
+  outline: 1px solid rgba(185, 150, 255, 0.55);
+  background: rgba(120, 80, 200, 0.18);
+}
+
+tr.cw-db-tr.dragging{
+  opacity: 0.65;
+}
+
+tr.cw-db-tr:hover{
+  background: rgba(255,255,255,0.06);
+}
+
+/* 创意工坊列表卡片：批量选择 */
+.cw-card-check{
+  position: absolute;
+  right: 8px;
+  top: 8px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  opacity: 0.85;
+}
+.cw-card-check input{
+  transform: scale(1);
+}
+
+.cw-db-priority{
+  width: 90px;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ========== 创意工坊：静态数据库表格自适应（桌面端更舒展、移动端不破版） ==========
+ * 现象1（移动端）：表格过宽导致必须拖动才能看到内容
+ * 解决：移动端隐藏“作者/版本”等次要列，仅保留核心列，并把表格 min-width 降到可控范围
+ *
+ * 现象2（桌面端）：表格看起来过窄（列挤在一起）
+ * 解决：桌面端提高 min-width，并为关键列提供更合理的宽度占比
+ */
+@media (min-width: 900px){
+  /* 桌面端：表格跟随容器拉满，且通过列宽比例让“作者/版本”可见 */
+  .cw-db-table-wrap{
+    overflow-x: hidden;
+  }
+  .cw-db-th-drag,
+  .cw-db-drag{
+    width: 56px;
+  }
+  .cw-db-priority{
+    width: 90px;
+  }
+  /* 固定布局下通过百分比控制列宽 */
+  .cw-db-th.cw-db-name,
+  .cw-db-td.cw-db-name{
+    width: 44%;
+  }
+  .cw-db-th.cw-db-author,
+  .cw-db-td.cw-db-author{
+    width: 28%;
+  }
+  .cw-db-th.cw-db-version,
+  .cw-db-td.cw-db-version{
+    width: 18%;
+  }
+}
+
+@media (max-width: 899px){
+  /* 移动端：静态数据库表格改为卡片式，避免信息被挤压 */
+  .cw-db-table-wrap{
+    overflow: visible;
+    border: none;
+    background: transparent;
+  }
+  .cw-db-table{
+    width: 100%;
+    min-width: 0;
+    display: block;
+  }
+  .cw-db-table thead{
+    display: none;
+  }
+  .cw-db-table tbody{
+    display: block;
+  }
+  .cw-db-table tr.cw-db-tr{
+    display: block;
+    margin-bottom: 10px;
+    border-radius: 10px;
+    border: 1px solid rgba(255,255,255,0.18);
+    background: rgba(0,0,0,0.16);
+    overflow: hidden;
+  }
+  .cw-db-table tr.cw-db-tr.selected{
+    outline: 1px solid rgba(185, 150, 255, 0.55);
+    background: rgba(120, 80, 200, 0.18);
+  }
+  .cw-db-table tr.cw-db-tr td.cw-db-td{
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 8px 10px;
+    border-bottom: 1px dashed rgba(255,255,255,0.12);
+    white-space: normal;
+    overflow: visible;
+    text-overflow: clip;
+    line-height: 1.5;
+    word-break: break-word;
+  }
+  .cw-db-table tr.cw-db-tr td.cw-db-td.cw-db-drag,
+  .cw-db-table tr.cw-db-tr td.cw-db-td.cw-db-priority{
+    width: auto;
+    text-align: left;
+    align-items: flex-start;
+  }
+  .cw-db-table tr.cw-db-tr td.cw-db-td.cw-db-check{
+    align-items: flex-start;
+    gap: 8px;
+    width: auto;
+    text-align: left;
+  }
+  .cw-db-table tr.cw-db-tr td.cw-db-td.cw-db-check::before{
+    align-self: flex-start;
+    pointer-events: none;
+  }
+  .cw-db-table tr.cw-db-tr td.cw-db-td.cw-db-check input.cw-batch-check{
+    width: 18px;
+    height: 18px;
+    flex: 0 0 auto;
+    margin: 2px 0 0;
+    align-self: flex-start;
+    cursor: pointer;
+    accent-color: rgba(227, 201, 153, 0.95);
+  }
+  .cw-db-table tr.cw-db-tr td.cw-db-td:last-child{
+    border-bottom: none;
+  }
+  .cw-db-table tr.cw-db-tr td.cw-db-td::before{
+    content: attr(data-label);
+    flex: 0 0 64px;
+    color: rgba(227, 201, 153, 0.95);
+    font-weight: 600;
+  }
+  .cw-db-table tr.cw-db-empty-row td.cw-db-td{
+    display: block;
+    padding: 10px;
+    text-align: center;
+  }
+}
+
+/* ========== 创意工坊：静态数据库编辑表单 - 防止“可视化编辑”动态内容撑破移动端宽度 ==========
+ * 现象：点击“当前已有内容”的某个对象后，右侧/下方渲染出大量字段，
+ * 其中某些元素带 min-width，导致外层容器被撑开出现横向滚动，移动端无法编辑。
+ * 处理：
+ * - 对 cw-db-obj-editor / cw-db-obj-list 这种 attributes-list 容器强制 max-width:100%
+ * - 禁止内部出现横向溢出（overflow-x:hidden）
+ * - 让内部控件允许收缩（min-width:0）
+ */
+@media (max-width: 899px){
+  #cw-db-obj-list,
+  #cw-db-obj-editor{
+    max-width: 100%;
+    overflow-x: hidden;
+    box-sizing: border-box;
+  }
+  #cw-db-obj-editor .sm-row,
+  #cw-db-obj-editor .attribute-item,
+  #cw-db-obj-editor .attributes-list{
+    max-width: 100%;
+    min-width: 0;
+  }
+  #cw-db-obj-editor input,
+  #cw-db-obj-editor select,
+  #cw-db-obj-editor textarea{
+    max-width: 100%;
+    min-width: 0 !important;
+    box-sizing: border-box;
+  }
+
+  /* 关键修复：attribute-item 在渲染时只有 style="gap:10px; align-items:center;"，没有 display:flex，
+   * 在某些移动端 WebView 中会退化成不可预期布局并撑宽容器。
+   * 这里强制 attribute-item 使用 flex，并允许换行/折行，避免 min-width 的 label 把整体撑破。
+   */
+  #cw-db-obj-editor .attribute-item{
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+  }
+  /* label（attribute-name）在移动端允许换行，同时取消强制最小宽度 */
+  #cw-db-obj-editor .attribute-name{
+    min-width: 0 !important;
+    flex: 0 0 auto;
+    white-space: normal;
+    line-height: 1.4;
+  }
+  /* 输入框/下拉在移动端占满整行，避免被按钮/label 挤压 */
+  #cw-db-obj-editor input.sm-input,
+  #cw-db-obj-editor select.gx-select,
+  #cw-db-obj-editor textarea.sm-input{
+    flex: 1 1 100%;
+    width: 100%;
+  }
+  /* 删除按钮在移动端不要强行跟在输入框同一行，避免把输入框挤没 */
+  #cw-db-obj-editor button.cw-db-dict-del{
+    flex: 0 0 auto;
+  }
+}
+
+/* ========== 修复：bonuses 编辑器在移动端“输入内容看不见” ==========
+ * 现象：属性加成（bonuses）里的数字输入框在移动端颜色/背景对比度太低，像是没输入。
+ * 处理：提高输入框文字颜色与 placeholder 对比度，并统一数字字体对齐
+ */
+.start-lobby-overlay .cw-db-obj-field[type="number"],
+.start-lobby-overlay .cw-db-obj-field[type="text"]{
+  color: var(--guixu-story-default-color, #DEDEE6);
+  caret-color: #fff;
+}
+.start-lobby-overlay .cw-db-obj-field{
+  /* 兜底：避免某些移动端默认把 input text 渲染成接近透明 */
+  -webkit-text-fill-color: var(--guixu-story-default-color, #DEDEE6);
+}
+.start-lobby-overlay .cw-db-obj-field::placeholder{
+  color: rgba(222, 222, 230, 0.55);
+}
+.start-lobby-overlay .cw-db-obj-field[type="number"]{
+  font-variant-numeric: tabular-nums;
+}
+
+/* 覆盖容器：固定定位全屏，默认隐藏 */
+.start-lobby-overlay {
+  position: fixed;
+  inset: 0;
+  display: none;            /* 通过 JS 切换为 flex 显示 */
+  align-items: center;
+  justify-content: center;
+  z-index: 10070;           /* 高于通用模态窗口(9000)，确保完全覆盖游玩界面 */
+  background-color: #000;   /* 背景图加载前的兜底色 */
+  background-size: var(--guixu-bg-size, cover);
+  background-repeat: var(--guixu-bg-repeat, no-repeat);
+  background-position: var(--guixu-bg-position, center);
+}
+
+/* 背景遮罩：与全局遮罩透明度变量保持一致，避免单独主题偏差 */
+.start-lobby-overlay::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0, var(--guixu-bg-mask, 0.7)); /* 使用全局遮罩变量 */
+}
+
+/* 内容容器：置于遮罩之上，并提供滚动条以容纳较多元素的分页 */
+.start-lobby-content {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  align-items: center;
+  justify-content: flex-start;
+  text-align: left;
+  padding: 20px 18px;
+  border-radius: 12px;
+  background: rgba(20, 18, 16, 0.30);  /* 稍强一点的底板，提升对比度 */
+  box-shadow: 0 8px 32px rgba(0,0,0,0.35);
+  box-sizing: border-box; /* 修复：容器首行计算宽度时的偏差 */
+  width: min(980px, 92vw);
+  max-width: 100%; /* 适配嵌入式容器：避免宽度超过父容器导致横向溢出 */
+  min-width: 0;
+  max-height: 86vh;            /* 关键：限制高度并允许滚动 */
+  overflow: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+  color: var(--guixu-story-default-color, #DEDEE6); /* 全局默认正文颜色（月华白），避免变成黑色不可见 */
+}
+
+/* 开始游玩：性别与点数分页统一单栏布局（桌面端/移动端一致） */
+.start-lobby-overlay .wiz-gender-points{
+  flex-direction: column;
+  align-items: stretch;
+}
+.start-lobby-overlay .wiz-gender-points > .sm-card{
+  width: 100%;
+  flex: 1 1 100%;
+  min-width: 0 !important;
+}
+
+/* 创意工坊内容容器：确保不超出嵌入式父容器宽度 */
+.start-lobby-overlay #cw-body{
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+}
+
+/* 标题：保持与默认紫金琉璃主题的金色系一致 */
+.start-lobby-title {
+  margin: 0;
+  font-size: 28px;
+  letter-spacing: 2px;
+  color: #E3C999; /* 金色 */
+  text-shadow: 0 2px 6px rgba(0,0,0,0.55);
+  text-align: center;
+}
+
+/* 大号按钮：复用全局 interaction-btn 样式，并在尺寸上做轻度放大 */
+.btn-lg {
+  min-width: 200px;
+  height: 44px;
+  font-size: 16px;
+  padding: 0 18px;
+}
+
+/* 大厅范围内按钮文本提亮，适配深色背景 */
+.start-lobby-overlay .interaction-btn {
+  color: #e8e3d6; /* 月华白 */
+  text-shadow: 0 1px 2px rgba(0,0,0,0.55);
+}
+.start-lobby-overlay .interaction-btn:hover {
+  color: #fff;
+}
+/* 主要按钮在大厅内统一使用白字，增强可读性 */
+.start-lobby-overlay .primary-btn {
+  color: #fff !important;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.6);
+}
+
+/* ========== 迁移自旧开局面板（通用卡片/表格/行内控件） ========== */
+/* 为避免依赖旧文件（start-menu.css），这里复刻必要规则（适度提亮颜色） */
+
+/* 分栏/网格布局容器（根据场景覆盖列数） */
+.start-menu-grid {
+  display: grid;
+  grid-template-columns: 1.1fr 0.9fr;
+  gap: 12px;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  align-items: stretch; /* 让同一行的卡片等高（性别/点数池/天赋/背景/静态数据库等） */
+  box-sizing: border-box;
+}
+
+/* ========== 移动端适配：修复开局向导各分页“中间容器左右溢出”问题 ==========
+ * 问题表现：
+ * - 副本/天赋/背景/静态数据库等分页使用了 repeat(2, minmax(240px, 1fr))
+ * - 在移动端宽度不足时，min-width=240px 会强制两列撑开，导致横向溢出
+ * 解决方案：
+ * - 移动端统一改为单列（1fr），避免出现横向滚动条
+ * - 同时把网格项的 min-width 归零，允许内容在网格内正确换行
+ */
+@media (max-width: 899px){
+  .start-lobby-overlay .start-menu-grid{
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+  .start-lobby-overlay .start-menu-grid > *{
+    min-width: 0;
+  }
+  /* 难度网格同样在移动端单列展示，避免 3 列撑破 */
+  .start-lobby-overlay .diff-grid{
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+}
+
+/* ========== 移动端适配：统一底部导航按钮布局（返回大厅/上一页/下一页/生成开局等） ==========
+ * 目标：
+ * - 避免按钮行在移动端横向溢出
+ * - 让“开始游玩”向导页底部导航与“游戏设置/创意工坊/存档管理”等页的 footer 视觉与行为更一致
+ */
+.start-lobby-overlay .start-menu-footer{
+  width: 100%;
+  box-sizing: border-box;
+}
+
+@media (max-width: 899px){
+  /* JS 里向导页底部使用的是内联 style 的 flex 容器，这里用更高优先级覆盖为可换行 */
+  .start-lobby-overlay .start-lobby-content > div[style*="justify-content:space-between"]{
+    flex-wrap: wrap !important;
+    gap: 10px !important;
+  }
+  /* 两个按钮组在移动端改为各占一行，避免右侧按钮组把整体撑开 */
+  .start-lobby-overlay .start-lobby-content > div[style*="justify-content:space-between"] > div{
+    flex: 1 1 100%;
+    min-width: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  .start-lobby-overlay .start-lobby-content > div[style*="justify-content:space-between"] > div:last-child{
+    justify-content: flex-start;
+  }
+  /* 按钮在移动端尽量铺满一行（两列并排会因文案长度导致溢出） */
+  .start-lobby-overlay .start-lobby-content > div[style*="justify-content:space-between"] .interaction-btn{
+    flex: 1 1 140px;
+    min-width: 0;
+  }
+
+  /* 创意工坊卡片内的操作区：允许换行，避免“编辑/删除”等按钮跑出容器 */
+  .start-lobby-overlay .sm-card .start-menu-footer{
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: flex-start;
+  }
+  .start-lobby-overlay .sm-card .start-menu-footer .interaction-btn{
+    flex: 1 1 140px;
+    min-width: 0;
+  }
+}
+
+/* ========== 移动端适配：创意工坊编辑表单的输入框/下拉不外溢 ==========
+ * 覆盖内联 min-width，强制在小屏内换行并占满容器
+ */
+@media (max-width: 899px){
+  .start-lobby-overlay #cw-body .sm-row{
+    align-items: stretch;
+  }
+  .start-lobby-overlay #cw-body .sm-row .sm-label{
+    min-width: 0 !important;
+    width: 100%;
+    white-space: normal;
+  }
+  .start-lobby-overlay #cw-body .sm-row .sm-input,
+  .start-lobby-overlay #cw-body .sm-row .gx-select,
+  .start-lobby-overlay #cw-body .sm-row .sm-select,
+  .start-lobby-overlay #cw-body .sm-row textarea.sm-input{
+    flex: 1 1 100%;
+    width: 100%;
+    max-width: 100%;
+    min-width: 0 !important;
+    box-sizing: border-box;
+  }
+  .start-lobby-overlay #cw-body .sm-row .interaction-btn{
+    flex: 1 1 100%;
+    width: 100%;
+  }
+}
+
+/* ========== 移动端适配：天赋 bonuses 列表的数值/删除按钮留出间距 ==========
+ * 目标：避免数值与删除按钮挤压变形
+ */
+@media (max-width: 899px){
+  .start-lobby-overlay #cw-body .cw-bonus-list .attribute-item{
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px 10px;
+  }
+  .start-lobby-overlay #cw-body .cw-bonus-list .attribute-name{
+    min-width: 0;
+    flex: 1 1 auto;
+  }
+  .start-lobby-overlay #cw-body .cw-bonus-list .attribute-value{
+    flex: 0 0 auto;
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+  }
+  .start-lobby-overlay #cw-body .cw-bonus-list .interaction-btn{
+    flex: 1 1 100%;
+    width: 100%;
+  }
+}
+
+/* ========== 移动端适配：游戏设置表单布局 ==========
+ * 目标：
+ * - 让“端点/模型/API Key/CORS模板”等输入框在移动端不被 min-width 撑破
+ * - 让 label 与输入框在窄屏自动上下排布，避免出现横向溢出与拥挤
+ * 说明：该页大量使用内联 min-width，这里通过更高优先级覆盖为 min-width:0 + 100% 宽度
+ */
+@media (max-width: 899px){
+  /* sm-row 在移动端统一改为纵向排布，更利于表单阅读 */
+  .start-lobby-overlay .sm-row{
+    align-items: stretch;
+  }
+  /* 游戏设置页：让 gx-input/滑条等控件占满可用宽度 */
+  .start-lobby-overlay .gx-input{
+    width: 100%;
+    max-width: 100%;
+    min-width: 0 !important;
+    box-sizing: border-box;
+  }
+  /* range 控件避免固定宽度 */
+  .start-lobby-overlay input[type="range"]{
+    width: 100% !important;
+    max-width: 100%;
+  }
+  /* number 的固定宽度在移动端容易显得别扭：允许拉伸 */
+  .start-lobby-overlay input[type="number"].gx-input{
+    width: 100%;
+  }
+  /* “消息构建器”按钮避免 margin-left:auto 导致布局奇怪，移动端直接占满一行 */
+  #wiz-aux-open-message-editor{
+    margin-left: 0 !important;
+    width: 100%;
+  }
+
+  /* 游戏设置页：CORS 代理输入框在移动端不要被挤成很小一截
+   * 原因：该行里同时有 checkbox + label + input，且外层是 flex-wrap
+   * 处理：让 label 与输入框各自独占一行，并让输入框占满宽度
+   */
+  #wiz-cors-enable{
+    flex: 0 0 auto;
+  }
+  label[for="wiz-cors-enable"]{
+    flex: 1 1 100%;
+    min-width: 0;
+    white-space: normal;
+    line-height: 1.4;
+  }
+  #wiz-cors-template{
+    flex: 1 1 100%;
+    width: 100%;
+    min-width: 0 !important;
+  }
+}
+
+/* ========== 移动端适配：创意工坊“天赋/背景”编辑表单容器宽度 ==========
+ * 现象：表单页内部分行使用了 min-width（如 240/260），移动端导致外层出现横向滚动
+ * 处理：移动端强制让表单页的 sm-card 容器宽度收敛到视口内，并禁止横向溢出
+ */
+@media (max-width: 899px){
+  .start-lobby-overlay .start-lobby-content{
+    overflow-x: hidden;
+  }
+  /* 创意工坊表单页通常是 start-lobby-content 内第一层 sm-card（外层容器） */
+  .start-lobby-overlay .start-lobby-content > .sm-card{
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+  }
+  /* 兜底：任何卡片/表单行内的控件都不应撑出容器 */
+  .start-lobby-overlay .sm-card *{
+    min-width: 0;
+  }
+}
+
+/* 修复：首行出现“左右卡片无法对齐”的常见原因是 grid 容器内存在子元素宽度溢出导致列宽回流。
+   对大厅内卡片中的长文本/描述强制换行，避免把第一行挤歪。 */
+.start-lobby-overlay .sm-card,
+.start-lobby-overlay .sm-overview,
+.start-lobby-overlay .sm-title {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+/* 难度卡片专用网格：保证排列整齐、等高 */
+.diff-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(220px, 1fr));
+  gap: 12px;
+  align-items: stretch; /* 让每列等高对齐 */
+}
+.diff-grid .sm-card {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  height: 100%;
+  text-align: center; /* 标题与说明居中 */
+}
+.diff-grid .sm-title {
+  justify-content: center;
+}
+
+/* 面板通用卡片（使用左右模块透明度变量） */
+.sm-card {
+  background: rgba(10,10,18, var(--gx-section-opacity, 0.55));
+  border: 1px solid rgba(201,170,113,0.42);
+  border-radius: 8px;
+  padding: 12px;
+  color: var(--guixu-story-default-color, #DEDEE6);
+  box-sizing: border-box; /* 修复：首行卡片边框/内边距导致的对齐偏差 */
+}
+.sm-card + .sm-card { margin-top: 10px; }
+
+.talent-card,
+.bg-card,
+.dungeon-card{
+  position: relative;
+}
+
+.sm-card .sm-title {
+  font-size: 14px;
+  color: #E3C999; /* 提升可见度 */
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* 绑定状态与行内展开 */
+.cw-bind-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+}
+.cw-db-td.cw-db-status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.cw-bind-status .cw-bind-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: rgba(180,180,180,0.9);
+  flex: 0 0 auto;
+}
+.cw-bind-status.ok .cw-bind-dot { background: rgba(96, 189, 135, 0.95); }
+.cw-bind-status.warn .cw-bind-dot { background: rgba(235, 180, 90, 0.95); }
+.cw-bind-status.empty .cw-bind-dot { background: rgba(160,160,160,0.8); }
+.cw-bind-toggle {
+  margin-left: 8px;
+  padding: 2px 6px;
+  font-size: 12px;
+  border-radius: 6px;
+  border: 1px solid rgba(201,170,113,0.45);
+  background: transparent;
+  color: #E3C999;
+  cursor: pointer;
+}
+.cw-bind-toggle:hover { border-color: rgba(201,170,113,0.75); }
+.cw-bind-detail-row { display: none; }
+.cw-bind-detail-row.open { display: table-row; }
+.cw-bind-detail-cell {
+  padding: 8px 12px;
+  background: rgba(10,10,18, 0.35);
+}
+.cw-bind-detail-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  font-size: 12px;
+}
+.cw-bind-item.ok { color: rgba(139, 214, 162, 0.95); }
+.cw-bind-item.miss { color: rgba(240, 128, 128, 0.95); }
+.cw-bind-empty { opacity: 0.7; }
+
+/* 创意工坊导入文件隐藏输入 */
+.cw-import-input {
+  display: none;
+}
+
+/* 选中态卡片高亮（用于副本/天赋/背景/难度卡片） */
+.sm-card.selected {
+  border-color: rgba(201,170,113,0.75);
+  box-shadow: 0 0 0 2px rgba(201,170,113,0.18) inset;
+}
+
+/* 行/字段容器 */
+.sm-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.sm-field {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* 标签/输入/下拉：保持默认主题的高对比 */
+.sm-field .sm-label {
+  min-width: 78px;
+  color: var(--guixu-story-default-color, #DEDEE6);
+  font-size: 12px;
+  white-space: nowrap;
+}
+.sm-input, .sm-select {
+  background: rgba(0,0,0,0.45);
+  border: 1px solid #8b7355;
+  color: var(--guixu-story-default-color, #DEDEE6);
+  border-radius: 6px;
+  padding: 6px 8px;
+  font-size: 12px;
+}
+.sm-select { min-width: 200px; }
+
+/* ========= 菜单大厅：卡片等高与输入框统一视觉 ========= */
+/* 卡片作为 grid item 时，确保自身可拉伸占满高度；并把内部布局改为 column，避免内容高度导致参差 */
+.start-lobby-overlay .start-menu-grid > .sm-card,
+.start-lobby-overlay .start-menu-grid .sm-card.talent-card,
+.start-lobby-overlay .start-menu-grid .sm-card.bg-card,
+.start-lobby-overlay .start-menu-grid .sm-card.static-db-card,
+.start-lobby-overlay .start-menu-grid .sm-card.dungeon-card {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  min-height: 128px; /* 兜底：避免首行卡片因内容过少而显得矮 */
+}
+
+/* 大厅内输入框视觉风格对齐“游玩界面通用输入框”（优先使用 gx-input 体系） */
+.start-lobby-overlay .sm-input {
+  width: 100%;
+  max-width: 100%;
+}
+.start-lobby-overlay input.sm-input,
+.start-lobby-overlay textarea.sm-input,
+.start-lobby-overlay select.sm-select {
+  background: rgba(0,0,0,0.35);
+  border: 1px solid rgba(var(--gx-accent-rgb, 201,170,113), 0.50);
+  box-shadow: 0 0 0 1px rgba(0,0,0,0.25) inset;
+}
+.start-lobby-overlay input.sm-input:focus,
+.start-lobby-overlay textarea.sm-input:focus,
+.start-lobby-overlay select.sm-select:focus {
+  outline: none;
+  border-color: rgba(var(--gx-accent-rgb, 201,170,113), 0.85);
+  box-shadow: 0 0 0 2px rgba(var(--gx-accent-rgb, 201,170,113), 0.18);
+}
+
+/* 单选组 */
+.sm-radio-group {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.sm-radio {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  color: var(--guixu-story-default-color, #DEDEE6);
+}
+
+/* 概览行 */
+.sm-overview-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 12px;
+}
+.sm-overview-label {
+  color: #E3C999;
+}
+.sm-overview-val {
+  color: var(--guixu-story-default-color, #DEDEE6);
+}
+
+/* 属性分配表 */
+.attr-alloc {
+  width: 100%;
+  border-collapse: collapse;
+}
+.attr-alloc th, .attr-alloc td {
+  border-bottom: 1px solid rgba(201,170,113,0.25);
+  padding: 6px 4px;
+  font-size: 12px;
+  color: var(--guixu-story-default-color, #DEDEE6);
+}
+.attr-alloc th {
+  color: #E3C999;
+  text-align: left;
+}
+.attr-alloc td.attr-name {
+  color: var(--guixu-story-default-color, #DEDEE6);
+  white-space: nowrap;
+  width: 36%;
+}
+.attr-alloc td.attr-controls {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.attr-alloc .gx-stepper {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.attr-alloc .gx-stepper .stepper-btn {
+  min-width: 28px;
+  height: 26px;
+  padding: 0 6px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ========= 菜单大厅内复用“道途印记”样式桥接 ========= */
+/* 说明：
+   - save-load.css 大量规则以 #save-load-modal 作为作用域选择器
+   - 大厅“存档管理”分页不使用该模态ID，需在大厅容器下补充一套等价选择器，保证一致外观
+*/
+
+/* 双栏布局与等高 */
+.start-lobby-overlay .save-manager-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr;
+  gap: 14px;
+  align-items: stretch;
+  width: 100%;
+  min-height: 0;
+}
+
+/* 左侧面板与滚动区域 */
+.start-lobby-overlay .save-list-pane {
+  background: var(--gx-surface-2);
+  border: 1px solid rgba(var(--gx-accent-rgb, 201,170,113), 0.36); /* 提升可见度 */
+  border-radius: 8px;
+  padding: 12px;
+  backdrop-filter: var(--gx-background-blur);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+}
+.start-lobby-overlay .save-list-title {
+  font-size: 14px;
+  color: var(--gx-accent);
+  margin: 12px 0 8px;
+  border-top: 1px solid rgba(var(--gx-accent-rgb), 0.3);
+  padding-top: 10px;
+}
+.start-lobby-overlay .save-list-pane .save-list-title:first-of-type {
+  border-top: none;
+  padding-top: 0;
+  margin-top: 0;
+}
+.start-lobby-overlay .save-list-section {
+  overflow-y: auto;
+  flex: 1 1 0;
+  min-height: 0;
+  padding-right: 4px;
+}
+
+/* 条目卡片与选中高亮 */
+.start-lobby-overlay .save-slot {
+  background: var(--gx-surface-2, rgba(26,26,46,0.48));
+  border: 1px solid rgba(var(--gx-accent-rgb, 201,170,113), 0.30);
+  border-radius: 6px;
+  padding: 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: background-color .2s ease, box-shadow .2s ease, border-color .2s ease;
+}
+.start-lobby-overlay .save-slot:hover,
+.start-lobby-overlay .save-slot:focus-visible {
+  background: rgba(26, 26, 46, 0.62);
+  box-shadow: 0 0 14px rgba(var(--gx-accent-rgb, 201,170,113), 0.20);
+}
+.start-lobby-overlay .save-slot.active {
+  border-color: rgba(var(--gx-accent-rgb), 0.6);
+  box-shadow: inset 0 0 0 2px rgba(var(--gx-accent-rgb), 0.15);
+  background: rgba(0, 0, 0, 0.36);
+}
+.start-lobby-overlay .save-slot-info .slot-name { font-size: 16px; color: #e0dcd1; }
+.start-lobby-overlay .save-slot-info .slot-time { font-size: 12px; color: #8b7355; margin-top: 5px; }
+.start-lobby-overlay .save-slot-info .slot-summary { font-size: 11px; color: #a09c91; margin-top: 8px; font-style: italic; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* 右侧详情面板（边框加强） */
+.start-lobby-overlay .save-detail-pane {
+  background: var(--gx-surface-1);
+  border: 1px solid rgba(var(--gx-accent-rgb, 201,170,113), 0.36); /* 提升可见度 */
+  border-radius: 8px;
+  padding: 14px;
+  backdrop-filter: var(--gx-background-blur);
+  overflow: auto;
+  height: 100%;
+  min-height: 0;
+  box-shadow: inset 0 0 1px rgba(0,0,0,.25);
+}
+
+/* 右侧详情结构与卡片 */
+.start-lobby-overlay .save-detail { display: flex; flex-direction: column; gap: 8px; height: 100%; min-height: 0; }
+.start-lobby-overlay .save-detail-header { border-bottom: 1px solid rgba(var(--gx-accent-rgb), 0.28); padding-bottom: 8px; }
+.start-lobby-overlay .save-detail-title { font-size: 18px; color: #e0dcd1; line-height: 1.35; }
+.start-lobby-overlay .save-detail-meta { font-size: 12px; color: #8b7355; margin-top: 4px; }
+
+.start-lobby-overlay .save-detail-subtitle { font-size: 13px; color: var(--gx-accent); margin-bottom: 8px; }
+.start-lobby-overlay .save-detail-snapshot {
+  background: var(--gx-surface-3);
+  border: 1px solid rgba(var(--gx-accent-rgb), 0.30); /* 加强 */
+  border-radius: 6px;
+  padding: 12px;
+  min-height: 200px;
+  position: relative;
+  overflow: hidden;
+}
+.start-lobby-overlay .save-detail-text {
+  color: #e0dcd1;
+  font-size: 13px;
+  line-height: 1.7;
+  white-space: pre-line;
+  word-wrap: break-word;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 8;
+  overflow: hidden;
+  max-height: calc(1.7em * 8);
+}
+
+/* 详情模块分割线 + 边框弱化 */
+.start-lobby-overlay .save-detail .save-detail-stats {
+  border: 1px solid rgba(var(--gx-accent-rgb), 0.22);
+  border-radius: 6px;
+  padding: 10px;
+  background: var(--gx-surface-2);
+}
+.start-lobby-overlay .save-detail .save-detail-stats + .save-detail-stats {
+  margin-top: 10px;
+}
+
+/* 状态网格与卡片 */
+.start-lobby-overlay .save-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(var(--save-stats-cols, 3), minmax(0, 1fr));
+  gap: 10px;
+  grid-auto-flow: row dense;
+}
+.start-lobby-overlay .save-stats-grid.cols-2 > .save-stat-card:last-child:nth-child(odd) { grid-column: 1 / -1; }
+.start-lobby-overlay .save-stats-grid.cols-3 > .save-stat-card:last-child:nth-child(3n+1) { grid-column: 1 / -1; }
+
+.start-lobby-overlay .save-stat-card {
+  background: var(--gx-surface-3);
+  border: 1px solid rgba(var(--gx-accent-rgb), 0.26); /* 加强 */
+  border-radius: 6px;
+  padding: 8px;
+  text-align: center;
+}
+.start-lobby-overlay .save-stat-key { font-size: 11px; color: #c9aa71; letter-spacing: 0.5px; margin-bottom: 4px; }
+.start-lobby-overlay .save-stat-val { font-size: 14px; color: #e8e3d6; font-weight: 600; }
+
+/* 右侧底部动作按钮栅格（统一使用全局按钮视觉） */
+.start-lobby-overlay .save-detail-actions {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: auto;
+  padding-top: 6px;
+}
+.start-lobby-overlay .save-detail-actions.cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.start-lobby-overlay .save-detail-actions.cols-2 > button:last-child:nth-child(odd) { grid-column: 1 / -1; }
+
+/* 移动端适配：单列布局与滚动 */
+@media (max-width: 900px), (pointer: coarse) {
+  .start-lobby-overlay .save-manager-grid {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto auto;
+    height: auto;
+    align-items: start;
+    display: block !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    overflow-x: hidden !important;
+    box-sizing: border-box !important;
+  }
+  .start-lobby-overlay .save-list-pane,
+  .start-lobby-overlay .save-detail-pane {
+    display: block;
+    width: 100% !important;
+    max-width: 100% !important;
+    height: auto;
+    min-height: 1px;
+    overflow-x: hidden !important;
+    box-sizing: border-box !important;
+    padding-bottom: 10px;
+  }
+  .start-lobby-overlay .save-list-section {
+    max-height: 36vh;
+    overflow-y: auto;
+    flex: unset;
+  }
+  .start-lobby-overlay .save-stats-grid { --save-stats-cols: 2; }
+}
+
+/* 底部操作区（用于概览页按钮等） */
+.start-menu-footer {
+  margin-top: 10px;
+  border-top: 1px solid rgba(201,170,113,0.35);
+  padding-top: 10px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+/* ========== 共享大厅：通用布局 ========= */
+.share-panel{
+  width: 100%;
+  max-width: 100%;
+  padding: 16px;
+  box-sizing: border-box;
+}
+
+/* 共享大厅：容器始终铺满（避免宽度随内容变化） */
+#share-body{
+  width: 100%;
+}
+
+.share-remote-meta{
+  text-align: center;
+  font-size: 12px;
+  opacity: 0.8;
+  margin-bottom: 8px;
+}
+
+.share-footer{
+  justify-content: space-between;
+  gap: 10px;
+}
+.share-footer-left,
+.share-footer-right{
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+@media (max-width: 899px){
+  .share-footer{
+    flex-wrap: wrap;
+  }
+  .share-footer-left,
+  .share-footer-right{
+    flex: 1 1 100%;
+  }
+  .share-footer-right{
+    justify-content: flex-start;
+  }
+  .share-footer .interaction-btn{
+    flex: 1 1 140px;
+  }
+}
+
+.share-tabbar{
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+}
+
+.share-search-row{
+  gap: 8px;
+  align-items: center;
+  margin: 6px 0 8px;
+  flex-wrap: wrap;
+}
+
+.share-table-wrap{
+  width: 100%;
+  overflow: auto;
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,0.18);
+  background: rgba(0,0,0,0.16);
+}
+
+.share-table{
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+  min-width: 0;
+}
+
+.share-th,
+.share-td{
+  padding: 10px 10px;
+  border-bottom: 1px solid rgba(255,255,255,0.10);
+  font-size: 13px;
+  text-align: left;
+  vertical-align: middle;
+}
+
+.share-col-check{
+  width: 48px;
+  text-align: center;
+}
+
+.share-td{
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.share-th{
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: rgba(0,0,0,0.35);
+  font-weight: 600;
+}
+
+tr.share-row.selected{
+  outline: 1px solid rgba(185, 150, 255, 0.55);
+  background: rgba(120, 80, 200, 0.18);
+}
+
+tr.share-row:hover{
+  background: rgba(255,255,255,0.06);
+}
+
+.share-col-time.share-time-toggle{
+  cursor: pointer;
+  text-decoration: underline dotted rgba(227, 201, 153, 0.8);
+  text-underline-offset: 2px;
+}
+.share-col-version.share-version-toggle{
+  cursor: pointer;
+  text-decoration: underline dotted rgba(227, 201, 153, 0.8);
+  text-underline-offset: 2px;
+}
+
+.share-pagination{
+  margin-top: 8px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.share-pagination-left,
+.share-pagination-center,
+.share-pagination-right{
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.share-pagination-center .interaction-btn{
+  min-width: 72px;
+}
+
+/* 桌面端：更舒展的列宽 */
+@media (min-width: 900px){
+  .share-col-name{ width: 20%; }
+  .share-col-author{ width: 14%; }
+  .share-col-version{ width: 12%; }
+  .share-col-desc{ width: 28%; }
+  .share-col-tags{ width: 14%; }
+  .share-col-time{ width: 12%; }
+}
+
+/* 移动端：共享大厅表格改为卡片式展示，提升可读性 */
+@media (max-width: 899px){
+  .share-table-wrap{
+    overflow: visible;
+    border: none;
+    background: transparent;
+  }
+  .share-table{
+    width: 100%;
+    min-width: 0;
+    display: block;
+  }
+  .share-table thead{
+    display: none;
+  }
+  .share-table tbody{
+    display: block;
+  }
+  .share-table tr.share-row{
+    display: block;
+    margin-bottom: 10px;
+    border-radius: 10px;
+    border: 1px solid rgba(255,255,255,0.18);
+    background: rgba(0,0,0,0.16);
+    overflow: hidden;
+  }
+  .share-table tr.share-row.selected{
+    outline: 1px solid rgba(185, 150, 255, 0.55);
+    background: rgba(120, 80, 200, 0.18);
+  }
+  .share-table tr.share-row td.share-td{
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 8px 10px;
+    border-bottom: 1px dashed rgba(255,255,255,0.12);
+    white-space: normal;
+    overflow: visible;
+    text-overflow: clip;
+    line-height: 1.5;
+    word-break: break-word;
+  }
+  .share-table tr.share-row td.share-td.share-col-check{
+    align-items: flex-start;
+    gap: 8px;
+    width: auto;
+    text-align: left;
+  }
+  .share-table tr.share-row td.share-td.share-col-check::before{
+    align-self: flex-start;
+    pointer-events: none;
+  }
+  .share-row-check{
+    width: 18px;
+    height: 18px;
+    flex: 0 0 auto;
+    margin: 2px 0 0;
+    align-self: flex-start;
+    cursor: pointer;
+    accent-color: rgba(227, 201, 153, 0.95);
+  }
+  .share-table tr.share-row td.share-td:last-child{
+    border-bottom: none;
+  }
+  .share-table tr.share-row td.share-td::before{
+    content: attr(data-label);
+    flex: 0 0 74px;
+    color: rgba(227, 201, 153, 0.95);
+    font-weight: 600;
+  }
+  .share-table tr.share-empty-row td.share-td{
+    display: block;
+    padding: 10px;
+    text-align: center;
+  }
+  .share-pagination{
+    align-items: flex-start;
+  }
+  .share-pagination-left,
+  .share-pagination-center,
+  .share-pagination-right{
+    width: 100%;
+  }
+  .share-pagination-center{
+    justify-content: center;
+  }
+  .share-pagination-center .sm-overview{
+    width: 100%;
+    text-align: center;
+    order: 1;
+  }
+  .share-pagination-center .interaction-btn{
+    flex: 1 1 calc(50% - 6px);
+    min-width: 0;
+    order: 2;
+  }
+  .share-pagination-right .gx-select{
+    width: 100%;
+  }
+}
+
+/* ========== 共享大厅：静态数据库路径编辑 ========= */
+.share-db-editor{
+  width: 100%;
+}
+
+.share-db-editor-grid{
+  display: grid;
+  grid-template-columns: minmax(240px, 1fr) minmax(260px, 2fr);
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.share-db-entry-list{
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,0.18);
+  background: rgba(0,0,0,0.16);
+  padding: 8px;
+  max-height: 320px;
+  overflow: auto;
+}
+
+.share-db-entry{
+  padding: 8px 10px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+.share-db-entry:hover{
+  background: rgba(255,255,255,0.06);
+}
+.share-db-entry.selected{
+  outline: 1px solid rgba(185, 150, 255, 0.55);
+  background: rgba(120, 80, 200, 0.18);
+}
+.share-db-entry-name{
+  font-weight: 600;
+}
+.share-db-entry-path{
+  font-size: 12px;
+  opacity: 0.8;
+  margin-top: 4px;
+}
+
+.share-db-tree-panel{
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,0.18);
+  background: rgba(0,0,0,0.16);
+  padding: 10px;
+}
+
+.share-path-current{
+  font-size: 12px;
+  opacity: 0.85;
+  margin: 6px 0 8px;
+}
+
+.share-tree{
+  max-height: 260px;
+  overflow: auto;
+  padding: 4px 2px;
+}
+
+.share-tree-node{
+  padding: 6px 8px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+.share-tree-node:hover{
+  background: rgba(255,255,255,0.06);
+}
+.share-tree-node.selected{
+  outline: 1px solid rgba(185, 150, 255, 0.55);
+  background: rgba(120, 80, 200, 0.18);
+}
+.share-tree-children{
+  margin-left: 14px;
+  padding-left: 10px;
+  border-left: 1px dashed rgba(255,255,255,0.2);
+}
+
+.share-path-create{
+  gap: 8px;
+  align-items: center;
+  margin-top: 8px;
+  flex-wrap: wrap;
+}
+
+@media (max-width: 899px){
+  .share-db-editor-grid{
+    grid-template-columns: 1fr;
+  }
+}
+
+/* 移动端：网格一列显示，标题/控件尺寸略缩 */
+@media (max-width: 900px), (pointer: coarse) {
+  .start-lobby-title {
+    font-size: 22px;
+    text-align: center;
+  }
+  .btn-lg {
+    min-width: 60%;
+    width: 86%;
+    height: 42px;
+    font-size: 15px;
+  }
+  .start-menu-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 899px){
+  .cw-bind-detail-row { display: none; }
+  .cw-bind-detail-row.open { display: block; }
+  .cw-bind-detail-row .cw-bind-detail-cell { display: block; }
+  .cw-bind-detail-row .share-td::before,
+  .cw-bind-detail-row .cw-db-td::before { content: none; }
+}

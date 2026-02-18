@@ -1,0 +1,104 @@
+/* Phase 2 - features/version-badge.css
+   版本小标签（Version Badge）独立样式
+   来源：从 css/guixu.css 精准迁移（移除聚合中的重复定义）
+ */
+
+/* 版本小标签：紧贴底部栏右下角（桌面与移动端一致） */
+.version-badge {
+  position: absolute;
+  right: 8px;
+  bottom: 6px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 6px;                 /* 更小更精致 */
+  background: rgba(15, 15, 35, 0.4); /* 去掉外框，仅半透明底色 */
+  border: none;                      /* 不要外框 */
+  border-radius: 999px;
+  color: #c9aa71;
+  font-size: 10px;                   /* 比原来更小 */
+  text-decoration: none;
+  z-index: 100;
+  line-height: 1;
+  white-space: nowrap;
+}
+.version-badge .vb-text { color: #c9aa71; }
+.version-badge .vb-pill {
+  padding: 1px 5px;                  /* 小胶囊更小 */
+  border: 1px solid #daa520;         /* 仅“可更新”胶囊保留强调边框 */
+  border-radius: 999px;
+  background: linear-gradient(45deg, #8b4513, #cd853f);
+  color: #fff;
+  font-size: 9px;
+  line-height: 1;
+}
+.version-badge.is-update {
+  box-shadow: none;                  /* 去掉外发光，避免显得厚重 */
+}
+
+/* 移动端：同样固定在右下角，略微再收紧 */
+.guixu-root-container.mobile-view .version-badge {
+  right: 8px;
+  bottom: 6px;
+  padding: 2px 5px;
+  font-size: 9px;
+}
+.guixu-root-container.mobile-view .version-badge .vb-pill {
+  padding: 1px 4px;
+  font-size: 8.5px;
+}
+
+/* 桌面端：空间不足时折叠为小图标，避免挤占输入/按钮区域 */
+.guixu-root-container:not(.mobile-view) .version-badge.compact {
+  padding: 0;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: rgba(15, 15, 35, 0.7);  /* 单层底色，去掉描边，避免出现“双层圈”视觉 */
+  border: none;
+  gap: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+/* 折叠态隐藏文字与胶囊，仅保留信息字母 */
+.guixu-root-container:not(.mobile-view) .version-badge.compact .vb-text,
+.guixu-root-container:not(.mobile-view) .version-badge.compact .vb-pill {
+  display: none !important;
+}
+.guixu-root-container:not(.mobile-view) .version-badge.compact::after {
+  content: 'i';                /* 使用单字母，移除自带外圈，杜绝“双层”效果 */
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1;
+  color: #e6d6ac;
+  text-shadow: 0 0 3px rgba(0,0,0,0.4);
+}
+/* 细微悬停反馈（不展开，仅高亮） */
+.guixu-root-container:not(.mobile-view) .version-badge.compact:hover {
+  box-shadow: 0 0 6px rgba(218, 165, 32, 0.35);
+}
+
+/* 桌面端：有更新时提高醒目度（非折叠） */
+.guixu-root-container:not(.mobile-view) .version-badge.is-update:not(.compact) {
+  box-shadow: 0 0 10px rgba(218, 165, 32, 0.35);
+}
+
+/* 桌面端：有更新且折叠时，使用金色渐变与脉冲高亮 */
+.guixu-root-container:not(.mobile-view) .version-badge.is-update.compact {
+  background: linear-gradient(45deg, #cd853f, #daa520);
+  color: #1a1a2e;
+  animation: vb-pulse 1.6s ease-in-out infinite;
+  box-shadow: 0 0 12px rgba(218, 165, 32, 0.55);
+}
+.guixu-root-container:not(.mobile-view) .version-badge.is-update.compact::after {
+  color: #1a1a2e;               /* 深色前景提高对比 */
+  text-shadow: none;
+}
+
+/* 脉冲动画：轻微扩散与亮度变化（避免强烈干扰） */
+@keyframes vb-pulse {
+  0%   { transform: scale(1);   box-shadow: 0 0 8px rgba(218,165,32,0.35); }
+  50%  { transform: scale(1.06); box-shadow: 0 0 14px rgba(218,165,32,0.65); }
+  100% { transform: scale(1);   box-shadow: 0 0 8px rgba(218,165,32,0.35); }
+}

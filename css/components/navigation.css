@@ -1,0 +1,213 @@
+/* 面板顶部中部导航条（紫金琉璃全局风格）
+   - 仅依赖全局变量，不引入主题局部色，避免覆盖混乱
+   - 颜色来源：
+     --gx-accent             紫金琉璃主题主色（金色）
+     --gx-accent-rgb         紫金琉璃主题主色（金色RGB）
+     --guixu-story-default-color  正文默认色（偏月华白）
+     --guixu-story-color          方括号文本色（烟雨灰）
+*/
+
+/* 顶栏需要可定位；并在启用导航时隐藏原左上角标题（除未启用导航的模态，如游玩指南） */
+.modal-header {
+  position: relative; /* 供 .panel-nav 居中绝对定位使用 */
+}
+/* 只对已注入导航的模态隐藏左上角标题（其他不受影响） */
+.modal-overlay.has-panel-nav .modal-header .modal-title {
+  display: none !important;
+}
+
+/* 顶部导航容器（居中） */
+.panel-nav {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px; /* 进一步收紧，使两侧箭头更贴近中心标题（巫师风格） */
+  z-index: 2; /* 高于标题但低于关闭按钮的点击区域 */
+  pointer-events: auto;
+  user-select: none;
+}
+
+/* 左右箭头按钮 */
+.panel-nav .pn-arrow {
+  /* 再次放大命中区与可读性（用户反馈：箭头太小） */
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: none;                  /* 去边框 */
+  background: transparent;       /* 去背景 */
+  /* 与关闭按钮一致：常态为低饱和色，hover 才高亮 */
+  color: #8b7355;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: color .2s ease, transform .15s ease;
+}
+/* 悬停仅高亮图标颜色，保持与关闭按钮 hover 一致，不改变背景 */
+.panel-nav .pn-arrow:hover {
+  color: #c9aa71;
+}
+.panel-nav .pn-arrow:active { transform: scale(0.98); }
+
+/* 翻页图标（由 JS 构建的小型 SVG） */
+.panel-nav .pn-arrow .pn-icon {
+  /* 放大箭头矢量本体，提高可见度（与 JS 设置的 36px 保持一致） */
+  width: 36px;
+  height: 36px;
+  display: block; /* 使用块级确保在按钮内绝对居中，不受行内布局影响 */
+  margin: auto;   /* 双向居中，避免任何行内基线带来的偏移 */
+  fill: currentColor;
+  stroke: currentColor;
+  /* 去除投影，避免比关闭按钮更亮的错觉 */
+}
+
+/* 中心区域：标题 + 分页点 + 次级标签 */
+.panel-nav .pn-center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 120px; /* 更小的最小宽度，让两侧箭头更靠近标题（巫师风格） */
+  max-width: 40vw;  /* 控制最大宽度，保持整体紧凑 */
+  gap: 0; /* 极致收紧：标题/分页/小标题三行贴近，模仿巫师风格 */
+}
+
+/* 标题：金色粗体（与示例一致），居中显示 */
+.panel-nav .pn-title {
+  color: var(--gx-accent);
+  font-weight: 700;              /* 金色粗体 */
+  font-size: 15px;               /* 略收一档，贴近巫师风格紧凑标题 */
+  line-height: 1.0;              /* 更紧的行高，上下间距更小 */
+  letter-spacing: 0.03em;        /* 略收字距，形成凝练观感 */
+  text-transform: uppercase;
+  text-shadow: 0 0 6px rgba(0,0,0,.35);
+  white-space: nowrap;
+}
+
+/* 分页点 */
+.panel-nav .pn-dots {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 10px;
+}
+.panel-nav .pn-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: rgba(var(--gx-accent-rgb, 201,170,113), 0.25);
+  box-shadow: 0 0 0 1px rgba(0,0,0,0.35) inset;
+  cursor: pointer;
+  transition: background-color .2s ease, transform .2s ease;
+}
+.panel-nav .pn-dot:hover {
+  background: rgba(var(--gx-accent-rgb, 201,170,113), 0.35);
+  transform: scale(1.05);
+}
+.panel-nav .pn-dot.active {
+  background: rgba(var(--gx-accent-rgb, 201,170,113), 0.8);
+}
+
+/* 小标题（左右相邻面板）：金色常规字重 */
+.panel-nav .pn-subs {
+  display: flex;
+  align-items: center;
+  gap: 12px; /* 再次拉近两端小标题，视觉更集中 */
+  margin-top: 2px;
+}
+.panel-nav .pn-sub {
+  color: var(--gx-accent);       /* 金色 */
+  font-weight: 400;              /* 常规字重 */
+  font-size: 10px;
+  opacity: 0.95;
+  white-space: nowrap;
+}
+
+/* 自适应：窄屏/移动端减少信息密度，保留核心交互 */
+@media (max-width: 900px) {
+  .panel-nav { gap: 8px; }
+  .panel-nav .pn-center { min-width: 140px; }
+  .panel-nav .pn-title { font-size: 14px; }
+  .panel-nav .pn-subs { display: none; } /* 移动端隐藏左右副标题 */
+}
+
+/* 与模态标题/关闭按钮的层级与布局关系：
+   - 关闭按钮通常在右上角，不与居中的导航冲突
+   - 若标题过长，可被导航覆盖，保持导航优先居中 */
+
+/* 不再使用 knot.svg 相关装饰，旧规则移除 */
+
+/* 额外版式优化：
+   1) 为启用导航的头部预留垂直空间，避免下方容器“贴边”
+   2) 明确导航内部垂直顺序：标题 -> 分页指示 -> 小标题
+   3) 调整分页指示与标题/小标题间距 */
+.modal-overlay.has-panel-nav .modal-header {
+  min-height: 46px;              /* 更紧凑的头部高度 */
+  padding-top: 1px;
+  padding-bottom: 6px;           /* 适度留白，避免贴下方容器 */
+  margin-bottom: 6px;            /* 与正文分离但不过度 */
+}
+
+/* 明确内部顺序（JS 按此顺序插入，但同时用 order 兜底） */
+.panel-nav .pn-center { display: flex; flex-direction: column; align-items: center; }
+.panel-nav .pn-center .pn-title { order: 1; }
+/* 同时兼容主菜单(svg分页)与子面板(.pn-dots分页)的顺序：统一放在标题下方 */
+.panel-nav .pn-center .pn-dots,
+.panel-nav .pn-center svg[aria-label="面板分页指示"] { order: 2; margin-top: 1px; }
+.panel-nav .pn-center .pn-subs { order: 3; margin-top: 1px; }
+
+/* 统一样式：SVG分页圆点外观与交互（主面板与子面板一致） */
+.panel-nav [aria-label="面板分页指示"] {
+  height: 18px; /* 与主面板保持一致 */
+  color: var(--gx-accent, #c9aa71);
+}
+.panel-nav [aria-label="面板分页指示"] circle {
+  fill: rgba(var(--gx-accent-rgb, 201,170,113), 0.25);
+  stroke: rgba(0,0,0,0.35);
+  stroke-width: 1.2;
+  cursor: pointer;
+  transition: fill .2s ease, transform .2s ease, opacity .2s ease;
+}
+.panel-nav [aria-label="面板分页指示"] circle.active {
+  fill: rgba(var(--gx-accent-rgb, 201,170,113), 0.80);
+  stroke: rgba(0,0,0,0.45);
+}
+.panel-nav [aria-label="面板分页指示"] circle:hover:not(.active) {
+  fill: rgba(var(--gx-accent-rgb, 201,170,113), 0.35);
+  transform: scale(1.05);
+}
+
+/* 移动端子面板：返回按钮靠左、关闭按钮靠右（仅在存在容器时生效；不影响桌面端与其他模态） */
+.modal-overlay.has-panel-nav .modal-header .head-left-actions { display: flex; align-items: center; gap: 6px; }
+@media (max-width: 900px) {
+  .modal-overlay.has-panel-nav .modal-header .head-left-actions { position: absolute; left: 6px; top: 6px; }
+  .modal-overlay.has-panel-nav .modal-header .head-actions { position: absolute; right: 6px; top: 6px; }
+}
+
+/* 手机端（超小屏）分页指示器可读性增强
+   说明：
+   - 平板端（>520px）保持原样
+   - 手机端避免因容器过窄导致 SVG 分页圆点被过度缩放变小
+   - 同时放大回退的 .pn-dot 尺寸以保证一致性 */
+@media (max-width: 520px) {
+  /* 允许中部区域更宽一些，减少对 SVG 的压缩 */
+  .panel-nav .pn-center {
+    max-width: 56vw;
+  }
+
+  /* SVG 分页器：提高高度与最小宽度，避免被压扁 */
+  .panel-nav [aria-label="面板分页指示"] {
+    height: 22px !important;     /* 覆盖内联 18px，高度加大使圆点更清晰 */
+    min-height: 22px !important; /* 强制下限，防止因宽度受限而连带压缩高度 */
+    min-width: 120px !important; /* 基础宽度，避免水平过度压缩导致圆点变小 */
+  }
+
+  /* 回退实现（非 SVG 的 .pn-dot）：提高像素尺寸，手机端更易点按 */
+  .panel-nav .pn-dot {
+    width: 10px;
+    height: 10px;
+  }
+}

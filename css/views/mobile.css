@@ -1,0 +1,992 @@
+/* Phase 1 - views/mobile.css
+   视图：移动端样式（以 .guixu-root-container.mobile-view / .mobile-view 为作用域）
+   仅包含“移动端视图”相关规则；全屏相关仍放在 states/fullscreen.css
+*/
+
+/* 移动端：同样固定在右下角，略微再收紧 */
+.guixu-root-container.mobile-view .version-badge {
+  right: 8px;
+  bottom: 6px;
+  padding: 2px 5px;
+  font-size: 9px;
+}
+.guixu-root-container.mobile-view .version-badge .vb-pill {
+  padding: 1px 4px;
+  font-size: 8.5px;
+}
+
+/* 移动端：隐藏顶部角落控制按钮（设置/视图切换/全屏），由“设置悬浮按钮”聚合 */
+.guixu-root-container.mobile-view .settings-btn,
+.guixu-root-container.mobile-view .view-toggle-btn,
+.guixu-root-container.mobile-view .fullscreen-btn {
+  display: none !important;
+}
+
+/* --- 新增：移动端视图样式 (由JS切换) --- */
+/* 注意：.guixu-root-container 本身会被加上 mobile-view 类，因此需要用自身选择器而非祖先选择器 */
+.guixu-root-container.mobile-view {
+  width: 100% !important;
+  height: auto !important; /* 关键修复：在嵌入式 iframe 中不要用 100%，避免父容器未定高导致内容高度为0 */
+  aspect-ratio: unset;
+  display: flex;
+  flex-direction: column;
+  /* 在移动端移除PC端的宽高比限制，并让容器占满视口 */
+}
+
+.mobile-view .game-container {
+  /* 改为 Flex 以修复非全屏下主区过小与底部栏不出现问题 */
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  flex: 1 1 auto;   /* 让内容区填满根容器剩余空间 */
+  min-height: 0;    /* 关键：允许子项正确计算高度，避免被挤压只显示数行 */
+  height: auto;
+}
+
+/* 兜底修复：非全屏 + 移动端，确保容器至少占满视口高度，去除底部空白
+   说明：在嵌入式环境下父级多为 auto/min-height，子项百分比高度无法吃到父级高度，
+   导致 .game-container 未铺满根容器，底部栏上方出现“与最外边边框之间的空隙”。
+   这里直接用动态视口单位为 .game-container 提供最小高度，以充满可视区。 */
+.guixu-root-container.mobile-view:not(:fullscreen) .game-container {
+  min-height: calc(100dvh - 0px);
+  min-height: calc(100svh - 0px);
+  min-height: calc(100vh - 0px);
+}
+
+/* 进一步兜底：使“根容器”在移动端非全屏时至少等于可视高度，避免根容器比视口矮导致底部出现留白 */
+.guixu-root-container.mobile-view:not(:fullscreen) {
+  min-height: 100dvh;
+  min-height: 100svh;
+  min-height: 100vh;
+}
+
+/* 让所有面板占据整行 */
+.mobile-view .top-status,
+.mobile-view .character-panel,
+.mobile-view .main-content,
+.mobile-view .interaction-panel,
+.mobile-view .bottom-status {
+  grid-column: 1 / -1;
+}
+
+.mobile-view .character-panel {
+  grid-row: 3;
+  /* 移动到正文下方 */
+  border-right: none;
+  border-bottom: 1px solid #c9aa71;
+  max-height: 250px;
+  /* 给一个最大高度，内容可滚动 */
+}
+
+.mobile-view .main-content {
+  grid-row: 2;
+  /* 移动到顶部下方 */
+}
+
+.mobile-view .interaction-panel {
+  grid-row: 4;
+  border-left: none;
+  border-top: 1px solid #c9aa71;
+  flex-direction: row;
+  /* 按钮横向排列 */
+  flex-wrap: wrap;
+  /* 允许换行 */
+  justify-content: center;
+  gap: 8px;
+  padding: 8px;
+}
+
+.mobile-view .interaction-btn {
+  flex-grow: 1;
+  /* 让按钮填充空间 */
+  min-width: 120px;
+  /* 最小宽度 */
+}
+
+.mobile-view .world-line-section {
+  width: 100%;
+  display: flex;
+  justify-content: space-around;
+}
+
+.mobile-view .bottom-status {
+  display: flex;               /* 覆盖桌面的 grid，移动端改为垂直堆叠 */
+  flex-direction: column;
+  align-items: stretch;
+  height: auto;
+  gap: 10px;
+  padding: 10px 14px;  /* 增加左右内边距，避免子项贴边 */
+  box-sizing: border-box;
+}
+
+.guixu-root-container.mobile-view .quick-send-container {
+  display: flex !important; /* 覆盖 JS 动态注入的 grid，移动端改为纵向布局 */
+  flex-direction: column;
+  width: 100%;
+  gap: 8px;
+}
+/* 移动端：刷新 + 重掷 两键等宽、左右分布（仅当 .qs-left 打上 .qs-left--two-btn 时生效） */
+.guixu-root-container.mobile-view .quick-send-container .qs-left.qs-left--two-btn {
+  display: grid;
+  grid-template-columns: 1fr 1fr; /* 两列等分，刚好铺满一行 */
+  gap: 10px; /* 与外层间距保持一致 */
+}
+.guixu-root-container.mobile-view #btn-first-run-refresh,
+.guixu-root-container.mobile-view #btn-reroll-last {
+  flex: 1 1 auto;
+  width: 100%;          /* 在两列网格下占满各自列 */
+  height: 34px;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+/* 强制覆盖 JS 动态注入的 gate-refresh-btn 高度，保持两键一致 */
+.guixu-root-container.mobile-view .quick-send-container .qs-left.qs-left--two-btn > #btn-first-run-refresh.gate-refresh-btn,
+.guixu-root-container.mobile-view .quick-send-container .qs-left.qs-left--two-btn > #btn-reroll-last {
+  height: 34px !important;   /* 与上方声明保持一致 */
+  line-height: 34px;         /* 文本垂直居中，避免视觉差 */
+  padding: 0 12px;
+  font-size: 12px;
+}
+
+/* 让输入区在移动端占满宽度 */
+.mobile-view .quick-send-input {
+  width: 100%;
+}
+
+/* 发送按钮与输入同宽，左右铺满 */
+.guixu-root-container.mobile-view .quick-send-container .qs-right #btn-quick-send {
+  width: 100%;
+  height: 36px;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+/* 三段式子区块在移动端拉伸到整行宽度 */
+.guixu-root-container.mobile-view .quick-send-container .qs-left,
+.guixu-root-container.mobile-view .quick-send-container .qs-center,
+.guixu-root-container.mobile-view .quick-send-container .qs-right {
+  width: 100%;
+}
+
+/* 状态一览按钮单独一行，且与下方内容同一最大宽度区域居中 */
+.guixu-root-container.mobile-view #btn-status-pop {
+  align-self: center;
+  margin: 0 auto 2px auto; /* 水平居中，稍微与下一行留缝 */
+  max-width: 680px;
+  width: auto; /* 保持芯片宽度，不再拉满整行 */
+}
+
+/* 移动端：为底部栏内容设置统一最大宽度，避免贴边并与“状态一览”对齐（已移除横屏全屏模式判断） */
+.guixu-root-container.mobile-view .bottom-status .quick-send-container,
+.guixu-root-container.mobile-view .bottom-status .qs-left,
+.guixu-root-container.mobile-view .bottom-status .qs-center,
+.guixu-root-container.mobile-view .bottom-status .qs-right {
+  max-width: 680px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+/* 移动端快速指令弹窗宽度适配 */
+.mobile-view #quick-command-popup {
+  width: 90%;
+  left: 5%;
+  right: 5%;
+  bottom: 110px;
+  /* 调整位置 */
+}
+
+/* 调整字体大小（移动端更紧凑） */
+.mobile-view .status-value {
+  font-size: 12px;
+}
+
+.mobile-view .status-label {
+  font-size: 10px;
+}
+
+.mobile-view .section-title {
+  font-size: 12px;
+}
+
+.mobile-view .attribute-item {
+  font-size: 11px;
+}
+
+.mobile-view .game-text-container {
+  /* 改为跟随设置中心的故事文本字号，修复移动端字号不生效 */
+  font-size: var(--guixu-story-font-size, 13px);
+}
+
+.mobile-view .interaction-btn {
+  font-size: 11px;
+}
+
+/* 移动端：Flex布局下的区块顺序与尺寸 */
+.mobile-view .top-status { order: 1; flex: 0 0 auto; }
+/* 固定正文高度交由 JS(_reflowMobileLayout) 计算，CSS 侧不再拉伸主区 */
+.mobile-view .main-content { order: 2; flex: 0 0 auto; min-height: 320px; overflow-y: auto; }
+.mobile-view .character-panel { order: 3; }
+.mobile-view .interaction-panel { order: 4; }
+.mobile-view .bottom-status { order: 5; flex: 0 0 auto; }
+
+/* 移动端：顶部栏归墟充能条收窄（桌面端不变；仅影响顶部栏小条形）
+   - 桌面端在 css/features/statusbar.css 中定义变量默认 100px
+   - 这里仅设置局部 CSS 变量，避免影响其它组件（如导航分页器的圆点） */
+.guixu-root-container.mobile-view .top-status #bar-guixu-charge.guixu-charge {
+  --gx-guixu-charge-width: 80px; /* 从桌面 100px 收窄到 80px */
+}
+
+/* 特小屏进一步收窄，确保顶部栏内容不拥挤 */
+@media (max-width: 360px) {
+  .guixu-root-container.mobile-view .top-status #bar-guixu-charge.guixu-charge {
+    --gx-guixu-charge-width: 72px; /* 超小屏进一步收窄 */
+  }
+}
+/* 移动端：侧栏以浮层形式显示，默认隐藏，通过根容器的开关类控制显隐 */
+.mobile-view .character-panel,
+.mobile-view .interaction-panel {
+  display: none;
+}
+
+.mobile-view.show-character-panel .character-panel,
+.mobile-view.show-interaction-panel .interaction-panel {
+  display: block !important;
+  position: fixed !important;
+  /* 居中显示（类似状态一览的模态居中风格） */
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: min(700px, 92vw);
+  max-width: 92vw;
+  height: min(520px, 80vh);
+  max-height: 80vh;
+  z-index: 10050;           /* 提升层级，确保浮层在所有遮罩之上 */
+  pointer-events: auto;     /* 明确允许接收点击 */
+  overflow-y: auto;
+
+  /* 面板背景：颜色随主题（--gx-mask-rgb），透明度全局统一由“模块背景透明度（左右面板）”控制 */
+  /* 注意：此处与功能模态的 --gx-panel-opacity 解耦，避免主题/模态对左右面板透明度的干扰 */
+  background: rgba(var(--gx-mask-rgb, 26, 26, 46), var(--gx-section-opacity, 0.5)) !important;
+
+  /* 描边随主题色 */
+  border: 1px solid var(--gx-border, #c9aa71) !important;
+
+  border-radius: 10px;
+  padding: 14px;
+  box-shadow: 0 12px 28px rgba(0,0,0,0.55);
+
+  /* 轻磨砂，提升可读性（与默认主题 modal 统一） */
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+
+/* 浮层状态下：面板内卡片与子模块背景透明度同样由 --gx-section-opacity 全局控制（主题仅决定颜色） */
+.mobile-view.show-character-panel .character-panel .panel-section,
+.mobile-view.show-interaction-panel .interaction-panel .panel-section {
+  background: rgba(var(--gx-mask-rgb, 26, 26, 46), var(--gx-section-opacity, 0.5)) !important; /* 统一卡片透明度 */
+}
+
+/* 浮层状态下：修行概览子模块与装备槽的背景透明度同样受控（不改变 hover 效果与品阶文字颜色） */
+.mobile-view.show-character-panel .character-panel .panel-section .attr-row,
+.mobile-view.show-character-panel .character-panel .panel-section .attr-cultivation-wrap,
+.mobile-view.show-character-panel .character-panel .equipment-grid .equipment-slot,
+.mobile-view.show-interaction-panel .interaction-panel .panel-section .attr-row,
+.mobile-view.show-interaction-panel .interaction-panel .panel-section .attr-cultivation-wrap,
+.mobile-view.show-interaction-panel .interaction-panel .equipment-grid .equipment-slot {
+  background: rgba(var(--gx-mask-rgb, 26, 26, 46), var(--gx-section-opacity, 0.5)) !important;
+}
+
+/* 修复：移动端浮层下装备槽 hover/active 高光被上面的 !important 背景覆盖
+   方案：为 hover / :active / :focus-visible 提供更高优先级的高光规则（同样使用 !important）
+   注意：
+   - 不改变“已装备”物品的品阶文字颜色（由内联 tierStyle 控制）
+   - 背景透明度仍受 --gx-section-opacity 控制，仅叠加柔和金色蒙层与细描边 */
+.mobile-view.show-character-panel .character-panel .equipment-grid .equipment-slot:hover,
+.mobile-view.show-character-panel .character-panel .equipment-grid .equipment-slot:active,
+.mobile-view.show-character-panel .character-panel .equipment-grid .equipment-slot:focus-visible,
+.mobile-view.show-interaction-panel .interaction-panel .equipment-grid .equipment-slot:hover,
+.mobile-view.show-interaction-panel .interaction-panel .equipment-grid .equipment-slot:active,
+.mobile-view.show-interaction-panel .interaction-panel .equipment-grid .equipment-slot:focus-visible {
+  background:
+    linear-gradient(0deg, rgba(201,170,113,0.12), rgba(201,170,113,0.12)),
+    rgba(var(--gx-mask-rgb, 26, 26, 46), var(--gx-section-opacity, 0.5)) !important;
+  box-shadow: 0 0 0 2px rgba(201,170,113,0.15) !important;
+  outline: none;
+}
+
+/* 移动端浮窗（功能面板）布局增强：采用网格，避免按钮挤成一坨 */
+.mobile-view.show-interaction-panel .interaction-panel {
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(100px, 1fr)); /* 更小的列最小宽，减轻拥挤 */
+  grid-auto-rows: minmax(40px, auto);                  /* 每行最小高度，避免挤压变形 */
+  gap: 10px !important;
+  padding: 12px !important;
+}
+/* 功能按钮：两列排布，统一高度 */
+.mobile-view.show-interaction-panel .interaction-panel .interaction-btn {
+  height: 40px;
+  min-width: 0;
+  padding: 0 10px;
+  white-space: nowrap;
+  box-sizing: border-box;
+}
+/* 功能区内的模块区块（世界书控制、世界线回顾等）占满整行，避免被按钮挤压 */
+.mobile-view.show-interaction-panel .interaction-panel .panel-section {
+  grid-column: 1 / -1;
+}
+/* 世界线回顾区块：占整行并重置为块级，避免父级 flex 规则干扰导致挤压/变形 */
+.mobile-view.show-interaction-panel .interaction-panel .world-line-section {
+  display: block !important;     /* 覆盖 .mobile-view .world-line-section 的 flex 设置 */
+  width: 100%;
+  margin-top: 12px;
+  grid-column: 1 / -1;           /* 在两列栅格中占满整行，确保居中对称 */
+}
+/* 世界线回顾区域：内部两键等分排布，间距合理 */
+.mobile-view.show-interaction-panel .interaction-panel .world-line-section > div:not(.world-line-title) {
+  display: grid !important;
+  grid-template-columns: 1fr 1fr !important;
+  gap: 10px !important;
+  width: 100% !important;
+  justify-content: stretch !important; /* 覆盖原内联的居中，避免右侧留白 */
+  align-items: stretch !important;
+}
+.mobile-view.show-interaction-panel .interaction-panel .world-line-section .worldline-btn {
+  height: 40px;
+  min-width: 0;
+  width: 100%;
+  padding: 0 12px;
+  font-size: 13px;
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;              /* 防止文本溢出按钮 */
+  text-overflow: ellipsis;       /* 宽度不足时省略号 */
+  box-sizing: border-box;
+}
+
+/* 移除半透明遮罩，避免点击浮窗时整屏变暗 */
+.guixu-root-container.mobile-view.show-character-panel::after,
+.guixu-root-container.mobile-view.show-interaction-panel::after {
+  content: none;
+}
+
+/* 浮层显示时，主区域可继续滚动；如需弱化背景可半透明遮罩（不拦截点击） */
+.mobile-view.show-character-panel .main-content,
+.mobile-view.show-interaction-panel .main-content {
+  filter: none;
+}
+
+/* 移动端视口容器在移动视图下允许滚动，修复非全屏下无法下拉的问题 */
+.guixu-viewport.mobile-view {
+  position: relative;
+  width: 100%;
+  height: auto;
+  margin: 0 auto;
+  overflow: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* --- 移动端-设置中心 浮窗尺寸与布局修复（不影响桌面） --- */
+.guixu-root-container.mobile-view #settings-modal .modal-content {
+  width: 96vw;
+  max-width: 96vw;
+  height: auto;
+  max-height: 90vh;
+  overflow-x: hidden;
+}
+.guixu-root-container.mobile-view #settings-modal .modal-body {
+  overflow-y: auto;
+}
+.guixu-root-container.mobile-view #settings-modal .modal-header {
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.guixu-root-container.mobile-view #settings-modal .attributes-list .attribute-item {
+  flex-wrap: wrap !important;
+  gap: 6px !important;
+}
+
+/* 分辨率模块：预设与自定义在移动端分行排布，输入框等分（从 guixu.css 迁移） */
+.guixu-root-container.mobile-view #settings-modal .attributes-list .attribute-item .attribute-name {
+  white-space: nowrap;
+}
+.guixu-root-container.mobile-view #settings-modal #pref-bg-select {
+  flex: 1 1 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+}
+.guixu-root-container.mobile-view #settings-modal #pref-bg-upload,
+.guixu-root-container.mobile-view #settings-modal #pref-bg-delete,
+.guixu-root-container.mobile-view #settings-modal #pref-bg-clear {
+  flex: 1 1 calc(33% - 6px) !important;
+  min-width: 0 !important;
+}
+
+/* 移动端-设置中心：按钮尺寸与页脚布局优化，防止超出浮窗 */
+.guixu-root-container.mobile-view #settings-modal .attributes-list .interaction-btn,
+.guixu-root-container.mobile-view #settings-modal .attributes-list .danger-btn {
+  min-width: 0 !important;
+  height: 34px !important;
+  padding: 0 10px !important;
+  flex: 1 1 auto !important;
+  box-sizing: border-box !important;
+}
+/* 设置中心页脚：上方“恢复默认”独占一行，下面“应用/保存并关闭”双列并排 */
+.guixu-root-container.mobile-view #settings-modal .command-center-footer {
+  flex-wrap: wrap !important;
+  gap: 8px !important;
+}
+.guixu-root-container.mobile-view #settings-modal #pref-reset-defaults {
+  flex: 1 1 100% !important;
+  height: 36px !important;
+}
+.guixu-root-container.mobile-view #settings-modal .command-center-footer > div {
+  width: 100% !important;
+  display: grid !important;
+  grid-template-columns: 1fr 1fr !important;
+  gap: 8px !important;
+}
+.guixu-root-container.mobile-view #settings-modal .command-center-footer > div > button {
+  width: 100% !important;
+  height: 36px !important;
+  min-width: 0 !important;
+  padding: 0 10px !important;
+  box-sizing: border-box !important;
+}
+
+/* 更新提醒浮窗（移动端适配） */
+.guixu-root-container.mobile-view #update-modal .modal-content {
+  width: 96vw;
+  max-width: 96vw;
+  height: auto;
+  max-height: 90vh;
+  overflow-x: hidden;
+}
+.guixu-root-container.mobile-view #update-modal .modal-body {
+  overflow-y: auto;
+}
+.guixu-root-container.mobile-view #update-modal .confirm-modal-buttons {
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: stretch;
+}
+.guixu-root-container.mobile-view #update-modal .confirm-modal-buttons > .interaction-btn,
+.guixu-root-container.mobile-view #update-modal .confirm-modal-buttons > .primary-btn,
+.guixu-root-container.mobile-view #update-modal #update-go-btn,
+.guixu-root-container.mobile-view #update-modal #update-later-btn {
+  min-width: 0;
+  height: 34px;
+  padding: 0 10px;
+  flex: 1 1 auto;
+  box-sizing: border-box;
+}
+.guixu-root-container.mobile-view #update-modal .dont-remind {
+  width: 100%;
+  margin-right: 0 !important;
+  order: -1;
+  margin-bottom: 6px;
+}
+
+/* 移动端-道途印记 浮窗与每条印记布局优化（不影响桌面） */
+.guixu-root-container.mobile-view #save-load-modal .modal-content {
+  width: 96vw;
+  max-width: 96vw;
+  /* 关键修复：移动端给出确定高度，保证 .save-manager-grid 的 height:100% 有参照，
+     否则左侧 .save-list-section（自动/手书印记）flex:1 计算为 0，导致看起来“无卡片”。 */
+  height: 90vh;
+  height: 90dvh; /* 优先使用动态视口单位，兼容地址栏伸缩 */
+  max-height: 90vh;
+  overflow-x: hidden;
+}
+.guixu-root-container.mobile-view #save-load-modal .modal-body {
+  overflow-y: auto;
+}
+.guixu-root-container.mobile-view #save-load-modal .modal-header {
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.guixu-root-container.mobile-view #save-slots-container .save-slot {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 10px;
+}
+.guixu-root-container.mobile-view #save-slots-container .save-slot-info {
+  width: 100%;
+}
+.guixu-root-container.mobile-view #save-slots-container .save-slot-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  width: 100%;
+  justify-content: stretch;
+}
+.guixu-root-container.mobile-view #save-slots-container .save-slot-actions > button {
+  height: 36px;
+  padding: 0 10px;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+/* 移动端-天命印记列表：与手书印记一致的纵向布局与按钮网格 */
+.guixu-root-container.mobile-view #auto-save-slot-container > .save-slot,
+.guixu-root-container.mobile-view #auto-save-slot-container > .auto-save-slot {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: stretch !important;
+  gap: 10px !important;
+}
+.guixu-root-container.mobile-view #auto-save-slot-container .save-slot-info,
+.guixu-root-container.mobile-view #auto-save-slot-container .slot-info {
+  width: 100% !important;
+}
+.guixu-root-container.mobile-view #auto-save-slot-container .save-slot-actions,
+.guixu-root-container.mobile-view #auto-save-slot-container .slot-actions {
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  gap: 8px !important;
+  width: 100% !important;
+  justify-content: stretch !important;
+}
+.guixu-root-container.mobile-view #auto-save-slot-container button {
+  height: 36px !important;
+  padding: 0 10px !important;
+  min-width: 0 !important;
+  box-sizing: border-box !important;
+}
+
+/* --- 移动端：历史面板头部换行与搜索栏自适应，防止“清除”溢出 --- */
+.guixu-root-container.mobile-view #history-modal .modal-header {
+  flex-wrap: wrap !important;
+  gap: 8px !important;
+}
+.guixu-root-container.mobile-view #history-modal #history-modal-actions {
+  order: 2 !important;
+  flex: 1 1 100% !important;
+  display: flex !important;
+  gap: 8px !important;
+  flex-wrap: wrap !important; /* 允许换行，避免溢出 */
+  margin-left: 0 !important;  /* 覆盖内联 margin-left:auto，防止动作区被推到面板外 */
+}
+.guixu-root-container.mobile-view #history-modal .history-search {
+  flex: 1 1 100% !important;    /* 独占一行 */
+  min-width: 0 !important;
+  margin-left: 0 !important;    /* 移除左侧间距，防止被挤出 */
+}
+.guixu-root-container.mobile-view #history-modal .history-search input#history-search-input {
+  flex: 1 1 auto !important;
+  min-width: 0 !important;
+  width: auto !important;
+}
+.guixu-root-container.mobile-view #history-modal .history-search #history-search-clear {
+  flex: 0 0 auto !important;
+  min-width: 72px !important;
+}
+
+/* --- 时间线标签在小屏换行且不挤压布局 --- */
+.guixu-root-container.mobile-view .timeline-header {
+  flex-direction: column !important;
+  align-items: flex-start !important;
+  gap: 6px !important;
+}
+.guixu-root-container.mobile-view .timeline-tags {
+  max-width: 100% !important;
+  width: 100% !important;
+  justify-content: flex-start !important;
+}
+
+/* 移动端视口容器在移动视图下允许滚动，修复非全屏下无法下拉的问题（补充） */
+.guixu-viewport.mobile-view {
+  overflow: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* 移动端 FAB - 视觉升级 (玄晶宝珠) */
+.guixu-root-container.mobile-view .mobile-fab {
+  /* 尺寸变量 */
+  width: var(--guixu-mobile-fab-size, 44px) !important;
+  height: var(--guixu-mobile-fab-size, 44px) !important;
+  font-size: var(--guixu-mobile-fab-font-size, 12px) !important;
+
+  /* 设计核心：玄晶宝珠质感 */
+  border-radius: 50% !important;
+  border: none !important; /* 边框由光影定义 */
+  background: radial-gradient(circle at 50% 30%, rgba(255, 255, 255, 0.08), transparent 80%),
+              linear-gradient(rgba(var(--gx-mask-rgb), 0.9), rgba(var(--gx-mask-rgb), 0.95)) !important;
+  color: var(--gx-accent, #c9aa71) !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  /* 设计核心：重构光影，营造悬浮宝珠的立体感与光晕 */
+  box-shadow: 
+    inset 0 1px 2px rgba(255, 255, 255, 0.1),
+    inset 0 0 0 1.5px rgba(var(--gx-accent-rgb), 0.5),
+    inset 0 -3px 6px rgba(0, 0, 0, 0.5),
+    0 4px 10px rgba(0, 0, 0, 0.4),
+    0 0 12px rgba(var(--gx-accent-rgb), 0.15) !important;
+  transition: transform 0.2s ease-out, box-shadow 0.2s ease-out;
+  touch-action: none !important;
+  z-index: 10040 !important;
+}
+.guixu-root-container.mobile-view .mobile-fab:active {
+  transform: scale(0.95); /* 按压时轻微缩放 */
+  box-shadow: 
+    inset 0 2px 6px rgba(0, 0, 0, 0.6),
+    inset 0 0 0 1.5px rgba(var(--gx-accent-rgb), 0.4) !important;
+}
+
+/* 设置 FAB 菜单 - 视觉升级 */
+.guixu-root-container.mobile-view .fab-settings-menu {
+  position: fixed;
+  z-index: 10055;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 8px;
+  /* 设计核心：与全局面板统一的材质与边框 */
+  background: var(--gx-surface-2);
+  border: 1px solid var(--gx-border);
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+  backdrop-filter: var(--gx-background-blur);
+  -webkit-backdrop-filter: var(--gx-background-blur);
+}
+
+/* 设置 FAB 菜单按钮 - 视觉升级 (微型玄晶) */
+.guixu-root-container.mobile-view .fab-settings-menu-btn {
+  min-width: 120px;
+  height: 38px; /* 略微增加高度以改善触摸 */
+  padding: 0 12px;
+  box-sizing: border-box;
+  /* 设计核心：完全继承 interaction-btn 样式 */
+  background: radial-gradient(circle at 50% 0%, rgba(255, 255, 255, 0.04), transparent 70%),
+              linear-gradient(rgba(var(--gx-mask-rgb), 0.88), rgba(var(--gx-mask-rgb), 0.92));
+  border: none;
+  border-radius: 8px;
+  color: var(--gx-accent);
+  font-size: 12px;
+  font-weight: normal;
+  cursor: pointer;
+  text-align: center;
+  transition: transform 0.2s ease-out, box-shadow 0.2s ease-out, background 0.3s ease-out, color 0.2s ease-out;
+  box-shadow: 
+    inset 0 1px 1px rgba(255, 255, 255, 0.08),
+    inset 0 0 0 1px rgba(var(--gx-accent-rgb), 0.35),
+    inset 0 -2px 5px rgba(0, 0, 0, 0.4),
+    0 2px 6px rgba(0, 0, 0, 0.35);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+.guixu-root-container.mobile-view .fab-settings-menu-btn:hover {
+  transform: translateY(-2px);
+  color: #fff;
+  background: radial-gradient(circle at 50% 0%, rgba(255, 255, 255, 0.06), transparent 70%),
+              linear-gradient(rgba(var(--gx-mask-rgb), 0.92), rgba(var(--gx-mask-rgb), 0.96));
+  box-shadow: 
+    inset 0 1px 1px rgba(255, 255, 255, 0.1),
+    inset 0 0 0 1.5px rgba(var(--gx-accent-rgb), 0.5),
+    inset 0 -2px 5px rgba(0, 0, 0, 0.4),
+    0 4px 8px rgba(0, 0, 0, 0.4),
+    0 0 12px rgba(var(--gx-accent-rgb), 0.15);
+}
+.guixu-root-container.mobile-view .fab-settings-menu-btn:active {
+  transform: translateY(1px);
+  transition-duration: 0.1s;
+  background: linear-gradient(rgba(var(--gx-mask-rgb), 0.8), rgba(var(--gx-mask-rgb), 0.85));
+  box-shadow: 
+    inset 0 0 0 1px rgba(var(--gx-accent-rgb), 0.3),
+    inset 0 2px 6px rgba(0, 0, 0, 0.6);
+  color: var(--gx-accent);
+}
+
+/* 移动端紧凑输入高度（从 guixu.css 迁移，保持变量名与影响范围不变） */
+@media (max-width: 520px) {
+  .guixu-root-container {
+    --gx-input-height: 30px;
+  }
+}
+
+/* 移动端-游玩指南/指令中心：防止底部按钮溢出面板，统一自适应尺寸 */
+.guixu-root-container.mobile-view #intro-modal .modal-content,
+.guixu-root-container.mobile-view #command-center-modal .modal-content {
+  width: 96vw;
+  max-width: 96vw;
+  height: auto;
+  max-height: 90vh;       /* 优先使用视口高度限制 */
+  max-height: 90dvh;      /* 兼容动态视口单位 */
+  overflow-x: hidden;     /* 防止横向滚动条 */
+}
+
+/* 主体区滚动，保留页脚按钮可见 */
+.guixu-root-container.mobile-view #intro-modal .modal-body,
+.guixu-root-container.mobile-view #command-center-modal .modal-body {
+  overflow-y: auto;
+}
+
+/* 底部按钮区：可换行并适配底部安全区，避免溢出面板 */
+.guixu-root-container.mobile-view #intro-modal .confirm-modal-buttons,
+.guixu-root-container.mobile-view #command-center-modal .command-center-footer {
+  flex-wrap: wrap !important;
+  gap: 8px !important;
+  align-items: stretch !important;
+  padding-bottom: max(8px, env(safe-area-inset-bottom, 0px));
+}
+
+/* 指令中心页脚：上方“刷新缓存”独占一行，下面“双键并排” */
+.guixu-root-container.mobile-view #command-center-modal .command-center-footer > #btn-refresh-storage {
+  flex: 1 1 100% !important;
+  height: 36px !important;
+}
+.guixu-root-container.mobile-view #command-center-modal .command-center-footer > div {
+  width: 100% !important;
+  display: grid !important;
+  grid-template-columns: 1fr 1fr !important;
+  gap: 8px !important;
+}
+.guixu-root-container.mobile-view #command-center-modal .command-center-footer button {
+  min-width: 0 !important;
+  height: 36px !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+/* 游玩指南：双键等分布局（“稍后再看/立即开始”） */
+.guixu-root-container.mobile-view #intro-modal .confirm-modal-buttons > .interaction-btn,
+.guixu-root-container.mobile-view #intro-modal .confirm-modal-buttons > .primary-btn {
+  min-width: 0 !important;
+  height: 36px !important;
+  flex: 1 1 calc(50% - 4px) !important;
+  box-sizing: border-box !important;
+}
+
+/* 移动端-变量编辑器：防止底部按钮溢出面板、组内删除键溢出，并统一缩小操作按钮尺寸 */
+.guixu-root-container.mobile-view #variable-manager-modal .modal-content {
+  width: 96vw;
+  max-width: 96vw;
+  height: auto;
+  max-height: 90vh;          /* 以视口高度限制整体，避免被外层裁剪 */
+  overflow-x: hidden;        /* 禁止横向滚动条 */
+}
+.guixu-root-container.mobile-view #variable-manager-modal .modal-body {
+  overflow-y: auto;          /* 主体可滚动，保持页脚可见 */
+}
+
+/* 页脚按钮区：允许换行，上行“重置”独占一行，下行“双键并排” */
+.guixu-root-container.mobile-view #variable-manager-modal .command-center-footer {
+  flex-wrap: wrap !important;
+  gap: 8px !important;
+  align-items: stretch !important;
+  padding-bottom: max(8px, env(safe-area-inset-bottom, 0px)); /* 适配安全区 */
+}
+.guixu-root-container.mobile-view #variable-manager-modal #vm-btn-reset {
+  flex: 1 1 100% !important;
+  height: 36px !important;
+}
+.guixu-root-container.mobile-view #variable-manager-modal .command-center-footer > div {
+  width: 100% !important;
+  display: grid !important;
+  grid-template-columns: 1fr 1fr !important;
+  gap: 8px !important;
+}
+.guixu-root-container.mobile-view #variable-manager-modal .command-center-footer button {
+  min-width: 0 !important;
+  height: 36px !important;
+  width: 100% !important;
+  padding: 0 10px !important;
+  box-sizing: border-box !important;
+}
+
+/* 组/条目摘要行：允许换行；标题（键名）居中；删除键换到下一行且居中（移动端） */
+.guixu-root-container.mobile-view #variable-manager-modal details.vm-details > summary {
+  flex-wrap: wrap !important;
+}
+/* 新增：标题容器 .vm-head 居中显示（顶层对象的子对象键名） */
+.guixu-root-container.mobile-view #variable-manager-modal details.vm-details > summary .vm-head {
+  order: 1;
+  flex: 1 0 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;  /* 关键：标题水平居中 */
+  text-align: center;       /* 多行时文本居中 */
+}
+/* 防止标题内的 attribute-value 被 margin-left:auto 挤到右侧 */
+.guixu-root-container.mobile-view #variable-manager-modal details.vm-details > summary .attribute-value {
+  margin-left: 0 !important;
+}
+.guixu-root-container.mobile-view #variable-manager-modal details.vm-details > summary .vm-actions {
+  order: 2;                                /* 放到下一行 */
+  margin-left: 0 !important;
+  width: 100%;
+  display: flex;
+  justify-content: center !important;      /* 删除键居中 */
+  gap: 6px;
+}
+/* 摘要行中的删除按钮在移动端铺满一整行（保持既有大按钮视觉） */
+.guixu-root-container.mobile-view #variable-manager-modal details.vm-details > summary .vm-actions > .interaction-btn,
+.guixu-root-container.mobile-view #variable-manager-modal details.vm-details > summary .vm-actions > .danger-btn {
+  width: 100% !important;
+}
+
+/* 变量编辑器组内操作条：按钮靠左渲染 */
+.guixu-root-container.mobile-view #variable-manager-modal .vm-group .vm-actions {
+  margin-left: 0 !important;
+  justify-content: flex-start !important;
+}
+
+/* 属性行：允许换行；值区占满整行；删除键与输入同容器不再撑出 */
+
+/* 属性行：允许换行；值区占满整行；删除键与输入同容器不再撑出 */
+.guixu-root-container.mobile-view #variable-manager-modal .attributes-list .attribute-item {
+  flex-wrap: wrap !important;
+  align-items: flex-start !important;
+  gap: 6px !important;
+}
+.guixu-root-container.mobile-view #variable-manager-modal .attribute-item .attribute-value {
+  display: block;                      /* 使内部按钮换到下一行 */
+  flex: 1 1 100% !important;           /* 覆盖内联 max-width:70% 限制 */
+  max-width: 100% !important;
+}
+.guixu-root-container.mobile-view #variable-manager-modal .attribute-item .attribute-name {
+  white-space: nowrap;
+}
+/* 属性行中的删除按钮在移动端独占一行并铺满宽度，避免与输入控件贴在一起 */
+.guixu-root-container.mobile-view #variable-manager-modal .attribute-item .attribute-value > .interaction-btn,
+.guixu-root-container.mobile-view #variable-manager-modal .attribute-item .attribute-value > .danger-btn {
+  display: block !important;
+  width: 100% !important;
+  margin-top: 6px !important;
+  height: 32px !important;
+  box-sizing: border-box !important;
+}
+
+/* 缩小“新增XX/添加XX/删除”等操作按钮尺寸（仅变量编辑器内） */
+.guixu-root-container.mobile-view #variable-manager-modal .vm-actions .interaction-btn,
+.guixu-root-container.mobile-view #variable-manager-modal .vm-actions .danger-btn,
+.guixu-root-container.mobile-view #variable-manager-modal .attribute-item .interaction-btn,
+.guixu-root-container.mobile-view #variable-manager-modal .attribute-item .danger-btn,
+.guixu-root-container.mobile-view #variable-manager-modal details.vm-details > summary .vm-actions .interaction-btn,
+.guixu-root-container.mobile-view #variable-manager-modal details.vm-details > summary .vm-actions .danger-btn {
+  height: 32px !important;
+  padding: 0 10px !important;
+  min-width: 0 !important;
+  font-size: 11px !important;
+  box-sizing: border-box !important;
+}
+/* 组内操作条：收紧上下留白，避免在窄屏显得拥挤 */
+.guixu-root-container.mobile-view #variable-manager-modal .vm-actions {
+  padding: 6px 0 !important;
+  gap: 6px !important;
+}
+ 
+/* =========================
+   移动端-我的行囊（Inventory）面板
+   修复：物品标签页卡片容器在移动端溢出面板、底部内容不可见
+   原因：
+   - inventory.css 为桌面端三栏布局将 .modal-body 设为 overflow:hidden 以让内层滚动
+   - 移动端改为“单栏+标签”后，.inv-grid/.inv-mobile-wrapper 未占满可用高度，导致内层滚动高度为 0
+   方案：
+   - 仅在移动端为 #inventory-modal 提供专属布局：让 inv-grid/Wrapper 成为可伸展的 Flex 列容器，并确保各层 min-height:0
+   - 主滚动区域设在 .inv-mobile-pane 内，避免双滚动条，且不影响桌面端
+   注意：严格作用域到 .guixu-root-container.mobile-view #inventory-modal，避免影响其他面板与桌面端
+========================= */
+.guixu-root-container.mobile-view #inventory-modal .modal-content {
+  /* 与设置中心/存档面板一致的移动端尺寸策略，确保有稳定的高度参照 */
+  width: 96vw;
+  max-width: 96vw;
+  height: auto;
+  max-height: 90vh;
+  max-height: 90dvh;            /* 兼容动态视口单位，地址栏伸缩时更稳定 */
+  overflow-x: hidden;            /* 禁止横向滚动条 */
+}
+.guixu-root-container.mobile-view #inventory-modal .modal-body {
+  /* 让内部单栏/标签容器占满可用高度，由子面板滚动 */
+  display: flex;
+  flex-direction: column;
+  min-height: 0;                 /* 关键：允许子元素获得可滚动高度 */
+  overflow: hidden;              /* 由子容器滚动，避免双滚动条 */
+}
+.guixu-root-container.mobile-view #inventory-modal .modal-body .inv-grid {
+  /* 在移动端切换为纵向 Flex，使 .inv-mobile-wrapper 可以按剩余空间拉伸 */
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;                 /* 关键：阻止高度被压到 0 */
+  height: 100%;
+}
+.guixu-root-container.mobile-view #inventory-modal .inv-mobile-wrapper {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;                 /* 关键：确保下层 pane 可滚动 */
+}
+.guixu-root-container.mobile-view #inventory-modal .inv-mobile-tabs {
+  flex: 0 0 auto;                /* 标签区占据自身高度，不参与伸缩 */
+}
+.guixu-root-container.mobile-view #inventory-modal .inv-mobile-pane {
+  flex: 1 1 auto;                /* 面板主体占满剩余空间 */
+  min-height: 0;                 /* 允许内部滚动高度计算 */
+  overflow: auto;                /* 独立滚动，避免被裁切 */
+  -webkit-overflow-scrolling: touch; /* iOS 惯性滚动 */
+}
+/* 兜底：三栏容器在移动端的各子面板允许计算滚动高度 */
+.guixu-root-container.mobile-view #inventory-modal .inv-pane-middle,
+.guixu-root-container.mobile-view #inventory-modal .inv-pane-left,
+.guixu-root-container.mobile-view #inventory-modal .inv-pane-right {
+  min-height: 0;
+}
+/* 列表自身在中栏中按需伸展，避免撑破容器 */
+.guixu-root-container.mobile-view #inventory-modal .inventory-list-flat {
+  flex: 1 1 auto;
+  min-height: 0;
+}
+ 
+/* =========================
+   移动端-人物关系（Relationships）面板
+   修复：关系列表在移动端溢出、卡片底部不可见
+   原因：模态主体按桌面策略滚动，列表容器未占满可用高度
+   方案：限制 modal-content 尺寸，主滚动下放到 .rel-grid；其余层设置 min-height:0
+   ========================= */
+.guixu-root-container.mobile-view #relationships-modal .modal-content {
+  /* 与设置中心/行囊一致的尺寸策略，避免被外层裁剪 */
+  width: 96vw;
+  max-width: 96vw;
+  height: auto;
+  max-height: 90vh;
+  max-height: 90dvh;            /* 兼容动态视口单位，地址栏伸缩时更稳定 */
+  overflow-x: hidden;            /* 禁止横向滚动条 */
+}
+.guixu-root-container.mobile-view #relationships-modal .modal-body {
+  /* 让内部布局可按剩余空间伸展，由下层容器滚动 */
+  display: flex;
+  flex-direction: column;
+  min-height: 0;                 /* 关键：允许子元素获得可滚动高度 */
+  overflow: hidden;              /* 主滚动交给 .rel-grid，避免双滚动条 */
+}
+.guixu-root-container.mobile-view #relationships-modal .rel-layout {
+  /* 根布局容器可伸展，给列表留出剩余高度 */
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+.guixu-root-container.mobile-view #relationships-modal .rel-content {
+  /* 工具栏 + 列表的包裹层 */
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+.guixu-root-container.mobile-view #relationships-modal .rel-tabs {
+  /* 筛选标签不参与伸缩，避免被压扁 */
+  flex: 0 0 auto;
+}
+.guixu-root-container.mobile-view #relationships-modal .rel-grid {
+  /* 主滚动容器：只滚列表，不滚头部与标签 */
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+  -webkit-overflow-scrolling: touch;
+}
+.guixu-root-container.mobile-view #relationships-modal .relationship-card {
+  /* 防止卡片在窄屏被撑出容器（不改 overflow，以免“更多”菜单被剪裁） */
+  max-width: 100%;
+  box-sizing: border-box;
+}

@@ -1,0 +1,805 @@
+/* 归墟 - 主题配色（嵌入式网站专用）
+   说明：
+   1) 通过在 .guixu-root-container 上添加类名来切换主题：
+      - theme-peony    => 绯玉凝脂 #f3a6a6
+   2) 动态样式（由 js/main.js 注入）和全局组件应尽量使用 CSS 变量 --gx-accent / --gx-accent-rgb
+      来统一控制边框/强调色；默认回退为金色(#c9aa71)。
+   3) 本文件只设置变量值和少量兜底覆盖，不直接写死颜色，确保与现有视觉体系兼容。
+*/
+
+/* 主题：绯玉凝脂 */
+.guixu-root-container.theme-peony{
+  /* 主题主色（边框/强调） */
+  /* 绯玉凝脂主色（豆蔻粉） */
+  --gx-accent: #f3a6a6;
+  --gx-accent-rgb: 243, 166, 166;
+}
+
+/* 轻量兜底覆盖：当第三方样式写死颜色时，用较高优先级提升边框/描边的主题一致性 */
+.guixu-root-container.theme-peony .interaction-btn,
+.guixu-root-container.theme-peony .primary-btn,
+.guixu-root-container.theme-peony .status-pop-btn{
+  /* 仅强制边框使用主题色；背景与文字仍遵循原有体系 */
+  border-color: var(--gx-accent, #c9aa71) !important;
+}
+
+/* 焦点态外发光：以主题色作为可达性强调 */
+.guixu-root-container.theme-peony .interaction-btn:focus,
+.guixu-root-container.theme-peony .gx-input:focus{
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(var(--gx-accent-rgb, 201, 170, 113), 0.25) !important;
+}
+
+/* 设置中心的问号说明、等待浮窗等强调元素的兜底（若JS未能覆盖时） */
+.guixu-root-container.theme-peony .info-icon{
+  border-color: var(--gx-accent, #c9aa71) !important;
+  color: var(--gx-accent, #c9aa71) !important;
+}
+
+.guixu-root-container.theme-peony #waiting-popup{
+  border-color: var(--gx-accent, #c9aa71) !important;
+  color: var(--gx-accent, #c9aa71) !important;
+}
+
+.guixu-root-container.theme-peony #waiting-popup .waiting-spinner{
+  border-color: var(--gx-accent, #c9aa71) !important;
+  border-right-color: transparent !important;
+}
+
+/* ========================= 扩大主题覆盖面 ========================= */
+/* 为每个主题定义表层/次表层/三级表层与按钮渐变变量（不直接覆盖正文颜色） */
+.guixu-root-container.theme-peony{
+  /* 表层（容器背景）：采用温柔的浅莲灰（lotus-gray）半透明层，贴合“绯玉凝脂”的清透质感 */
+  --gx-surface-1: rgba(234, 224, 213, 0.60); /* #EAE0D5 / 60% */
+  --gx-surface-2: rgba(234, 224, 213, 0.48);
+  --gx-surface-3: rgba(234, 224, 213, 0.36);
+  /* 主题遮罩RGB（用于背景与浮层半透明蒙层） */
+  --gx-mask-rgb: 234, 224, 213; /* lotus-gray */
+  /* 单色配色分层（用于轻量按钮/条/徽章） | 绯玉凝脂方案 */
+  --gx-tint-50:  #FEF9E7;  /* cream-white */
+  --gx-tint-100: #EAE0D5;  /* lotus-gray */
+  --gx-tint-200: #F7B5B5;  /* 豆蔻粉的浅阶 */
+  --gx-tint-300: #F3A6A6;  /* cardamom-pink（同主色的浅阶） */
+  --gx-tint-400: #FAD390;  /* pale-gold：与主色做柔和金粉渐变 */
+  --gx-shade-600: #576574; /* teal-gray：用于深阶描边/文字点缀 */
+  /* 边框以主色为准 */
+  --gx-border: var(--gx-accent);
+  /* 按钮渐变：粉色 -> 淡金，呼应设计参考 */
+  --gx-accent-2: #FAD390;
+  --gx-btn-bg: linear-gradient(45deg, var(--gx-accent), var(--gx-accent-2));
+  --gx-btn-bg-hover: linear-gradient(45deg, var(--gx-accent-2), var(--gx-accent));
+
+  /* 输入类组件在绯玉凝脂主题下的文字与占位符颜色（覆盖 tokens.css 的深色系预设） */
+  --gx-input-bg: var(--gx-surface-3);
+  --gx-input-color: #576574; /* 深青灰：浅底上保持良好可读性 */
+  --gx-placeholder-color: rgba(87, 101, 116, 0.7);
+  --gx-input-border-color: rgba(var(--gx-accent-rgb, 201,170,113), 0.35);
+  --gx-input-border-color-hover: rgba(var(--gx-accent-rgb, 201,170,113), 0.45);
+  --gx-input-border-color-focus: rgba(var(--gx-accent-rgb, 201,170,113), 0.65);
+  --gx-input-shadow-focus: 0 0 0 2px rgba(var(--gx-accent-rgb, 201,170,113), 0.12);
+}
+
+/* 核心容器与顶栏/底栏采用主题表层色，统一边框为主题色 */
+.guixu-root-container.theme-peony .game-container{
+  /* 保持原布局不变，仅提供轻微蒙层以统一色调 */
+  background: radial-gradient( at 15% 0%, rgba(var(--gx-accent-rgb, 201,170,113), 0.08), transparent 60% ) !important;
+}
+
+/* 顶部栏：完全透明，由全局背景遮罩控制 */
+.guixu-root-container.theme-peony .top-status{
+  background: transparent !important;
+  border: none !important;
+  border-bottom: 1px solid var(--gx-border, #c9aa71) !important;
+}
+
+/* 底部栏：完全透明，由全局背景遮罩控制 */
+.guixu-root-container.theme-peony .bottom-status{
+  background: transparent !important;
+  border-top: 1px solid var(--gx-border, #c9aa71) !important;
+}
+
+/* 左/右侧面板与各 section：背景透明度统一由设置中心“模块背景透明度（左右面板）”控制
+   - 只解绑透明度，底色仍随各主题（使用 --gx-mask-rgb 确保颜色保持主题风格） */
+.guixu-root-container.theme-peony .character-panel .panel-section,
+.guixu-root-container.theme-peony .interaction-panel .panel-section{
+  /* 透明度统一受全局滑块 --gx-section-opacity 控制；颜色仍按各主题的 --gx-mask-rgb */
+  background: rgba(var(--gx-mask-rgb, 26, 26, 46), var(--gx-section-opacity, 0.5)) !important;
+  border: 1px solid var(--gx-border, #c9aa71) !important; /* 保留主题描边 */
+}
+
+/* 右侧交互面板按钮背景：轻量单色系（避免厚重不透明） */
+.guixu-root-container.theme-peony .interaction-panel > .interaction-btn,
+.guixu-root-container.theme-peony .interaction-btn.primary-btn,
+.guixu-root-container.theme-peony .status-pop-btn{
+  background: rgba(var(--gx-accent-rgb, 201,170,113), 0.22) !important; /* 更轻的主题色蒙层 */
+  border: 1px solid rgba(var(--gx-accent-rgb, 201,170,113), 0.55) !important;
+  color: #fff !important;
+}
+.guixu-root-container.theme-peony .interaction-panel > .interaction-btn:hover,
+.guixu-root-container.theme-peony .interaction-btn.primary-btn:hover,
+.guixu-root-container.theme-peony .status-pop-btn:hover{
+  background: rgba(var(--gx-accent-rgb, 201,170,113), 0.30) !important;
+  filter: brightness(1.02);
+  box-shadow: 0 0 0 2px rgba(var(--gx-accent-rgb, 201,170,113), 0.10);
+}
+
+/* 底部栏“当前指令/发送”按钮：采用轻量单色蒙层 */
+.guixu-root-container.theme-peony #btn-quick-commands,
+.guixu-root-container.theme-peony #btn-quick-send{
+  background: rgba(var(--gx-accent-rgb, 201,170,113), 0.22) !important;
+  border-color: rgba(var(--gx-accent-rgb, 201,170,113), 0.55) !important;
+  color: #fff !important;
+}
+
+/* 输入控件与选择器：背景采用表层三层，边框/阴影由 tokens.css 已适配主题 */
+.guixu-root-container.theme-peony .gx-input,
+.guixu-root-container.theme-peony .quick-send-input,
+.guixu-root-container.theme-peony select.gx-select,
+.guixu-root-container.theme-peony input[type="number"],
+.guixu-root-container.theme-peony textarea{
+  background: var(--gx-surface-3) !important;
+}
+
+/* 进度条与能量填充条使用主题主色 */
+.guixu-root-container.theme-peony #bar-guixu-charge .guixu-fill,
+.guixu-root-container.theme-peony .details-progress-fill{
+  background: var(--gx-accent, #c9aa71) !important;
+}
+
+/* 统一 modal 背景与边框 */
+.guixu-root-container.theme-peony .modal-content,
+.guixu-root-container.theme-peony .confirm-modal-content{
+  /* 各主题模态背景透明度统一由 --gx-panel-opacity 控制，颜色随各主题 --gx-mask-rgb */
+  background: rgba(var(--gx-mask-rgb, 26, 26, 46), var(--gx-panel-opacity, 1)) !important;
+  border: 1px solid var(--gx-border, #c9aa71) !important;
+}
+
+/* Section 标题强调色（不改变正文文字色，仅标题点缀） */
+.guixu-root-container.theme-peony .section-title{
+  color: rgba(var(--gx-accent-rgb, 201,170,113), .95) !important;
+}
+
+/* 装备槽选中态（equipped）描边与标题点缀使用主题色 */
+/* 注意：不要影响“已装备”物品的品阶渲染（包含文字/描边/背景等均来自内联 tierStyle）
+   因此不对 .equipped 槽位做任何主题色覆盖，仅保留未装备态样式（见下文 :not(.equipped)） */
+/* 装备槽（已装备）：随模块背景且不改文字颜色（品阶文字由内联 tierStyle 控制） */
+.guixu-root-container.theme-peony .equipment-slot.equipped{
+  /* 已装备槽：底色透明度改由全局 --gx-section-opacity 控制，仅改变透明度，不改变颜色 */
+  background: rgba(var(--gx-mask-rgb, 26, 26, 46), var(--gx-section-opacity, 0.5)) !important;
+  border: 1px solid rgba(var(--gx-accent-rgb, 201,170,113), 0.65) !important;
+  /* 不设置 color，交由 tierStyle 控制品阶文字颜色 */
+}
+/* 未装备槽：与模块背景一致，透明度由全局滑块控制；描边为主题色虚线；仅占位文字用主题色 */
+.guixu-root-container.theme-peony .equipment-slot:not(.equipped){
+  background: rgba(var(--gx-mask-rgb, 26, 26, 46), var(--gx-section-opacity, 0.5)) !important;
+  border: 1px dashed rgba(var(--gx-accent-rgb, 201,170,113), 0.5) !important;
+  color: rgba(var(--gx-accent-rgb, 201,170,113), 0.75) !important; /* 仅未装备时着色 */
+}
+.guixu-root-container.theme-peony .equipment-slot:not(.equipped):hover{
+  background: rgba(var(--gx-accent-rgb, 201,170,113), 0.10) !important;
+}
+
+/* 底部左侧“一键刷新/重新生成”：与“发送”一致的轻透单色风格 */
+.guixu-root-container.theme-peony #btn-first-run-refresh.gate-refresh-btn,
+.guixu-root-container.theme-peony #btn-reroll-last{
+  background: rgba(var(--gx-accent-rgb, 201,170,113), 0.22) !important;
+  border: 1px solid rgba(var(--gx-accent-rgb, 201,170,113), 0.55) !important;
+  color: #fff !important;
+}
+.guixu-root-container.theme-peony #btn-reroll-last:hover,
+.guixu-root-container.theme-peony #btn-first-run-refresh.gate-refresh-btn:hover{
+  background: rgba(var(--gx-accent-rgb, 201,170,113), 0.30) !important;
+  box-shadow: 0 0 0 2px rgba(var(--gx-accent-rgb, 201,170,113), 0.10);
+}
+
+/* 绯玉凝脂主题：菜单与底部栏按钮采用“发送按钮”风格（圆角+柔和下阴影+白字）
+   注意：不再包含“世界线按钮”（.worldline-btn），以确保其继承全局通用按钮风格 */
+.guixu-root-container.theme-peony .interaction-panel > .interaction-btn,
+.guixu-root-container.theme-peony .interaction-btn.primary-btn,
+.guixu-root-container.theme-peony #btn-quick-commands,
+.guixu-root-container.theme-peony #btn-quick-send,
+.guixu-root-container.theme-peony #btn-first-run-refresh.gate-refresh-btn,
+.guixu-root-container.theme-peony #btn-reroll-last{
+  background: var(--gx-accent) !important; /* 实色粉 */
+  border: 1px solid transparent !important;
+  color: #fff !important;
+  border-radius: 12px !important;
+  box-shadow: 0 8px 22px rgba(var(--gx-accent-rgb, 201,170,113), 0.25) !important; /* 柔和下阴影 */
+  transition: transform .15s ease, box-shadow .2s ease, background-color .2s ease;
+}
+.guixu-root-container.theme-peony .interaction-panel > .interaction-btn:hover,
+.guixu-root-container.theme-peony .interaction-btn.primary-btn:hover{
+  /* 仅针对右侧菜单的交互按钮，底部按钮/世界线按钮的 hover 由专属块统一管理，避免重复覆盖 */
+  background: rgba(var(--gx-accent-rgb, 201,170,113), 0.95) !important;  /* 略微加深 */
+  box-shadow: 0 10px 24px rgba(var(--gx-accent-rgb, 201,170,113), 0.28) !important;
+  transform: translateY(-1px);
+}
+.guixu-root-container.theme-peony .interaction-panel > .interaction-btn:active,
+.guixu-root-container.theme-peony .interaction-btn.primary-btn:active,
+.guixu-root-container.theme-peony #btn-quick-commands:active,
+.guixu-root-container.theme-peony #btn-quick-send:active{
+  transform: scale(0.98);
+  box-shadow: 0 6px 18px rgba(var(--gx-accent-rgb, 201,170,113), 0.22) !important;
+}
+
+/* 思维链按钮芯片描边已有 main.js 覆盖；这里补充其背景与 hover */
+.guixu-root-container.theme-peony .thinking-chip-btn{
+  border-color: var(--gx-border, #c9aa71) !important;
+  background: var(--gx-btn-bg) !important;
+}
+.guixu-root-container.theme-peony .thinking-chip-btn:hover{
+  background: var(--gx-btn-bg-hover) !important;
+}
+
+/* ========================= 主题扩展覆盖（统一在此增强覆盖面） ========================= */
+/* 1) 根容器四边描边与投影随主题变换 */
+.guixu-root-container.theme-peony{
+  border-color: var(--gx-border, #c9aa71) !important;
+  box-shadow: 0 0 15px rgba(var(--gx-accent-rgb, 201,170,113), 0.20) !important;
+}
+
+/* 2) 背景透明遮罩颜色随主题变化（不改变不透明度，仅更换RGB） */
+.guixu-root-container.theme-peony::before{
+  /* 使用各主题 --gx-mask-rgb，透明度继续沿用 --guixu-bg-mask 用户设置 */
+  background: rgba(var(--gx-mask-rgb, 15, 15, 35), var(--guixu-bg-mask, 0.7)) !important;
+}
+
+/* 3) 左右侧面板自身描边与滚动条拇指颜色随主题变化 */
+.guixu-root-container.theme-peony .character-panel{
+  border-right: 1px solid var(--gx-border, #c9aa71) !important;
+}
+.guixu-root-container.theme-peony .interaction-panel{
+  border-left: 1px solid var(--gx-border, #c9aa71) !important;
+}
+
+/* 桌面端左右面板“开合按钮”随主题变化
+   修复：在启用主题时出现可见边框，与默认紫金琉璃主题不一致。
+   方案：去掉边框，仅使用半透明底色与文字颜色，保持默认紫金琉璃主题的一致观感。 */
+.guixu-root-container.theme-peony .pane-toggle-btn{
+  /* 与默认紫金琉璃主题一致：完全透明背景 */
+  background: transparent !important;
+  border: none !important;
+  color: rgba(var(--gx-accent-rgb, 201,170,113), 0.95) !important; /* 仍保留主题文字色 */
+  box-shadow: none !important; /* 不叠加阴影，保持简洁 */
+}
+.guixu-root-container.theme-peony .pane-toggle-btn:hover{
+  /* 保持透明背景；放大与文字高光效果交由 desktop.css 控制 */
+  background: transparent !important;
+  transform: translateY(-50%) scale(1.08);
+}
+/* WebKit 滚动条：用主题主色替换金色 */
+.guixu-root-container.theme-peony ::-webkit-scrollbar-thumb{
+  background: rgba(var(--gx-accent-rgb, 201,170,113), 0.35) !important;
+  border: 1px solid rgba(var(--gx-accent-rgb, 201,170,113), 0.25) !important;
+}
+/* 绯玉凝脂主题：滚动条轨道采用浅莲灰，与设计参考一致 */
+.guixu-root-container.theme-peony ::-webkit-scrollbar-track{
+  background: rgba(234, 224, 213, 0.8) !important; /* lotus-gray */
+  border-radius: 10px;
+}
+.guixu-root-container.theme-peony ::-webkit-scrollbar-thumb:hover{
+  background: rgba(var(--gx-accent-rgb, 201,170,113), 0.5) !important;
+}
+/* 绯玉凝脂主题：滚动条 hover 时更柔和的透明度变化 */
+.guixu-root-container.theme-peony ::-webkit-scrollbar-thumb:hover{
+  background: rgba(var(--gx-accent-rgb, 201,170,113), 0.6) !important;
+}
+
+/* 4) 顶部状态条：标签与选定数值随主题（境界值本身保持原色） */
+.guixu-root-container.theme-peony .top-status .status-label{
+  color: var(--gx-accent, #c9aa71) !important;
+}
+/* 指定需要变色的数值：当前纪年 + 归墟充能（境界值 #val-jingjie 不改） */
+.guixu-root-container.theme-peony #val-jinian,
+.guixu-root-container.theme-peony #val-guixu-charge-text{
+  color: var(--gx-accent, #c9aa71) !important;
+}
+/* 归墟充能条边框随主题 */
+.guixu-root-container.theme-peony .guixu-charge{
+  border-color: var(--gx-border, #c9aa71) !important;
+}
+
+/* 6) 中央正文 - 思维链与行动选项随主题 */
+.guixu-root-container.theme-peony #guixu-thinking-panel .thinking-chip-btn{
+  color: #fff !important; /* 芯片文字保持高对比 */
+}
+/* 思维链内容卡片：背景蒙层颜色跟随主题遮罩RGB与用户透明度设置 */
+.guixu-root-container.theme-peony #guixu-thinking-content.thinking-box{
+  background: rgba(var(--gx-mask-rgb, 15, 15, 35), var(--guixu-thinking-bg-opacity, 0.85)) !important;
+  border: 1px solid rgba(var(--gx-accent-rgb, 201,170,113), 0.35) !important;
+}
+/* 行动选项：标题与按钮背景/悬停随主题 */
+.guixu-root-container.theme-peony #guixu-action-guidelines .guideline-label{
+  color: rgba(var(--gx-accent-rgb, 201,170,113), 0.95) !important;
+}
+.guixu-root-container.theme-peony #guixu-action-guidelines .action-guideline-btn{
+  background: rgba(var(--gx-mask-rgb, 15, 15, 35), var(--guixu-guideline-bg-opacity, 0.6)) !important;
+  border: 1px solid var(--gx-border, #c9aa71) !important;
+  color: var(--guixu-guideline-text-color, #e0dcd1) !important;
+}
+.guixu-root-container.theme-peony #guixu-action-guidelines .action-guideline-btn:hover{
+  border-color: var(--gx-border, #c9aa71) !important;
+  box-shadow: 0 0 0 2px rgba(var(--gx-accent-rgb, 201,170,113), 0.12) !important;
+  filter: brightness(1.03);
+}
+
+/* 7) 底部输入栏：边框随主题 */
+.guixu-root-container.theme-peony .quick-send-input{
+  border-color: var(--gx-input-border-color, rgba(var(--gx-accent-rgb, 201,170,113), 0.35)) !important;
+}
+
+/* 8) 右上角切换/全屏按钮：采用轻量单色蒙层（与右侧面板一致，避免厚重不透明） */
+.guixu-root-container.theme-peony .view-toggle-btn,
+.guixu-root-container.theme-peony .fullscreen-btn{
+  background: rgba(var(--gx-accent-rgb, 201,170,113), 0.22) !important;
+  border: 1px solid rgba(var(--gx-accent-rgb, 201,170,113), 0.55) !important;
+  color: #fff !important;
+}
+.guixu-root-container.theme-peony .view-toggle-btn:hover,
+.guixu-root-container.theme-peony .fullscreen-btn:hover{
+  background: rgba(var(--gx-accent-rgb, 201,170,113), 0.30) !important;
+}
+
+/* 9) 移动端三个悬浮按钮（角色/功能/设置）：与“发送”一致的轻透单色风格 */
+.guixu-root-container.theme-peony #fab-character,
+.guixu-root-container.theme-peony #fab-functions,
+.guixu-root-container.theme-peony #fab-settings{
+  background: rgba(var(--gx-accent-rgb, 201,170,113), 0.22) !important;
+  border: 1px solid rgba(var(--gx-accent-rgb, 201,170,113), 0.55) !important;
+  color: #fff !important; /* 中文按钮与齿轮符号高对比 */
+}
+.guixu-root-container.theme-peony #fab-character:hover,
+.guixu-root-container.theme-peony #fab-functions:hover,
+.guixu-root-container.theme-peony #fab-settings:hover{
+  background: rgba(var(--gx-accent-rgb, 201,170,113), 0.30) !important;
+}
+
+/* 10) 右侧世界书控制：读写序号与“自动开关世界书”随主题 */
+.guixu-root-container.theme-peony #world-book-controls label{
+  color: var(--gx-accent, #c9aa71) !important;
+}
+.guixu-root-container.theme-peony #world-book-controls input[type="number"]{
+  background: var(--gx-surface-3) !important;
+  border: 1px solid var(--gx-border, #c9aa71) !important;
+  color: var(--gx-input-color, #e8e3d6) !important;
+  border-radius: var(--gx-input-radius, 8px) !important;
+}
+.guixu-root-container.theme-peony #world-book-controls input[type="checkbox"]{
+  /* 浏览器原生复选框主题色 */
+  accent-color: var(--gx-accent, #c9aa71);
+}
+
+/* 11) 右侧“世界线回顾”：标题与按钮字体颜色（按钮仍保留主题背景以保证可读性） */
+.guixu-root-container.theme-peony .world-line-title{
+  color: rgba(var(--gx-accent-rgb, 201,170,113), .95) !important;
+}
+/* 保持按钮文本白色高对比；背景已随主题变化（见上文按钮渐变规则） */
+.guixu-root-container.theme-peony .worldline-btn{
+  color: #fff !important;
+}
+
+/* 13) 左侧修行概览：气运徽章颜色/背景随主题 */
+.guixu-root-container.theme-peony .qiyun-badge{
+  background: linear-gradient(180deg, rgba(var(--gx-accent-rgb, 201,170,113), 0.28), rgba(var(--gx-accent-rgb, 201,170,113), 0.12)) !important;
+  border: 1px solid rgba(var(--gx-accent-rgb, 201,170,113), 0.55) !important;
+  color: #fff !important;
+}
+.guixu-root-container.theme-peony .qiyun-badge .label{
+  color: rgba(var(--gx-accent-rgb, 201,170,113), 0.95) !important;
+}
+.guixu-root-container.theme-peony .qiyun-badge .value{
+  color: #fff !important;
+  text-shadow: 0 0 6px rgba(var(--gx-accent-rgb, 201,170,113), 0.35) !important;
+}
+
+/* 14) 左侧修行概览：属性与修为进度条随主题 */
+.guixu-root-container.theme-peony .attr-bar{
+  background: linear-gradient(180deg, rgba(var(--gx-accent-rgb, 201,170,113), 0.12), rgba(var(--gx-accent-rgb, 201,170,113), 0.05)) !important;
+  border: 1px solid rgba(var(--gx-accent-rgb, 201,170,113), 0.25) !important;
+}
+.guixu-root-container.theme-peony .attr-bar .attr-bar-fill{
+  background: linear-gradient(90deg, rgba(var(--gx-accent-rgb, 201,170,113), 0.85), rgba(var(--gx-accent-rgb, 201,170,113), 0.55)) !important;
+  box-shadow: 0 0 10px rgba(var(--gx-accent-rgb, 201,170,113), 0.35) !important;
+}
+.guixu-root-container.theme-peony .attr-bar--cultivation .attr-bar-fill{
+  background: linear-gradient(90deg, var(--gx-accent), var(--gx-tint-400, var(--gx-accent))) !important;
+}
+
+/* 15) 右侧“世界线回顾”两按钮：背景/边框随主题（轻量） */
+.guixu-root-container.theme-peony .world-line-section .worldline-btn{
+  background: rgba(var(--gx-accent-rgb, 201,170,113), 0.22) !important;
+  border: 1px solid rgba(var(--gx-accent-rgb, 201,170,113), 0.55) !important;
+  color: #fff !important;
+}
+.guixu-root-container.theme-peony .world-line-section .worldline-btn:hover{
+  background: rgba(var(--gx-accent-rgb, 201,170,113), 0.30) !important;
+}
+
+/* 16) 底部版本小标签：随主题变化 */
+.guixu-root-container.theme-peony .version-badge{
+  background: rgba(var(--gx-mask-rgb, 15,15,35), 0.35) !important;
+  color: var(--gx-accent, #c9aa71) !important;
+}
+.guixu-root-container.theme-peony .version-badge .vb-text{
+  color: var(--gx-accent, #c9aa71) !important;
+}
+.guixu-root-container.theme-peony .version-badge .vb-pill{
+  border-color: rgba(var(--gx-accent-rgb, 201,170,113), 0.65) !important;
+  background: linear-gradient(45deg, rgba(var(--gx-accent-rgb, 201,170,113), 0.9), rgba(var(--gx-accent-rgb, 201,170,113), 0.7)) !important;
+  color: #fff !important;
+}
+
+/* 17) 修行概览 - “当前瓶颈”标签固定白色（仅主题）；默认（金色）由全局样式控制 */
+.guixu-root-container.theme-peony #attr-cultivation-panel .attr-bottleneck-label{
+  /* 标签固定白色，不随主题变色 */
+  color: #e0dcd1 !important;
+}
+/* 主题下：变量值继续随主题（已在上文设置 #cultivation-bottleneck/.attr-bottleneck-value 为主题色） */
+
+/* 18) 底部栏“状态一览”按钮内的小圆点图标随主题 */
+.guixu-root-container.theme-peony .status-pop-btn .effect-icon{
+  background: var(--gx-accent, #c9aa71) !important;
+}
+
+/* 20) 版本徽标（有更新）在主题下仍保持金色“醒目”提示 */
+.guixu-root-container.theme-peony .version-badge.is-update .vb-pill{
+  border-color: #daa520 !important;
+  background: linear-gradient(45deg, #8b4513, #cd853f) !important;
+  color: #fff !important;
+}
+/* 紧凑态：仍使用金色渐变与高亮，不被主题覆盖 */
+.guixu-root-container.theme-peony .version-badge.is-update.compact{
+  background: linear-gradient(45deg, #cd853f, #daa520) !important;
+  color: #1a1a2e !important;
+  box-shadow: 0 0 12px rgba(218,165,32,0.55) !important;
+}
+
+/* 17) 左侧面板“天赋灵根”模块：仅标签（attribute-name）随主题，值不跟随 */
+.guixu-root-container.theme-peony #talent-linggen-list .attribute-name{
+  color: rgba(var(--gx-accent-rgb, 201,170,113), 0.85) !important;
+}
+
+/* 18) 中央正文面板左右边框随主题 */
+.guixu-root-container.theme-peony .main-content{
+  border-left: 1px solid var(--gx-border, #c9aa71) !important;
+  border-right: 1px solid var(--gx-border, #c9aa71) !important;
+}
+
+/* 21) 指定模块的“表层背景” - 主题通用
+   - 左边：修行概览(#attr-cultivation-panel)、天赋灵根(#talent-linggen-list)、当前装备(.equipment-grid)
+   - 右边：世界书控制(#world-book-controls)
+   桌面端与移动端保持一致（使用主题 --gx-surface-1） */
+/* 21) 指定模块的“表层背景” - 主题通用（修正：修行概览自身拥有该ID，不适用 :has 选择自身） */
+.guixu-root-container.theme-peony #attr-cultivation-panel.panel-section,
+.guixu-root-container.theme-peony .character-panel .panel-section:has(#talent-linggen-list),
+.guixu-root-container.theme-peony .character-panel .panel-section:has(.equipment-grid),
+.guixu-root-container.theme-peony .interaction-panel #world-book-controls.panel-section{
+  /* 透明度统一由 --gx-section-opacity 控制；底色仍随主题 --gx-mask-rgb */
+  background: rgba(var(--gx-mask-rgb, 26, 26, 46), var(--gx-section-opacity, 0.5)) !important;
+  border-color: var(--gx-border, #c9aa71) !important;
+  border-radius: 10px !important;
+  box-shadow: 0 4px 12px rgba(var(--gx-accent-rgb, 201,170,113), 0.08);
+}
+
+/* 绯玉凝脂：修行概览子模块卡片与悬停
+   - 保留 cream-white 作为内层底色，但透明度统一受 --gx-section-opacity 控制 */
+.guixu-root-container.theme-peony #attr-cultivation-panel .attr-row,
+.guixu-root-container.theme-peony #attr-cultivation-panel .attr-cultivation-wrap{
+  background: rgba(254, 249, 231, var(--gx-section-opacity, 0.5)) !important; /* cream-white with global opacity */
+  border: 1px solid rgba(var(--gx-accent-rgb, 201,170,113), 0.18) !important;
+}
+.guixu-root-container.theme-peony #attr-cultivation-panel .attr-row:hover,
+.guixu-root-container.theme-peony #attr-cultivation-panel .attr-row:focus-visible{
+  background:
+    linear-gradient(0deg, rgba(243,166,166,0.12), rgba(250,211,144,0.12)),
+    rgba(254, 249, 231, 0.50) !important; /* 叠加粉/淡金的柔和蒙层 */
+  border-color: rgba(var(--gx-accent-rgb, 201,170,113), 0.35) !important;
+}
+
+/* 绯玉凝脂：天赋灵根折叠内容与标签配色（正文采用 teal-gray；分隔线用粉色低透明）
+   透明度改为全局 --gx-section-opacity 控制，但底色仍使用 cream-white，保持主题风格不变 */
+.guixu-root-container.theme-peony #talent-linggen-list .details-content{
+  background: rgba(254, 249, 231, var(--gx-section-opacity, 0.50)) !important;  /* cream-white with global opacity */
+  border-top: 1px solid rgba(243,166,166, 0.25) !important; /* cardamom-pink */
+  color: #576574 !important; /* teal-gray */
+}
+/* 折叠标题的“标签”加强（已在前文做过主题色加粗，这里确保一致性） */
+.guixu-root-container.theme-peony #talent-linggen-list details summary .attribute-name{
+  color: #576574 !important;
+  font-weight: 400 !important; /* 灵根/天赋标签常规字重 */
+}
+
+/* 绯玉凝脂：装备槽动效（恢复已装备 hover 的柔和高亮，不改品阶文字色） */
+.guixu-root-container.theme-peony .equipment-grid .equipment-slot{
+  transition: background .15s ease, box-shadow .15s ease, transform .12s ease;
+}
+/* 已装备槽 hover：在全局透明度底色上叠加主题色柔光与细描边 */
+.guixu-root-container.theme-peony .equipment-grid .equipment-slot.equipped:hover{
+  background:
+    linear-gradient(0deg, rgba(var(--gx-accent-rgb, 201,170,113), 0.12), rgba(var(--gx-accent-rgb, 201,170,113), 0.12)),
+    rgba(var(--gx-mask-rgb, 26, 26, 46), var(--gx-section-opacity, 0.5)) !important;
+  box-shadow: 0 0 0 2px rgba(var(--gx-accent-rgb, 201,170,113), 0.15);
+}
+
+/* 22) 当前装备内的槽位背景与模块一致（不改变已装备物品的文字颜色） */
+.guixu-root-container.theme-peony .equipment-grid .equipment-slot{
+  /* 仅控制透明度，颜色仍随各主题 */
+  background: rgba(var(--gx-mask-rgb, 26, 26, 46), var(--gx-section-opacity, 0.5)) !important;
+}
+
+/* 23) 渐变风格（绯玉凝脂）：顶部归墟充能条 + 左侧修为/属性进度条填充采用“粉->金” */
+.guixu-root-container.theme-peony #bar-guixu-charge .guixu-fill,
+.guixu-root-container.theme-peony .details-progress-fill,
+.guixu-root-container.theme-peony .attr-bar .attr-bar-fill,
+.guixu-root-container.theme-peony .attr-bar--cultivation .attr-bar-fill{
+  background: linear-gradient(90deg, var(--gx-accent), var(--gx-tint-400)) !important;
+  box-shadow: 0 0 10px rgba(var(--gx-accent-rgb, 201,170,113), 0.35) !important;
+}
+
+/* 24) 修复绯玉凝脂主题下“刷新/重掷”悬停透明化问题：强制保持不透明背景与白字 */
+.guixu-root-container.theme-peony #btn-first-run-refresh.gate-refresh-btn,
+.guixu-root-container.theme-peony #btn-reroll-last{
+  background: var(--gx-accent) !important;
+  color: #fff !important;
+}
+
+/* 26) 移动端与桌面端一致性：角色/功能面板文字与模块背景不再降级 */
+.guixu-root-container.mobile-view.theme-peony #attr-cultivation-panel.panel-section,
+.guixu-root-container.mobile-view.theme-peony .character-panel .panel-section:has(#talent-linggen-list),
+.guixu-root-container.mobile-view.theme-peony .character-panel .panel-section:has(.equipment-grid),
+.guixu-root-container.mobile-view.theme-peony .interaction-panel #world-book-controls.panel-section{
+  /* 移动端主题下的模块卡片透明度同样由 --gx-section-opacity 统一控制，颜色仍随主题 */
+  background: rgba(var(--gx-mask-rgb, 26, 26, 46), var(--gx-section-opacity, 0.5)) !important;
+}
+
+/* 修行概览边框厚度与其它模块保持一致（默认1px）——移除加粗 */
+
+/* ========================= 绯玉凝脂主题 · 文字与模块风格精修 ========================= */
+/* 目标：
+   1) 顶部栏：境界/纪年/归墟充能的“标签”与“数值”分别采用参考方案的配色与字重
+      - 数值：深青灰，粗体
+      - 标签：深青灰，常规字重
+      - 注意：不改变“境界的值”（#val-jingjie 由品阶内联样式控制）
+   2) 左侧/右侧模块：修行概览、天赋灵根、当前装备、世界书控制
+      - 模块标题：深青灰，粗体
+      - 属性标签：深青灰，常规字重
+      - 属性值：深青灰，粗体
+      - 保留：天赋灵根具体条目与装备已装备物品的颜色由其自身品阶/内联控制，不受主题覆盖
+   3) 模块背景：已由 --gx-surface-1 统一处理（见前文 21/26），此处不改布局，仅细化字体风格
+*/
+
+/* 1) 顶部栏：标签/数值配色与字重（标签=常规；值=加粗） */
+.guixu-root-container.theme-peony .top-status .status-label{
+  color: #576574 !important;           /* 深青灰（teal-gray） */
+  font-weight: 400 !important;         /* 标签常规字重 */
+}
+.guixu-root-container.theme-peony #val-jinian,
+.guixu-root-container.theme-peony #val-guixu-charge-text{
+  color: #576574 !important;           /* 数值改为与“修行总览”标题风格一致 */
+  font-weight: 700 !important;         /* 数值加粗 */
+}
+/* 不覆盖 #val-jingjie：由内联 tierStyle 控制（保持渲染器色彩与字重） */
+/* 明确：不覆盖 #val-jingjie（境界值由内联 tierStyle 控制） */
+
+/* 2) 模块标题：修行概览 / 天赋灵根 / 当前装备 / 世界书控制 */
+.guixu-root-container.theme-peony #attr-cultivation-panel .section-title,
+.guixu-root-container.theme-peony .character-panel .panel-section:has(#talent-linggen-list) .section-title,
+.guixu-root-container.theme-peony .character-panel .panel-section:has(.equipment-grid) .section-title,
+.guixu-root-container.theme-peony .interaction-panel #world-book-controls.panel-section .section-title{
+  color: #576574 !important;           /* 深青灰 */
+  font-weight: 700 !important;         /* 标题加粗 */
+}
+
+/* 2.1) 属性标签：修行概览 + 世界书控制（标签常规、深青灰） */
+.guixu-root-container.theme-peony #attr-cultivation-panel .attribute-name,
+.guixu-root-container.theme-peony #attr-cultivation-panel .attr-bottleneck-label,
+.guixu-root-container.theme-peony #attr-cultivation-panel .attr-name,
+.guixu-root-container.theme-peony #world-book-controls label{
+  color: #576574 !important;
+  font-weight: 400 !important;
+  letter-spacing: 0.2px;
+}
+
+/* 2.2) 属性值：修行概览 + 世界书控制（加粗、深青灰） */
+.guixu-root-container.theme-peony #attr-cultivation-panel .attribute-value,
+.guixu-root-container.theme-peony #attr-cultivation-panel .attr-values,
+.guixu-root-container.theme-peony #cultivation-bottleneck,
+.guixu-root-container.theme-peony #world-book-controls input[type="number"]{
+  color: #576574 !important;
+  font-weight: 700 !important;         /* 值加粗 */
+}
+
+/* 2.3) 气运：标签与变量值同“法力”风格（深青灰；去除高光阴影） */
+.guixu-root-container.theme-peony .qiyun-badge .label,
+.guixu-root-container.theme-peony .qiyun-badge .value{
+  color: #576574 !important;
+  text-shadow: none !important;
+}
+.guixu-root-container.theme-peony .qiyun-badge .label{ font-weight: 700 !important; }
+.guixu-root-container.theme-peony .qiyun-badge .value{ font-weight: 400 !important; }
+
+/* （说明）模块背景色与描边：
+   - 已由前文 21/26 规则使用 --gx-surface-1 与 var(--gx-border) 统一，符合“修行总览”卡片背景风格
+   - 不再重复设置，避免提高特异性造成维护困难
+ */
+
+/* 补充修正（按反馈逐条覆盖） */
+/* 1) 当前瓶颈“变量值”：深青灰、加粗 */
+.guixu-root-container.theme-peony #attr-cultivation-panel .attr-bottleneck-value,
+.guixu-root-container.theme-peony #cultivation-bottleneck{
+  color: #576574 !important;
+  font-weight: 700 !important;
+}
+
+/* 2) 天赋模块的“天赋/灵根”标签：深青灰、常规字重 */
+.guixu-root-container.theme-peony #talent-linggen-list .attribute-name{
+  color: #576574 !important;
+  font-weight: 400 !important;
+}
+
+/* 3) 装备模块-未装备槽位的占位文字采用修行总览字体颜色（常规字重） */
+.guixu-root-container.theme-peony .equipment-grid .equipment-slot:not(.equipped){
+  color: #576574 !important;
+  font-weight: 400 !important;
+}
+
+/* 4) 世界线回顾模块标题采用修行总览标题风格（深青灰、加粗） */
+.guixu-root-container.theme-peony .world-line-title{
+  color: #576574 !important;
+  font-weight: 700 !important;
+}
+/* 绯玉凝脂：天赋灵根折叠区域键值配色（键=常规；值=加粗） */
+.guixu-root-container.theme-peony .gx-eff-key{ color: #576574 !important; font-weight: 400 !important; }
+.guixu-root-container.theme-peony .gx-eff-sep{ color: rgba(87,101,116,0.7) !important; margin: 0 2px; }
+.guixu-root-container.theme-peony .gx-eff-val{ color: #576574 !important; font-weight: 700 !important; }
+/* 天赋灵根折叠区：通过通用 attribute-item 渲染的“固定加成/百分比加成/词条”键值字重也统一（键常规，值加粗） */
+.guixu-root-container.theme-peony #talent-linggen-list .details-content .attribute-name{ color:#576574 !important; font-weight: 400 !important; }
+.guixu-root-container.theme-peony #talent-linggen-list .details-content .attribute-value{ color:#576574 !important; font-weight: 700 !important; }
+.guixu-root-container.theme-peony .gx-eff-val{ color: #576574 !important; font-weight: 700 !important; }
+
+/* 绯玉凝脂：顶部栏视图切换与全屏按钮采用与右侧菜单一致的“实色粉”按钮风格 */
+.guixu-root-container.theme-peony .view-toggle-btn,
+.guixu-root-container.theme-peony .fullscreen-btn{
+  background: var(--gx-accent) !important;
+  border: 1px solid transparent !important;
+  color: #fff !important;
+  border-radius: 12px !important;
+  box-shadow: 0 8px 22px rgba(var(--gx-accent-rgb, 201,170,113), 0.25) !important;
+  transition: transform .15s ease, box-shadow .2s ease, background-color .2s ease;
+}
+.guixu-root-container.theme-peony .view-toggle-btn:hover,
+.guixu-root-container.theme-peony .fullscreen-btn:hover{
+  background: rgba(var(--gx-accent-rgb, 201,170,113), 0.95) !important;
+  box-shadow: 0 10px 24px rgba(var(--gx-accent-rgb, 201,170,113), 0.28) !important;
+  transform: translateY(-1px);
+}
+
+/* 绯玉凝脂：移动端三个悬浮按钮采用与右侧菜单一致的“实色粉”风格 */
+.guixu-root-container.theme-peony #fab-character,
+.guixu-root-container.theme-peony #fab-functions,
+.guixu-root-container.theme-peony #fab-settings{
+  background: var(--gx-accent) !important;
+  border: 1px solid transparent !important;
+  color: #fff !important;
+  box-shadow: 0 8px 22px rgba(var(--gx-accent-rgb, 201,170,113), 0.25) !important;
+}
+.guixu-root-container.theme-peony #fab-character:hover,
+.guixu-root-container.theme-peony #fab-functions:hover,
+.guixu-root-container.theme-peony #fab-settings:hover{
+  background: rgba(var(--gx-accent-rgb, 201,170,113), 0.95) !important;
+  transform: translateY(-1px);
+}
+
+/* 绯玉凝脂：各类模态背景受设置中心“功能面板背景透明度”控制（桌面端/移动端通用） */
+.guixu-root-container.theme-peony .modal-content,
+.guixu-root-container.theme-peony .confirm-modal-content{
+  background: rgba(var(--gx-mask-rgb, 234,224,213), var(--gx-panel-opacity, 1)) !important;
+  border: 1px solid var(--gx-border, #c9aa71) !important;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+
+/* ========================= 专项修复与统一 · 绯玉凝脂 ========================= */
+/* 1) 修复右侧“世界线回顾”（今生印记/前世回响）鼠标靠近后无高光的问题
+      - 要求：出现高光但不透明化（避免完全透明背景）
+      - 方案：仅在按钮 hover/focus 时高光，避免父容器 hover 误触发相邻按钮 */
+.guixu-root-container.theme-peony .world-line-section .worldline-btn:hover,
+.guixu-root-container.theme-peony .world-line-section .worldline-btn:focus-visible{
+  /* 保持不透明的实色粉底，避免透明化 */
+  background: var(--gx-accent) !important;
+  opacity: 1 !important;
+  filter: brightness(1.05);
+  /* 柔和下阴影，高光感 */
+  box-shadow: 0 10px 24px rgba(var(--gx-accent-rgb, 201,170,113), 0.28) !important;
+}
+
+/* 2) 统一“中央正文 · 思维链折叠内容”背景色到“天赋灵根”的折叠背景色
+      - 同时保留设置中心“思维链文字颜色/背景透明滑块”的控制权 */
+.guixu-root-container.theme-peony #guixu-thinking-content.thinking-box{
+  /* 背景色采用 cream-white，透明度仍由 --guixu-thinking-bg-opacity 驱动 */
+  background: rgba(254, 249, 231, var(--guixu-thinking-bg-opacity, 0.85)) !important;
+  border: 1px solid rgba(243,166,166, 0.25) !important; /* cardamom-pink 细描边 */
+  color: var(--guixu-thinking-color, #576574) !important; /* 文本颜色保持可配置 */
+}
+
+/* 3) 统一“中央正文 · 行动选项按钮”到左侧“修行概览”子模块卡片的配色与动效
+      - 同时保留设置中心“行动选项文字颜色/背景透明滑块”的控制权
+      - 常态：cream-white 背景 + 细描边（透明度跟随 --guixu-guideline-bg-opacity）
+      - 悬停：叠加粉/淡金柔和蒙层，提升描边透明度；不做抬升与投影 */
+.guixu-root-container.theme-peony #guixu-action-guidelines .action-guideline-btn{
+  background: rgba(254, 249, 231, var(--guixu-guideline-bg-opacity, 0.6)) !important; /* 与 .attr-row 常态一致 */
+  border: 1px solid rgba(var(--gx-accent-rgb, 201,170,113), 0.18) !important;
+  color: var(--guixu-guideline-text-color, #576574) !important; /* 文本颜色保持可配置 */
+  box-shadow: none !important; /* 保持卡片风格（无投影） */
+}
+
+.guixu-root-container.theme-peony #guixu-action-guidelines .action-guideline-btn:hover,
+.guixu-root-container.theme-peony #guixu-action-guidelines .action-guideline-btn:focus-visible{
+  /* 在当前背景上叠加与 .attr-row:hover 一致的柔和蒙层 */
+  background:
+    linear-gradient(0deg, rgba(243,166,166,0.12), rgba(250,211,144,0.12)),
+    rgba(254, 249, 231, var(--guixu-guideline-bg-opacity, 0.6)) !important;
+  border-color: rgba(var(--gx-accent-rgb, 201,170,113), 0.35) !important;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+.guixu-root-container.theme-peony #guixu-action-guidelines .action-guideline-btn:active{
+  transform: none !important; /* 不做按压缩放，延续卡片交互风格 */
+}
+
+/* 额外：中央正文与思维链文本统一为“细体”风格，避免粗体渲染 */
+.guixu-root-container.theme-peony .game-text-container,
+.guixu-root-container.theme-peony .game-text-container *,
+.guixu-root-container.theme-peony #game-text-display,
+.guixu-root-container.theme-peony #game-text-display *,
+.guixu-root-container.theme-peony #guixu-thinking-content,
+.guixu-root-container.theme-peony #guixu-thinking-content *{
+  /* 正文与思维链全文细体 + 去阴影，避免视觉“加粗” */
+  font-weight: 400 !important;
+  text-shadow: none !important;
+}
+.guixu-root-container.theme-peony .game-text-container :is(strong, b),
+.guixu-root-container.theme-peony #game-text-display :is(strong, b),
+.guixu-root-container.theme-peony #guixu-thinking-content :is(strong, b){
+  /* 即便正文包含 <strong>/<b> 也保持细体视觉（用户特别要求） */
+  font-weight: 400 !important;
+  text-shadow: none !important;
+}
+
+/* 天赋灵根折叠区内部的“固定加成/百分比加成/词条”子对象：键=常规，值=加粗 */
+.guixu-root-container.theme-peony #talent-linggen-list .details-content .attribute-item > .attribute-name{
+  color: #576574 !important;
+  font-weight: 400 !important;
+}
+.guixu-root-container.theme-peony #talent-linggen-list .details-content .attribute-item > .attribute-value{
+  color: #576574 !important;
+  font-weight: 700 !important;
+}
+
+/* 4) 底部栏三键 hover 高光：确保不透明且有柔和高光（发送/一键刷新/重新生成） */
+.guixu-root-container.theme-peony #btn-quick-commands:hover,
+.guixu-root-container.theme-peony #btn-quick-send:hover,
+.guixu-root-container.theme-peony #btn-first-run-refresh.gate-refresh-btn:hover,
+.guixu-root-container.theme-peony #btn-reroll-last:hover{
+  /* 悬停：略微加深 + 柔和阴影 + 微抬升；明确禁止透明化 */
+  background: rgba(var(--gx-accent-rgb, 201,170,113), 0.95) !important;
+  opacity: 1 !important;
+  filter: none !important;
+  box-shadow: 0 10px 24px rgba(var(--gx-accent-rgb, 201,170,113), 0.28) !important;
+  transform: translateY(-1px);
+}
+
+/* 补充：右侧“世界线回顾”两键在绯玉凝脂主题下的高光与不透明保障（覆盖 primary-btn:hover 等基元） */
+.guixu-root-container.theme-peony .world-line-section .worldline-btn:hover,
+.guixu-root-container.theme-peony .world-line-section .worldline-btn:focus-visible,
+.guixu-root-container.theme-peony #btn-view-journey-main:hover,
+.guixu-root-container.theme-peony #btn-view-journey-main:focus-visible,
+.guixu-root-container.theme-peony #btn-view-past-lives-main:hover,
+.guixu-root-container.theme-peony #btn-view-past-lives-main:focus-visible{
+  background: rgba(var(--gx-accent-rgb, 201,170,113), 0.95) !important; /* 略微加深但保持不透明 */
+  opacity: 1 !important;              /* 禁止透明化 */
+  filter: none !important;             /* 避免滤镜带来的伪透明 */
+  box-shadow: 0 10px 24px rgba(var(--gx-accent-rgb, 201,170,113), 0.28) !important;
+  transform: translateY(-1px);
+}

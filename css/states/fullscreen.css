@@ -1,0 +1,71 @@
+/* Phase 1 - states/fullscreen.css
+   全屏状态覆盖：:fullscreen / :-webkit-full-screen 以及“移动端横屏全屏”相关基础规则
+   注意：仅放“全屏相关”样式，避免与 views/ 与 base/ 重叠。 */
+
+.guixu-root-container:fullscreen,
+.guixu-root-container:-webkit-full-screen {
+  width: 100vw;
+  height: 100vh;
+  max-width: none;
+  margin: 0;
+  border-radius: 0;
+  /* 防止全屏下固定/浮层被父容器裁剪（iPad/Safari 常见） */
+  overflow: visible;
+}
+.guixu-root-container:fullscreen .game-container,
+.guixu-root-container:-webkit-full-screen .game-container {
+  height: 100%;
+}
+
+
+/* 全屏下部分模态回归桌面尺寸（示例：印记与指令中心），避免移动端样式在横屏时显得过大 */
+.guixu-root-container:fullscreen.mobile-view #save-load-modal .modal-content,
+.guixu-root-container:-webkit-full-screen.mobile-view #save-load-modal .modal-content,
+.guixu-root-container:fullscreen.mobile-view #command-center-modal .modal-content,
+.guixu-root-container:-webkit-full-screen.mobile-view #command-center-modal .modal-content {
+  width: 90%;
+  max-width: 800px;
+  height: 90%;
+  max-height: 550px;
+}
+.guixu-root-container:fullscreen.mobile-view #save-load-modal .modal-body,
+.guixu-root-container:-webkit-full-screen.mobile-view #save-load-modal .modal-body {
+  overflow-y: auto;
+}
+.guixu-root-container:fullscreen.mobile-view #save-load-modal .save-slot-actions > button,
+.guixu-root-container:-webkit-full-screen.mobile-view #save-load-modal .save-slot-actions > button,
+.guixu-root-container:fullscreen.mobile-view #save-load-modal .slot-actions > button,
+.guixu-root-container:-webkit-full-screen.mobile-view #save-load-modal .slot-actions > button,
+.guixu-root-container:fullscreen.mobile-view #save-load-modal .interaction-btn,
+.guixu-root-container:-webkit-full-screen.mobile-view #save-load-modal .interaction-btn,
+.guixu-root-container:fullscreen.mobile-view #save-load-modal .clear-saves-btn,
+.guixu-root-container:-webkit-full-screen.mobile-view #save-load-modal .clear-saves-btn {
+  height: 32px !important;
+  padding: 0 12px !important;
+  font-size: 12px !important;
+  min-width: 0;
+  box-sizing: border-box;
+}
+.guixu-root-container:fullscreen.mobile-view #save-load-modal .save-slot,
+.guixu-root-container:-webkit-full-screen.mobile-view #save-load-modal .save-slot {
+  gap: 10px;
+}
+
+/* 全屏下角色/功能侧栏浮层定位修正，确保最上层且不被裁剪 */
+.guixu-root-container:fullscreen.mobile-view.show-character-panel .character-panel,
+.guixu-root-container:-webkit-full-screen.mobile-view.show-character-panel .character-panel {
+  display: block !important;
+  position: fixed !important;
+  z-index: 10050 !important;
+  left: 50% !important;
+  top: 50% !important;
+  transform: translate(-50%, -50%) !important;
+}
+.guixu-root-container:fullscreen.mobile-view.show-interaction-panel .interaction-panel,
+.guixu-root-container:-webkit-full-screen.mobile-view.show-interaction-panel .interaction-panel {
+  position: fixed !important;
+  z-index: 10050 !important;
+  left: 50% !important;
+  top: 50% !important;
+  transform: translate(-50%, -50%) !important;
+}

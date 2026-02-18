@@ -1,0 +1,1491 @@
+/* Phase 2 - features/cultivation.css
+   左侧角色面板（属性/修为/气运/装备格）与相关通用项
+   从 css/guixu.css 迁移，保持选择器不变以避免特异性变化 */
+
+/* 左侧角色面板容器 */
+.character-panel {
+  /* 背景透明度改为全局控制：不受主题影响，仅颜色随主题（--gx-mask-rgb） */
+  background: rgba(var(--gx-mask-rgb, 26, 26, 46), var(--gx-section-opacity, 0.5)) !important;
+  border-right: 1px solid #c9aa71;
+  padding: 10px;
+  position: relative; /* 使属性说明浮窗相对角色面板定位（从 guixu.css 精准迁移） */
+  overflow-y: auto;
+}
+
+/* 装备网格与槽位 */
+.equipment-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+}
+.equipment-slot {
+  aspect-ratio: 1;
+  /* 默认（金色）主题迁移：槽位背景透明度与模块一致，由设置中心滑块控制；颜色随 --gx-mask-rgb */
+  background: rgba(var(--gx-mask-rgb, 26, 26, 46), var(--gx-section-opacity, 0.5));
+  border: 1px dashed rgba(var(--gx-accent-rgb, 201, 170, 113), 0.5);
+  border-radius: 5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  color: #8b7355;
+  cursor: pointer;
+  /* 平滑动效：背景与描边光晕 */
+  transition: background 0.15s ease, box-shadow 0.15s ease;
+}
+.equipment-slot.equipped {
+  border-style: solid;
+  color: #e0dcd1;
+  font-size: 12px;
+}
+.equipment-slot:hover {
+  /* 默认（金色）主题迁移：在模块底色上叠加微金色柔光 + 轻描边 */
+  background:
+    linear-gradient(0deg, rgba(var(--gx-accent-rgb, 201, 170, 113), 0.12), rgba(var(--gx-accent-rgb, 201, 170, 113), 0.12)),
+    rgba(var(--gx-mask-rgb, 26, 26, 46), var(--gx-section-opacity, 0.5));
+  box-shadow: 0 0 0 2px rgba(var(--gx-accent-rgb, 201, 170, 113), 0.15);
+}
+
+/* 移动端高光兜底：在无 hover 的设备上用 :active/:focus-visible 模拟高光
+   说明：
+   - 仅影响移动端视图（.mobile-view），避免桌面端重复高光
+   - 不改变已装备物品的品阶文字颜色（由内联 tierStyle 控制） */
+@media (hover: none) {
+  .guixu-root-container.mobile-view .equipment-grid .equipment-slot:active,
+  .guixu-root-container.mobile-view .equipment-grid .equipment-slot:focus-visible {
+    /* 与 :hover 保持一致的柔和金色高光 */
+    background:
+      linear-gradient(0deg, rgba(201, 170, 113, 0.12), rgba(201, 170, 113, 0.12)),
+      rgba(26, 26, 46, var(--gx-section-opacity, 0.5));
+    box-shadow: 0 0 0 2px rgba(201, 170, 113, 0.15);
+    outline: none; /* 移除默认焦点虚线 */
+  }
+
+  /* 已装备槽同样提供触控高光；不覆盖文字色 */
+  .guixu-root-container.mobile-view .equipment-grid .equipment-slot.equipped:active,
+  .guixu-root-container.mobile-view .equipment-grid .equipment-slot.equipped:focus-visible {
+    background:
+      linear-gradient(0deg, rgba(201, 170, 113, 0.12), rgba(201, 170, 113, 0.12)),
+      rgba(26, 26, 46, var(--gx-section-opacity, 0.5));
+    box-shadow: 0 0 0 2px rgba(201, 170, 113, 0.15);
+    outline: none;
+  }
+}
+
+/* 属性列表与条目 */
+.attributes-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.attribute-item {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+}
+.attribute-name { color: #c9aa71; font-weight: 400; }
+.attribute-value {
+  color: #c9aa71;
+  font-weight: 700; /* 值使用金色加粗 */
+}
+
+/* 详情折叠区（用于说明/展开项） */
+.details-container { margin-bottom: 5px; }
+.details-container summary {
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  list-style: none; /* 隐藏默认箭头 */
+}
+.details-container summary::-webkit-details-marker { display: none; /* 隐藏默认箭头 */ }
+.details-content {
+  padding: 8px;
+  margin-top: 4px;
+  font-size: 11px;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 4px;
+  border-top: 1px solid rgba(201, 170, 113, 0.2);
+  color: #a09c91;
+}
+.details-content p { margin-bottom: 4px; }
+
+/* 进度条（用于修为详情等） */
+.details-progress-bar {
+  width: 100%;
+  height: 8px;
+  background: rgba(0, 0, 0, 0.5);
+  border-radius: 4px;
+  overflow: hidden;
+  border: 1px solid #8b7355;
+  margin-top: 8px;
+}
+.details-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #6a11cb, #2575fc);
+  border-radius: 3px;
+  transition: width 0.5s ease-in-out;
+}
+
+/* 移除：仅“进度条”高光（改为让属性卡片整体高光） */
+
+/* 属性/修为组合卡片 */
+#attr-cultivation-panel .section-title {
+  font-size: 13px;
+  color: #c9aa71;
+  text-align: center;
+  border-bottom: 1px solid rgba(201,170,113,0.3);
+  padding-bottom: 4px;
+  margin-bottom: 8px;
+}
+.attr-card {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+.attr-row {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 6px 6px;
+  /* 统一使用与“思维链折叠窗口”一致的淡浅金色描边 */
+  border: 1px solid rgba(201,170,113,0.35);
+  border-radius: 6px;
+  /* 子模块背景透明度统一受设置中心“模块背景透明度（左右面板）”控制 */
+  background: rgba(var(--gx-mask-rgb, 26, 26, 46), var(--gx-section-opacity, 0.5));
+  cursor: pointer;
+  outline: none;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+/* 桌面端与“移动端视图”一致的卡片高光：鼠标/触控靠近均高光 */
+.attr-row:hover,
+.attr-row:focus-visible,
+.guixu-root-container.mobile-view .attr-row:hover,
+.guixu-root-container.mobile-view .attr-row:active,
+.guixu-root-container.mobile-view .attr-row:focus-visible {
+  background: rgba(201,170,113,0.12);
+  border-color: rgba(201,170,113,0.55);
+  box-shadow:
+    0 0 0 2px rgba(var(--gx-accent-rgb, 201,170,113), 0.25),
+    0 0 10px rgba(var(--gx-accent-rgb, 201,170,113), 0.18);
+}
+.attr-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 12px;
+}
+/* 默认（金色）主题迁移：组合卡片标题采用金色（标签用常规字重） */
+.attr-name { color: #c9aa71; font-weight: 400; letter-spacing: .5px; }
+.attr-values { color: #c9aa71; font-weight: 700; font-variant-numeric: tabular-nums; font-feature-settings: "tnum"; }
+
+/* 通用属性条（金光灵流轨道风格） */
+.attr-bar {
+  height: 12px;
+  border-radius: 9999px; /* 圆角最大化，贴合晶流风格 */
+  background-color: rgba(10, 12, 24, 0.6); /* 深色半透明轨道 */
+  border: 1px solid rgba(250, 204, 21, 0.20); /* 纤细金色描边（amber-400） */
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.5); /* 内凹阴影，提升层次 */
+  overflow: hidden;
+  position: relative; /* 允许自身发光不被父元素裁剪 */
+  transition: background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease; /* 悬浮反馈更顺滑 */
+}
+/* 属性填充（金色通用流光） */
+.attr-bar .attr-bar-fill {
+  position: relative;       /* 为伪元素定位 */
+  overflow: hidden;         /* 隐藏纹理溢出 */
+  height: 100%;
+  width: var(--gx-fill-pct, 0%);
+  border-radius: 9999px;
+  background-image: linear-gradient(to right, #d97706, #facc15, #fef08a); /* amber-700 -> amber-400 -> amber-100 */
+  box-shadow: 0 0 6px 1px rgba(250, 204, 21, 0.5);
+  transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+/* 移除：仅“属性进度条 .attr-bar”高光（改为卡片整体高光） */
+/* 扫描线/能量栅格纹理 */
+.attr-bar .attr-bar-fill::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: linear-gradient(45deg,
+    rgba(255,255,255,0.07) 25%, transparent 25%,
+    transparent 50%, rgba(255,255,255,0.07) 50%,
+    rgba(255,255,255,0.07) 75%, transparent 75%, transparent 100%);
+  background-size: 8px 8px;
+  opacity: .8;
+}
+/* 流光 */
+.attr-bar .attr-bar-fill::after {
+  content: '';
+  position: absolute;
+  top: -50%; left: -50%;
+  width: 200%; height: 200%;
+  background: linear-gradient(100deg, transparent 30%, rgba(255,255,255,0.3) 50%, transparent 70%);
+  animation: gx-shimmer 2.5s infinite linear;
+}
+
+/* 修为进度条与瓶颈行 */
+.attr-cultivation-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 8px 6px;
+  /* 统一使用与“思维链折叠窗口”一致的淡浅金色描边 */
+  border: 1px solid rgba(201,170,113,0.35);
+  border-radius: 6px;
+  /* 子模块背景透明度统一受设置中心控制；颜色保持随主题变量 */
+  background: rgba(var(--gx-mask-rgb, 26, 26, 46), var(--gx-section-opacity, 0.5));
+}
+.attr-bar--cultivation .attr-bar-fill {
+  /* 修为进度采用“古金炼纹”渐变（参考设计稿金色进度） */
+  background-image: linear-gradient(to right, #C8B59A, #8E795E);
+  box-shadow: 0 0 9px 2px rgba(200, 181, 154, 0.45);
+}
+
+/* ========== 状态分色进度条（参考设计稿色系） ========== */
+
+/* 状态面板：生命/法力/体力/神识 */
+.attr-bar--life .attr-bar-fill {   /* red-800 -> red-600 */
+  background-image: linear-gradient(to right, #991B1B, #DC2626);
+  box-shadow: 0 0 8px 2px rgba(220,38,38,.45);
+}
+.attr-bar--mana .attr-bar-fill {   /* blue-800 -> blue-600 */
+  background-image: linear-gradient(to right, #1E40AF, #2563EB);
+  box-shadow: 0 0 8px 2px rgba(37,99,235,.45);
+}
+.attr-bar--stamina .attr-bar-fill { /* yellow-700 -> yellow-500 */
+  background-image: linear-gradient(to right, #B45309, #F59E0B);
+  box-shadow: 0 0 8px 2px rgba(245,158,11,.45);
+}
+.attr-bar--sense .attr-bar-fill {   /* purple-800 -> purple-600 */
+  background-image: linear-gradient(to right, #6B21A8, #9333EA);
+  box-shadow: 0 0 8px 2px rgba(147,51,234,.45);
+}
+.attr-bottleneck {
+  margin-top: 4px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+}
+/* 默认（金色）主题迁移：当前瓶颈标签与变量值均采用金色 */
+.attr-bottleneck-label { color: #c9aa71; font-weight: 400; }
+.attr-bottleneck-value { color: #c9aa71; font-weight: 700; }
+/* index.html 使用 id #cultivation-bottleneck 显示变量值，这里同步设置为金色 */
+#cultivation-bottleneck { color: #c9aa71; font-weight: 700; }
+
+/* 气运徽章（角色面板） */
+.qiyun-row {
+  display: flex;
+  justify-content: center;
+  margin: 4px 0 10px;
+}
+.qiyun-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  padding: 3px 20px;
+  min-width: 128px;
+  border-radius: 999px;
+  border: 1px solid rgba(201,170,113,0.55);
+  background: linear-gradient(180deg, rgba(201,170,113,0.28), rgba(201,170,113,0.12));
+  box-shadow: 0 0 10px rgba(218,165,32,0.25) inset, 0 2px 8px rgba(0,0,0,0.25);
+  color: #e8e3d6;
+}
+
+.qiyun-badge .label {
+  color: #c9aa71;
+  font-weight: 700;
+  font-size: 11px;
+  letter-spacing: .5px;
+}
+.qiyun-badge .value {
+  color: #ffd700;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum";
+  text-shadow: 0 0 6px rgba(255,215,0,0.45);
+}
+
+/* 覆盖：修行概览模块标签强制为金色常规字样（避免被其他规则误加粗） */
+#attr-cultivation-panel .attribute-item .attribute-name { font-weight: 400 !important; }
+#attr-cultivation-panel .attr-head .attr-name { font-weight: 400 !important; }
+
+/* 天赋灵根折叠区（默认主题）：键/描述=金色常规，值=金色加粗 */
+#talent-linggen-list .details-content { color: #c9aa71 !important; font-weight: 400 !important; }
+#talent-linggen-list .details-content p { color: #e0dcd1 !important; font-weight: 400 !important; }
+/* 支持渲染器输出的 gx-eff-* 键值对（键常规、值加粗、分隔符半透明金色） */
+#talent-linggen-list .details-content .gx-eff-key { color: #c9aa71 !important; font-weight: 400 !important; }
+#talent-linggen-list .details-content .gx-eff-sep { color: rgba(201,170,113,0.75) !important; margin: 0 2px; }
+#talent-linggen-list .details-content .gx-eff-val { color: #c9aa71 !important; font-weight: 700 !important; }
+
+/* 当前装备：未装备槽位的占位文字改为金色常规字样（不影响已装备的品阶渲染） */
+.equipment-grid .equipment-slot:not(.equipped) {
+  color: #c9aa71 !important;
+  font-weight: 400 !important;
+}
+
+/* 天赋灵根折叠区：固定加成/百分比加成/特殊词条小标题（默认紫金琉璃主题）
+   - 精准作用于左侧面板 #talent-linggen-list 内部，避免影响其他 tooltip 标题
+   - 新色采用“柔和金辉色”以贴合全局风格并增强层级区分
+   - 保留原文件 scrollbar-tooltips.css 的斜体风格，仅新增加粗 */
+#talent-linggen-list .details-content .tooltip-section-title {
+  color: #CCA348 !important;   /* 柔和金辉色：与 #c9aa71 相近但更明亮，提升可读性 */
+  font-weight: 700;            /* 小标题加粗，强化信息结构 */
+  font-style: italic;          /* 保留原有斜体，保持风格一致 */
+}
+
+/* ========== 新增：道号标签（修行概览） ========== */
+/* 位置：标题下方、气运上方；宽度撑满；鼠标靠近高光 */
+#attr-cultivation-panel .daohao-row {
+  display: flex;
+  justify-content: center;
+  margin: 6px 0 8px;
+}
+#attr-cultivation-panel .daohao-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;      /* 字体居中显示 */
+  gap: 8px;
+  padding: 6px 14px;
+  width: 100%;                  /* 撰满一行 */
+  border-radius: 8px;
+  /* 默认款式保留（兼容可能的非透明用法） */
+  border: 1px solid rgba(201,170,113,0.45);
+  background:
+    linear-gradient(180deg, rgba(201,170,113,0.12), rgba(201,170,113,0.08)),
+    rgba(var(--gx-mask-rgb, 26, 26, 46), var(--gx-section-opacity, 0.5));
+  color: #e8e3d6;
+  transition: background .15s ease, border-color .15s ease, box-shadow .15s ease, transform .08s ease;
+  cursor: pointer;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.25) inset;
+}
+/* 全透明道号样式：无边框、无底色；仅在悬浮时发光 */
+#attr-cultivation-panel .daohao-badge--transparent {
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none;
+  color: var(--gx-accent, #c9aa71);
+  padding: 6px 10px; /* 略收紧，避免占宽 */
+}
+#attr-cultivation-panel .daohao-badge--transparent:hover,
+#attr-cultivation-panel .daohao-badge--transparent:focus-visible {
+  background: linear-gradient(0deg, rgba(201,170,113,0.10), rgba(201,170,113,0.10));
+  box-shadow:
+    0 0 0 2px rgba(var(--gx-accent-rgb, 201,170,113), 0.24),
+    0 0 10px rgba(var(--gx-accent-rgb, 201,170,113), 0.18);
+}
+#attr-cultivation-panel .daohao-badge:hover,
+#attr-cultivation-panel .daohao-badge:focus-visible {
+  background:
+    linear-gradient(0deg, rgba(201,170,113,0.14), rgba(201,170,113,0.14)),
+    rgba(var(--gx-mask-rgb, 26, 26, 46), var(--gx-section-opacity, 0.5));
+  border-color: rgba(201,170,113,0.6);
+  box-shadow:
+    0 0 0 2px rgba(var(--gx-accent-rgb, 201,170,113), 0.22),
+    0 0 10px rgba(var(--gx-accent-rgb, 201,170,113), 0.18);
+}
+#attr-cultivation-panel .daohao-badge:active {
+  transform: translateY(0.5px);
+}
+#attr-cultivation-panel .daohao-label {
+  color: #c9aa71;          /* 金色常规字重 */
+  font-weight: 400;
+  letter-spacing: .5px;
+}
+#attr-cultivation-panel .daohao-value {
+  /* 默认字体风格（具体颜色由品阶/状态控制） */
+  font-weight: 700;
+  font-style: italic;
+}
+/* 道号为空时：以金色并带淡淡发光（仅空值态激活） */
+#attr-cultivation-panel .daohao-value.is-empty {
+  color: var(--gx-accent, #c9aa71) !important;
+  text-shadow: 0 0 6px rgba(var(--gx-accent-rgb, 201,170,113), 0.45),
+               0 0 12px rgba(var(--gx-accent-rgb, 201,170,113), 0.25);
+  letter-spacing: .5px;
+}
+
+/* ========== 调整：气运徽章宽度撑满（去除左右留白） ========== */
+#attr-cultivation-panel .qiyun-row { justify-content: center; }
+#attr-cultivation-panel .qiyun-badge {
+  width: 100%;        /* 撑满容器宽度 */
+  min-width: 0;       /* 取消最小宽度限制 */
+  box-sizing: border-box;
+}
+
+/* ========== 新增：道号面板（模态）卡片栅格 ========== */
+/* 桌面端：4列；移动端：2列；卡片圆角、描边/字体颜色随品阶渲染器（通过行内样式传入） */
+#titles-modal .titles-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+}
+.guixu-root-container.mobile-view #titles-modal .titles-grid {
+  grid-template-columns: repeat(2, 1fr);
+}
+#titles-modal .title-card {
+  display: flex;
+  gap: 0; /* 去除左右空隙，便于内容居中 */
+  align-items: center;
+  justify-content: center; /* 水平居中 */
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid rgba(201,170,113,0.35); /* 初始由内联覆盖为品阶色 */
+  background: rgba(var(--gx-mask-rgb, 26, 26, 46), var(--gx-section-opacity, 0.5));
+  cursor: pointer;
+  transition: background .15s ease, border-color .15s ease, box-shadow .15s ease, transform .08s ease;
+}
+#titles-modal .title-card:hover,
+#titles-modal .title-card:focus-visible {
+  background:
+    linear-gradient(0deg, rgba(201,170,113,0.12), rgba(201,170,113,0.12)),
+    rgba(var(--gx-mask-rgb, 26, 26, 46), var(--gx-section-opacity, 0.5));
+  border-color: rgba(201,170,113,0.6);
+  box-shadow:
+    0 0 0 2px rgba(var(--gx-accent-rgb, 201,170,113), 0.22),
+    0 0 10px rgba(var(--gx-accent-rgb, 201,170,113), 0.18);
+}
+#titles-modal .title-card.selected {
+  outline: none;
+  border-width: 2px;
+  box-shadow:
+    0 0 0 2px rgba(var(--gx-accent-rgb, 201,170,113), 0.28),
+    inset 0 0 12px rgba(var(--gx-accent-rgb, 201,170,113), 0.12);
+}
+#titles-modal .title-card-main {
+  display: flex;
+  flex-direction: column;
+  align-items: center;     /* 垂直居中内部文本 */
+  justify-content: center; /* 水平/纵向居中内容区域 */
+  text-align: center;
+  min-width: 0;
+}
+#titles-modal .title-name {
+  font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-align: center;      /* 文本居中 */
+}
+#titles-modal .title-desc {
+  margin-top: 2px;
+  font-size: 12px;
+  color: #a09c91;         /* 与默认主题说明文字一致 */
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+
+/* ========== 新增：修行概览选项卡与迷你条、网格 ========== */
+
+/* 头部迷你条：寿元/心境（与全局金色语义一致） */
+#attr-cultivation-panel .attr-header-bars {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 6px;
+  margin: 8px 0 10px;
+}
+#attr-cultivation-panel .attr-header-bars .mini-row {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+#attr-cultivation-panel .attr-bar--mini {
+  height: 8px;
+  border-radius: 9999px;
+  background-color: rgba(10, 12, 24, 0.6);
+  border: 1px solid rgba(250, 204, 21, 0.20);
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.5);
+  overflow: hidden;
+  position: relative;
+}
+#attr-cultivation-panel .attr-bar--mini .attr-bar-fill {
+  position: relative;
+  overflow: hidden;
+  height: 100%;
+  width: var(--gx-fill-pct, 0%);
+  border-radius: 9999px;
+  background-image: linear-gradient(to right, #d97706, #facc15, #fef08a);
+  box-shadow: 0 0 6px 1px rgba(250, 204, 21, 0.5);
+  transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+#attr-cultivation-panel .attr-bar--mini .attr-bar-fill::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: linear-gradient(45deg,
+    rgba(255,255,255,0.07) 25%, transparent 25%,
+    transparent 50%, rgba(255,255,255,0.07) 50%,
+    rgba(255,255,255,0.07) 75%, transparent 75%, transparent 100%);
+  background-size: 8px 8px;
+  opacity: .8;
+}
+#attr-cultivation-panel .attr-bar--mini .attr-bar-fill::after {
+  content: '';
+  position: absolute;
+  top: -50%; left: -50%;
+  width: 200%; height: 200%;
+  background: linear-gradient(100deg, transparent 30%, rgba(255,255,255,0.3) 50%, transparent 70%);
+  animation: gx-shimmer 2.5s infinite linear;
+}
+
+/* 选项卡导航（默认紫金琉璃配色） */
+#attr-cultivation-panel .tab-nav {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 8px 0;
+  border-bottom: 1px solid rgba(var(--gx-accent-rgb, 201,170,113), 0.22);
+}
+#attr-cultivation-panel .tab-button {
+  flex: 1 1 0;
+  padding: 6px 8px;
+  background: transparent;
+  border: none;
+  color: rgba(var(--gx-accent-rgb, 201,170,113), 0.65);
+  font-weight: 600;
+  letter-spacing: .5px;
+  cursor: pointer;
+  position: relative;
+  transition: color .15s ease;
+  display: flex;                 /* 防止内容挤压变形 */
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  white-space: nowrap;
+  min-width: 0;
+  font-size: 12px;
+}
+#attr-cultivation-panel .tab-button:hover,
+#attr-cultivation-panel .tab-button:focus-visible {
+  color: var(--gx-accent, #c9aa71);
+  outline: none;
+}
+#attr-cultivation-panel .tab-button.active {
+  color: var(--gx-accent, #c9aa71);
+}
+#attr-cultivation-panel .tab-button.active::after {
+  content: '';
+  position: absolute;
+  left: 20%;
+  bottom: -1px;
+  width: 60%;
+  height: 2px;
+  background: rgba(var(--gx-accent-rgb, 201,170,113), 0.65);
+  border-radius: 999px;
+}
+#attr-cultivation-panel .tab-panels { margin-top: 8px; }
+
+/* 选项卡图标与布局微调（防止窄宽度下图标挤压变形） */
+#attr-cultivation-panel .tab-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;               /* 使用 gap 而非 margin-right，避免挤压换行 */
+  white-space: nowrap;    /* 禁止换行，保持图标与文字同一行 */
+  font-size: 12px;        /* 略微收紧字号，腾出宽度 */
+  min-width: 0;           /* 允许在 flex 容器中收缩但不溢出 */
+}
+#attr-cultivation-panel .tab-button i {
+  flex: 0 0 auto;         /* 不参与拉伸 */
+  width: 1.05em;          /* 固定可视宽度，避免字体挤压变形 */
+  display: inline-block;
+  text-align: center;
+  font-size: 1em;         /* 与文本同等字号比例 */
+  line-height: 1;
+  margin: 0;              /* 交由 gap 控制间距 */
+}
+
+/* 属性网格（根基/核心） */
+#attr-cultivation-panel .attr-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px 12px;
+}
+#attr-cultivation-panel .attr-grid .kv {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 4px 2px;
+  border-bottom: 1px solid rgba(var(--gx-accent-rgb, 201,170,113), 0.18);
+  min-width: 0; /* 关键：允许内部子项计算可用宽度以启用省略号 */
+}
+#attr-cultivation-panel .attr-grid .kv .attribute-name {
+  font-weight: 400;
+  white-space: nowrap;          /* 禁止换行，防止长标签折行 */
+  overflow: hidden;             /* 超出裁剪 */
+  text-overflow: ellipsis;      /* 超出以省略号显示 */
+  max-width: 68%;               /* 保证右侧数值不被挤压 */
+  flex: 1 1 auto;               /* 参与收缩 */
+}
+#attr-cultivation-panel .attr-grid .kv .attribute-value {
+  font-weight: 700;
+  white-space: nowrap;          /* 数值不换行 */
+  flex: 0 0 auto;               /* 固定内容宽度 */
+  min-width: max-content;       /* 确保数值完整呈现 */
+}
+
+/* 当最后一项为单独一条（总数为奇数）时，占满整行，消除旁侧空白 */
+#attr-cultivation-panel .attr-grid > .kv:nth-last-child(1):nth-child(odd) {
+  grid-column: 1 / -1;
+}
+
+/* 显式指定占满整行（例如：核心面板“暴击率/神识强度”） */
+#attr-cultivation-panel .attr-grid .kv.is-wide,
+#attr-cultivation-panel .attr-grid .kv[data-span="full"] {
+  grid-column: 1 / -1;
+}
+
+/* 占满整行时放宽标签宽度，确保标签名能正常显示 */
+#attr-cultivation-panel .attr-grid .kv.is-wide .attribute-name,
+#attr-cultivation-panel .attr-grid .kv[data-span="full"] .attribute-name {
+  max-width: 80%;
+}
+
+/* 窄屏兜底：极小宽度时改为单列，避免任何换行/拥挤 */
+@media (max-width: 380px) {
+  #attr-cultivation-panel .attr-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* 强制覆盖：迷你条（寿元/心境）使用各自配色，避免被通用 .attr-bar--mini 覆盖 */
+#attr-cultivation-panel .attr-bar--mini.attr-bar--lifespan .attr-bar-fill {
+  background-image: linear-gradient(to right, #047857, #10B981) !important;
+  box-shadow: 0 0 8px 2px rgba(16,185,129,.45) !important;
+}
+#attr-cultivation-panel .attr-bar--mini.attr-bar--mindset .attr-bar-fill {
+  background-image: linear-gradient(to right, #0369A1, #0EA5E9) !important;
+  box-shadow: 0 0 8px 2px rgba(14,165,233,.45) !important;
+}
+
+/* ================= 功法绝学面板（#gongfa-panel-modal） =================
+   目标：两段式布局（左：我的功法/我的神通；右：功法详情）
+   风格：沿用“紫金琉璃”主题变量，视觉与 save-load 面板一致
+   注意：仅在 #gongfa-panel-modal 作用域内生效，避免与其它面板冲突
+====================================================================== */
+
+/* 网格布局：左右两栏等高，自适应 */
+#gongfa-panel-modal .save-manager-grid {
+  display: grid;
+  grid-template-columns: 1fr 1.25fr; /* 左略窄，右略宽以容纳详情 */
+  grid-template-rows: 1fr;
+  gap: 14px;
+  align-items: stretch;
+  height: 100%;
+  min-height: 0;
+}
+
+/* 左侧面板容器 */
+#gongfa-panel-modal .save-list-pane {
+  background: var(--gx-surface-2);
+  border: 1px solid var(--gx-border);
+  border-radius: 8px;
+  padding: 12px;
+  backdrop-filter: var(--gx-background-blur);
+  -webkit-backdrop-filter: var(--gx-background-blur);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+}
+
+/* 顶部 Tabs 与标题 */
+#gongfa-panel-modal .save-list-title {
+  font-size: 14px;
+  color: var(--gx-accent);
+  margin: 6px 0 8px;
+}
+#gongfa-panel-modal .gf-tabs {
+  margin-bottom: 8px;
+  display: grid;                     /* 一行两列铺满 */
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+#gongfa-panel-modal .gf-tabs .gx-tab {
+  width: 100%;                       /* 铺满单元格 */
+  min-width: 0;
+  flex: 1 1 0 !important;            /* 覆盖全局，允许充满 */
+  border-radius: 8px;                /* 与列表卡片圆角统一 */
+}
+
+/* 左侧两个列表区域（各自滚动） */
+#gongfa-panel-modal .save-list-section {
+  overflow-y: auto;
+  flex: 1 1 0;
+  min-height: 0;
+  padding-right: 4px;
+}
+
+/* 右侧详情面板 */
+#gongfa-panel-modal .save-detail-pane {
+  background: var(--gx-surface-1);
+  border: 1px solid var(--gx-border);
+  border-radius: 8px;
+  padding: 14px;
+  backdrop-filter: var(--gx-background-blur);
+  -webkit-backdrop-filter: var(--gx-background-blur);
+  overflow: auto;
+  height: 100%;
+  min-height: 0;
+}
+
+/* 列表卡片（功法/神通）
+   背景改为与“当前状态面板-状态卡片”一致的通用底色（--gx-surface-2），保持全局统一 */
+#gongfa-panel-modal .save-item {
+  background: var(--gx-surface-2, rgba(26,26,46,0.48));
+  border: 1px solid var(--gx-border, rgba(var(--gx-accent-rgb, 201,170,113), 0.35));
+  border-radius: 8px;
+  padding: 10px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  transition: background .15s ease, border-color .15s ease, box-shadow .15s ease;
+  cursor: pointer;
+  position: relative;   /* 允许选中时内层高光覆盖 */
+  overflow: hidden;     /* 防止高光外溢 */
+}
+#gongfa-panel-modal .save-item + .save-item { margin-top: 10px; }
+#gongfa-panel-modal .save-item:hover,
+#gongfa-panel-modal .save-item:focus-visible {
+  /* 背景轻微提亮；不改变边框颜色，也不添加外环描边 */
+  background: var(--gx-surface-3, rgba(26,26,46,0.36));
+  outline: none;
+}
+#gongfa-panel-modal .save-item.selected {
+  border-color: rgba(var(--gx-accent-rgb, 201,170,113), 0.75);
+  box-shadow:
+    0 0 0 2px rgba(var(--gx-accent-rgb, 201,170,113), 0.22),
+    inset 0 0 10px rgba(var(--gx-accent-rgb, 201,170,113), 0.10);
+}
+
+/* —— 品阶竖线（功法卡片）
+   说明：
+   - 颜色来源于行内 CSS 变量 --gf-grade-color / --gf-grade-glow
+   - 变量由全局渲染器（Helpers.getTierColorValue + getTierColorStyle）在 JS 中统一注入
+   - 避免在 CSS 内自建本地“品阶→颜色”映射表
+*/
+#gongfa-panel-modal .gongfa-item {
+  --gf-grade-color: rgba(var(--gx-accent-rgb), .35); /* JS 会覆盖为对应品阶色 */
+  --gf-grade-glow: rgba(var(--gx-accent-rgb), .18);  /* JS 会覆盖为对应品阶辉光 */
+  border-left: none; /* 改为使用伪元素绘制更纤细的品阶竖条 */
+}
+/* 品阶竖条（对齐“状态面板”3px 细条风格，并降低亮度/饱和度） */
+#gongfa-panel-modal .gongfa-item::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px; /* 更纤细 */
+  background: var(--gf-grade-color);
+  opacity: .82; /* 整体更低调：降低亮度 */
+  filter: saturate(.82) brightness(.9); /* 降低饱和度与亮度 */
+  border-radius: 0 6px 6px 0; /* 与卡片圆角衔接 */
+  pointer-events: none; /* 仅作装饰 */
+}
+
+/* 悬浮：整卡全局柔光，不改变边框色；左侧品阶竖线保持原色 */
+#gongfa-panel-modal .gongfa-item:hover,
+#gongfa-panel-modal .gongfa-item:focus-visible {
+  /* 仅整卡全局柔光；不改任何边框颜色 */
+  border-left-color: var(--gf-grade-color); /* 保持左侧竖线为品阶色 */
+  box-shadow: 0 0 14px rgba(var(--gx-accent-rgb), 0.22);
+}
+/* 选中：边框与辉光与品阶色一致 */
+#gongfa-panel-modal .gongfa-item.selected {
+  border-color: var(--gf-grade-color);
+  box-shadow:
+    0 0 16px var(--gf-grade-glow),
+    inset 0 0 10px rgba(0,0,0,0.15);
+}
+/* 选中时：功法卡片内“纯色柔光”叠层（不使用任何渐变） */
+#gongfa-panel-modal .gongfa-item.selected::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  border-radius: inherit;
+  background: rgba(var(--gx-accent-rgb), .08); /* 统一全局纯色柔光 */
+  box-shadow: inset 0 0 10px rgba(0,0,0,0.12); /* 轻内阴影提层次（非渐变） */
+}
+
+/* —— 神通卡片：类型彩色竖线 + 高光 —— */
+#gongfa-panel-modal .st-item {
+  --st-type-color: rgba(var(--gx-accent-rgb), .35);
+  --st-type-glow: rgba(var(--gx-accent-rgb), .18);
+  border-left: none; /* 改为伪元素实现纤细竖条 */
+  position: relative; /* 兜底：确保伪元素绝对定位可用 */
+}
+/* 类型竖条（3px 细条，低饱和度/低亮度） */
+#gongfa-panel-modal .st-item::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background: var(--st-type-color);
+  opacity: .82;
+  filter: saturate(.85) brightness(.92);
+  border-radius: 0 6px 6px 0;
+  pointer-events: none;
+}
+#gongfa-panel-modal .st-item[data-st-type="攻击"] { --st-type-color: #dc2626; --st-type-glow: rgba(220,38,38,.45); }
+#gongfa-panel-modal .st-item[data-st-type="防御"] { --st-type-color: #2563eb; --st-type-glow: rgba(37,99,235,.45); }
+#gongfa-panel-modal .st-item[data-st-type="辅助"] { --st-type-color: #10b981; --st-type-glow: rgba(16,185,129,.45); }
+#gongfa-panel-modal .st-item[data-st-type="遁术"] { --st-type-color: #9333ea; --st-type-glow: rgba(147,51,234,.45); }
+/* 悬浮：整卡全局柔光，不改变边框色；左侧类型竖线保持原色 */
+#gongfa-panel-modal .st-item:hover,
+#gongfa-panel-modal .st-item:focus-visible {
+  /* 仅整卡全局柔光；不改任何边框颜色 */
+  border-left-color: var(--st-type-color);   /* 保持左侧竖线为类型色 */
+  box-shadow: 0 0 14px rgba(var(--gx-accent-rgb), 0.22);
+}
+/* 选中：边框与辉光与类型色一致 */
+#gongfa-panel-modal .st-item.selected {
+  border-color: var(--st-type-color);
+  box-shadow:
+    0 0 16px var(--st-type-glow),
+    inset 0 0 10px rgba(0,0,0,0.15);
+}
+/* 选中时：神通卡片内“纯色柔光”叠层（不使用任何渐变） */
+#gongfa-panel-modal .st-item.selected::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  border-radius: inherit;
+  background: rgba(var(--gx-accent-rgb), .08); /* 统一全局纯色柔光 */
+  box-shadow: inset 0 0 10px rgba(0,0,0,0.12); /* 轻内阴影提层次（非渐变） */
+}
+
+/* —— 右栏头部信息卡：取消粗竖线，仅保留轻微阴影 —— */
+#gongfa-panel-modal .gf-detail-header {
+  position: relative;
+  /* 移除粗竖线效果 */
+  border-left: none;
+  box-shadow: 0 0 18px rgba(var(--gx-accent-rgb), .12);
+}
+#gongfa-panel-modal .gf-detail-title { text-align: left; }
+
+/* 右栏：分节头/尾布局（对齐示意图） */
+#gongfa-panel-modal .gf-section-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+/* 去掉进度卡标题下的细分割线，使其与右侧层级对齐紧凑 */
+#gongfa-panel-modal .gf-section-head .section-title {
+  border-bottom: 0;
+  padding-bottom: 0;
+  margin-bottom: 0;
+}
+#gongfa-panel-modal .gf-section-meta {
+  color: #a09c91;
+  font-size: 12px;
+  white-space: nowrap;
+}
+#gongfa-panel-modal .gf-progress .details-progress-bar {
+  margin-top: 6px;
+  margin-bottom: 6px;
+}
+#gongfa-panel-modal .gf-section-foot {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+}
+/* 详情说明文案左对齐、提升可读性 */
+#gongfa-panel-modal .gf-detail-meta .item-description {
+  color: #e0dcd1;
+  line-height: 1.6;
+  text-align: left;
+}
+
+/* —— 层级效果条目：解锁态强调竖线，未解锁降噪 —— */
+#gongfa-panel-modal details.gf-level {
+  border-left: 3px solid rgba(var(--gx-accent-rgb), 0.35);
+  padding-left: 8px;
+  border-radius: 6px;
+  background: rgba(0,0,0,0.18);
+}
+#gongfa-panel-modal details.gf-level[data-unlocked="true"] {
+  border-left-color: rgba(var(--gx-accent-rgb), 0.60);
+}
+#gongfa-panel-modal details.gf-level[data-unlocked="false"] summary .attribute-value {
+  opacity: .75;
+}
+
+/* 文字解绑与详情头部/徽章定位等新增样式 */
+#gongfa-panel-modal .gf-grade-tag { color: #e8e3d6; font-weight: 600; }
+
+/* 详情头部：标题在左，徽章固定在右上角；去除标题下边线 */
+#gongfa-panel-modal .gf-detail-headline {
+  position: relative;
+  display: flex;
+  align-items: center;
+  min-height: 24px;
+}
+#gongfa-panel-modal .gf-detail-title {
+  text-align: left;
+  border-bottom: 0; /* 移除分割线 */
+  padding-bottom: 0;
+  margin-bottom: 2px;
+  font-size: 18px;   /* 标题字号更大 */
+  font-weight: 700;  /* 强化权重，确保大于描述 */
+}
+#gongfa-panel-modal .gf-detail-badges {
+  position: absolute;
+  top: 0;
+  right: 0;
+  display: inline-flex;
+  gap: 6px;
+}
+#gongfa-panel-modal .gf-detail-subline {
+  color: #a09c91;
+  font-size: 12px;
+}
+#gongfa-panel-modal .gf-detail-desc {
+  color: #e0dcd1;
+  line-height: 1.6;
+  margin-top: 6px;
+  text-align: left;
+  font-size: 13px;  /* 描述字号略小于标题 */
+}
+
+/* 修炼进度字体层级：层级数更大、点数更小 */
+#gongfa-panel-modal .gf-progress .gf-section-meta {
+  color: #e0dcd1;
+  font-size: 14px;
+  font-weight: 700;
+}
+#gongfa-panel-modal .gf-progress .gf-section-foot .attribute-name {
+  font-size: 11px;
+  color: #a09c91;
+}
+#gongfa-panel-modal .gf-progress .gf-section-foot .attribute-value {
+  font-size: 12px;
+  font-weight: 700;
+}
+
+/* 层级效果标题居左 */
+#gongfa-panel-modal .gf-level-section .section-title { text-align: left; }
+
+/* 卡片头部：名称 + 右侧类型/层级 */
+#gongfa-panel-modal .save-item-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+#gongfa-panel-modal .save-item .save-name {
+  font-weight: 700;
+  color: #e8e3d6;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+#gongfa-panel-modal .save-item .save-date {
+  font-size: 11px;
+  color: #8b7355;
+  white-space: nowrap;
+}
+
+/* 副标题/标记（品阶/主修/辅修） */
+#gongfa-panel-modal .save-item .save-item-sub {
+  font-size: 11px;
+  color: #a09c91;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* 左侧卡片中的进度条（与默认主题一致） */
+#gongfa-panel-modal .save-progress {
+  width: 100%;
+  height: 6px;
+  background: rgba(0,0,0,0.5);
+  border-radius: 4px;
+  overflow: hidden;
+  border: 1px solid #8b7355;
+}
+#gongfa-panel-modal .save-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #C8B59A, #8E795E);
+  border-radius: 3px;
+  transition: width .5s ease-in-out;
+  box-shadow: 0 0 6px 1px rgba(200, 181, 154, 0.45);
+}
+
+/* 神通卡片与功法卡片保持一致，类型徽章（参考示例色系） */
+#gongfa-panel-modal .st-type-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2px 10px;
+  font-size: 11px;
+  line-height: 1;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  color: #e8e3d6;
+  background: rgba(0,0,0,0.25);
+}
+/* 攻击：红 */
+#gongfa-panel-modal .st-type--攻击 {
+  color: #fecaca;
+  background: linear-gradient(180deg, rgba(220,38,38,0.16), rgba(153,27,27,0.16));
+  border-color: rgba(220,38,38,0.45);
+}
+/* 防御：蓝 */
+#gongfa-panel-modal .st-type--防御 {
+  color: #c7d2fe;
+  background: linear-gradient(180deg, rgba(37,99,235,0.16), rgba(30,58,138,0.16));
+  border-color: rgba(37,99,235,0.45);
+}
+/* 辅助：绿 */
+#gongfa-panel-modal .st-type--辅助 {
+  color: #bbf7d0;
+  background: linear-gradient(180deg, rgba(16,185,129,0.16), rgba(4,120,87,0.16));
+  border-color: rgba(16,185,129,0.45);
+}
+/* 遁术：紫 */
+#gongfa-panel-modal .st-type--遁术 {
+  color: #e9d5ff;
+  background: linear-gradient(180deg, rgba(147,51,234,0.16), rgba(107,33,168,0.16));
+  border-color: rgba(147,51,234,0.45);
+}
+
+/* 右侧详情占位提示 */
+#gongfa-panel-modal .save-detail-placeholder {
+  width: 100%;
+  height: 100%;
+  min-height: 180px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: #8b7355;
+  text-align: center;
+  gap: 6px;
+}
+#gongfa-panel-modal .save-detail-placeholder .placeholder-icon { font-size: 28px; opacity: .9; }
+#gongfa-panel-modal .save-detail-placeholder .placeholder-title { font-size: 15px; color: #e0dcd1; }
+#gongfa-panel-modal .save-detail-placeholder .placeholder-sub { font-size: 12px; color: #a09c91; }
+
+/* 右栏修炼进度条使用与左侧一致的古金渐变 */
+#gongfa-panel-modal .details-progress-fill {
+  background: linear-gradient(90deg, #C8B59A, #8E795E) !important;
+  box-shadow: 0 0 6px 1px rgba(200, 181, 154, 0.45) !important;
+}
+
+/* ————— 神通浮窗（参考示意图） ————— */
+#gongfa-panel-modal .st-modal {
+  background: var(--gx-surface-1);
+  /* 按需求：移除中间容器外边框，仅保留圆角与内边距（不再额外描边） */
+  border: none;
+  border-radius: 10px;
+  padding: 14px;
+}
+#gongfa-panel-modal .st-modal-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+#gongfa-panel-modal .st-modal-title {
+  color: var(--gx-accent);
+  font-size: 18px;
+  font-weight: 700;
+}
+#gongfa-panel-modal .st-modal-desc {
+  color: #e0dcd1;
+  font-size: 13px;
+  margin-top: 8px;
+  line-height: 1.6;
+  text-align: left; /* 描述文本强制左对齐，换行从左边开始渲染 */
+}
+#gongfa-panel-modal .st-divider {
+  width: 100%;
+  height: 1px;
+  background: rgba(var(--gx-accent-rgb), 0.25);
+  margin: 10px 0;
+}
+#gongfa-panel-modal .st-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: flex-start;
+  gap: 8px;
+  margin: 6px 0;
+}
+#gongfa-panel-modal .st-key { color: var(--gx-accent); font-weight: 700; font-size: 12px; }
+#gongfa-panel-modal .st-val { color: #e0dcd1; font-size: 12px; }
+
+#gongfa-panel-modal .st-section { margin-top: 8px; }
+#gongfa-panel-modal .st-section-title {
+  color: var(--gx-accent);
+  font-weight: 700;
+  font-size: 13px;
+  margin-bottom: 6px;
+}
+#gongfa-panel-modal .st-cost { color: #e0dcd1; font-size: 12px; }
+#gongfa-panel-modal .st-cost .st-cost-item b { color: var(--gx-accent); font-weight: 700; }
+/* 参考示意图：特殊效果为左右两列对齐（左=标签，右=值），统一金色体系 */
+#gongfa-panel-modal .st-effects .attribute-item {
+  /* 两列：左固定宽度，右自适应；支持长文本自动换行 */
+  display: grid;
+  grid-template-columns: 96px 1fr;
+  align-items: start;
+  column-gap: 10px;
+  row-gap: 2px;
+  padding: 2px 0;
+}
+#gongfa-panel-modal .st-effects .attribute-name {
+  /* 标签：金色常规字重（等同全局 .guixu-gold-label） */
+  color: var(--gx-accent);
+  font-weight: 400;
+}
+#gongfa-panel-modal .st-effects .attribute-value {
+  /* 值：金色加重字重（等同全局 .guixu-gold-value） */
+  color: var(--gx-accent);
+  font-weight: 700;
+  word-break: break-word;
+}
+
+/* 层级效果内由渲染器输出的“固定加成/百分比加成”：统一金色键值样式 */
+#gongfa-panel-modal .gx-eff-key { color: var(--gx-accent); font-weight: 400; }
+#gongfa-panel-modal .gx-eff-val { color: var(--gx-accent); font-weight: 700; }
+
+/* 解锁神通的名称列表：金色加重（仅布局，不改配色方案） */
+#gongfa-panel-modal .st-unlock-list { color: var(--gx-accent); font-weight: 700; }
+
+/* 特殊效果容器改为纵向列表且左对齐，词条使用“名：描述” */
+#gongfa-panel-modal .st-effects {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  text-align: left;
+}
+/* 单条词条为块级，换行后从左侧开始，不产生悬挂缩进 */
+#gongfa-panel-modal .st-effect-line {
+  width: 100%;
+  display: block;
+  line-height: 1.6;
+  word-break: break-word;
+  white-space: normal;
+}
+#gongfa-panel-modal .st-effect-name { color: var(--gx-accent); font-weight: 400; }
+#gongfa-panel-modal .st-colon { color: rgba(var(--gx-accent-rgb), 0.85); margin: 0 2px; }
+#gongfa-panel-modal .st-effect-text { color: var(--gx-accent); font-weight: 700; }
+/* 动作区间距保留 */
+#gongfa-panel-modal .st-actions { margin-top: 12px; }
+
+/* —— 移动端：列表/详情二级标签（桌面端隐藏） —— */
+#gongfa-panel-modal .gf-mobile-tabs { display: none; }
+.guixu-root-container.mobile-view #gongfa-panel-modal .gf-mobile-tabs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;   /* 一行两列，铺满整行 */
+  gap: 8px;
+  margin-bottom: 8px;
+}
+.guixu-root-container.mobile-view #gongfa-panel-modal .gf-mobile-tabs .gx-tab {
+  width: 100%;
+  min-width: 0;
+  flex: 1 1 0 !important;
+  border-radius: 8px;
+}
+
+/* 移动端：上下布局、两列表给出可滚动高度（不影响桌面端） */
+.guixu-root-container.mobile-view #gongfa-panel-modal .save-manager-grid {
+  grid-template-columns: 1fr;
+  grid-template-rows: auto auto;
+  height: auto;
+  align-items: start;
+}
+
+/* 移动端：通过 data-mobile-tab 控制显示“列表/详情” */
+.guixu-root-container.mobile-view #gongfa-panel-modal .gongfa-grid[data-mobile-tab="list"] .save-list-pane { display: block; }
+.guixu-root-container.mobile-view #gongfa-panel-modal .gongfa-grid[data-mobile-tab="list"] .save-detail-pane { display: none; }
+.guixu-root-container.mobile-view #gongfa-panel-modal .gongfa-grid[data-mobile-tab="detail"] .save-list-pane { display: none; }
+.guixu-root-container.mobile-view #gongfa-panel-modal .gongfa-grid[data-mobile-tab="detail"] .save-detail-pane { display: block; }
+
+/* 移动端：列表区滚动高度控制 */
+.guixu-root-container.mobile-view #gongfa-panel-modal .save-list-pane {
+  height: auto;
+  min-height: 1px;
+  overflow: visible;
+}
+.guixu-root-container.mobile-view #gongfa-panel-modal .save-list-section {
+  max-height: 36vh;
+  overflow-y: auto;
+  flex: unset;
+}
+
+/* ========== 神通浮窗（#gongfa-shentong-modal）视觉补全 ========== */
+/* 类型徽章（浮窗专用） */
+#gongfa-shentong-modal .st-type-badge {
+  display: inline-flex;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2px 10px;
+  font-size: 11px;
+  line-height: 1;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  color: #e8e3d6;
+  background: rgba(0,0,0,0.25);
+}
+#gongfa-shentong-modal .st-type--攻击 {
+  color: #fecaca;
+  background: linear-gradient(180deg, rgba(220,38,38,0.16), rgba(153,27,27,0.16));
+  border-color: rgba(220,38,38,0.45);
+}
+#gongfa-shentong-modal .st-type--防御 {
+  color: #c7d2fe;
+  background: linear-gradient(180deg, rgba(37,99,235,0.16), rgba(30,58,138,0.16));
+  border-color: rgba(37,99,235,0.45);
+}
+#gongfa-shentong-modal .st-type--辅助 {
+  color: #bbf7d0;
+  background: linear-gradient(180deg, rgba(16,185,129,0.16), rgba(4,120,87,0.16));
+  border-color: rgba(16,185,129,0.45);
+}
+#gongfa-shentong-modal .st-type--遁术 {
+  color: #e9d5ff;
+  background: linear-gradient(180deg, rgba(147,51,234,0.16), rgba(107,33,168,0.16));
+  border-color: rgba(147,51,234,0.45);
+}
+
+/* 浮窗卡片结构与面板内保持一致 */
+#gongfa-shentong-modal .st-modal {
+  background: var(--gx-surface-1);
+  /* 按需求：移除中间容器外边框 */
+  border: none;
+  border-radius: 10px;
+  padding: 14px;
+}
+#gongfa-shentong-modal .st-modal-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+#gongfa-shentong-modal .st-modal-title {
+  color: var(--gx-accent);
+  font-size: 18px;
+  font-weight: 700;
+}
+#gongfa-shentong-modal .st-modal-desc {
+  color: #e0dcd1;
+  font-size: 13px;
+  margin-top: 8px;
+  line-height: 1.6;
+  text-align: left; /* 浮窗中的描述文本同样左对齐 */
+}
+#gongfa-shentong-modal .st-divider {
+  width: 100%;
+  height: 1px;
+  background: rgba(var(--gx-accent-rgb), 0.25);
+  margin: 10px 0;
+}
+#gongfa-shentong-modal .st-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: flex-start;
+  gap: 8px;
+  margin: 6px 0;
+}
+#gongfa-shentong-modal .st-key { color: var(--gx-accent); font-weight: 700; font-size: 12px; }
+#gongfa-shentong-modal .st-val { color: #e0dcd1; font-size: 12px; }
+#gongfa-shentong-modal .st-section { margin-top: 8px; }
+#gongfa-shentong-modal .st-section-title {
+  color: var(--gx-accent);
+  font-weight: 700;
+  font-size: 13px;
+  margin-bottom: 6px;
+}
+/* 特殊效果小标题：放大并使用 #CCA348 */
+#gongfa-shentong-modal .st-section-title--effects {
+  font-size: 15px;
+  color: #CCA348;
+}
+#gongfa-shentong-modal .st-cost { color: #e0dcd1; font-size: 12px; }
+#gongfa-shentong-modal .st-cost .st-cost-item b { color: var(--gx-accent); font-weight: 700; }
+/* 浮窗内的“特殊效果”同样采用两列对齐与金色键值体系 */
+#gongfa-shentong-modal .st-effects .attribute-item {
+  display: grid;
+  grid-template-columns: 96px 1fr;
+  align-items: start;
+  column-gap: 10px;
+  row-gap: 2px;
+  padding: 2px 0;
+}
+#gongfa-shentong-modal .st-effects .attribute-name { color: var(--gx-accent); font-weight: 400; }
+#gongfa-shentong-modal .st-effects .attribute-value { color: var(--gx-accent); font-weight: 700; word-break: break-word; }
+/* 浮窗内“特殊效果”采用与面板一致的左对齐块级行样式 */
+#gongfa-shentong-modal .st-effects {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  text-align: left;
+}
+#gongfa-shentong-modal .st-effect-line {
+  width: 100%;
+  display: block;
+  line-height: 1.6;
+  word-break: break-word;
+  white-space: normal;
+}
+#gongfa-shentong-modal .st-effect-name { color: var(--gx-accent); font-weight: 400; }
+#gongfa-shentong-modal .st-colon { color: rgba(var(--gx-accent-rgb), 0.85); margin: 0 2px; }
+#gongfa-shentong-modal .st-effect-text { color: var(--gx-accent); font-weight: 700; }
+
+#gongfa-shentong-modal .st-actions { margin-top: 12px; }
+
+/* ========== 新增：神通浮窗头部 Font Awesome 图标与布局（紫金琉璃配色） ========== */
+/* 说明：
+   - 仅作用于 #gongfa-shentong-modal，避免影响其它模态
+   - 使用全局变量 --gx-accent / --gx-accent-rgb，保持默认紫金琉璃主题一致
+   - 不使用内联样式，遵循全局样式规范
+*/
+#gongfa-shentong-modal .confirm-modal-content {
+  /* 浮窗宽度略放大以适配标题图标与内容分组 */
+  max-width: 460px;
+  padding: 20px;
+}
+#gongfa-shentong-modal .modal-header .modal-title {
+  /* 顶部标题：图标 + 名称，强制左对齐，覆盖“未启用导航时绝对居中”的全局规则 */
+  position: static !important;
+  left: auto !important;
+  top: auto !important;
+  transform: none !important;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--gx-accent);
+  font-weight: 700;
+  text-align: left;
+}
+/* 标题左侧容器与类型徽章（位于标题正下方，左对齐） */
+#gongfa-shentong-modal .st-head-left {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+}
+#gongfa-shentong-modal .st-type-below {
+  margin-top: 2px;
+}
+/* 小标题统一左对齐（如“特殊效果”） */
+#gongfa-shentong-modal .st-section-title {
+  text-align: left;
+}
+#gongfa-shentong-modal .st-modal .st-modal-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+#gongfa-shentong-modal .st-type-icon {
+  /* 类型图标底牌：与类型徽章同色系、微圆角方形，贴合参考图 */
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0,0,0,0.25);
+  border: 1px solid transparent;
+  line-height: 1;
+  font-size: 16px;
+}
+
+/* 类型配色（与 .st-type-badge 保持一致） */
+#gongfa-shentong-modal .st-type-icon.st-type--攻击 {
+  color: #fecaca;
+  background: linear-gradient(180deg, rgba(220,38,38,0.16), rgba(153,27,27,0.16));
+  border-color: rgba(220,38,38,0.45);
+}
+#gongfa-shentong-modal .st-type-icon.st-type--防御 {
+  color: #c7d2fe;
+  background: linear-gradient(180deg, rgba(37,99,235,0.16), rgba(30,58,138,0.16));
+  border-color: rgba(37,99,235,0.45);
+}
+#gongfa-shentong-modal .st-type-icon.st-type--辅助 {
+  color: #bbf7d0;
+  background: linear-gradient(180deg, rgba(16,185,129,0.16), rgba(4,120,87,0.16));
+  border-color: rgba(16,185,129,0.45);
+}
+#gongfa-shentong-modal .st-type-icon.st-type--遁术 {
+  color: #e9d5ff;
+  background: linear-gradient(180deg, rgba(147,51,234,0.16), rgba(107,33,168,0.16));
+  border-color: rgba(147,51,234,0.45);
+}
+
+/* —— 神通浮窗头部与主体布局微调（参考示意图，但采用全局紫金琉璃变量） —— */
+#gongfa-shentong-modal .modal-header {
+  /* 需求：移除顶部栏与正文之间的横向分割线 */
+  border-bottom: none;
+  padding-bottom: 6px;  /* 保留少量间距即可 */
+  margin-bottom: 6px;
+}
+#gongfa-shentong-modal .modal-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--gx-accent);
+}
+#gongfa-shentong-modal .modal-body {
+  padding-top: 6px;
+}
+
+/* 正文顶部信息行：图标 + 标题列（标题在上、类型徽章在下） */
+#gongfa-shentong-modal .st-topline {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 6px;
+}
+#gongfa-shentong-modal .st-title-wrap {
+  display: flex;
+  flex-direction: column;      /* 名称在上，类型徽章在下 */
+  align-items: flex-start;
+  gap: 4px;
+}
+#gongfa-shentong-modal .st-modal-title-text {
+  color: var(--gx-accent);
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 1.2;
+}
+#gongfa-shentong-modal .st-title-wrap .st-type-badge {
+  margin-left: 0;              /* 与标题同一列左对齐 */
+}
+
+/* 按约定：神通对象仅渲染 special_effects；移除 st-bonuses 相关样式 */
+
+/* 入场/离场动效：淡入+微缩放，保持与全局毛玻璃风格协调 */
+#gongfa-shentong-modal.st-enter { animation: gx-st-overlay-in 200ms ease forwards; }
+#gongfa-shentong-modal .confirm-modal-content.st-enter { animation: gx-st-content-in 220ms cubic-bezier(0.4, 0, 0.2, 1) forwards; }
+#gongfa-shentong-modal.st-leave { animation: gx-st-overlay-out 180ms ease forwards; }
+#gongfa-shentong-modal .confirm-modal-content.st-leave { animation: gx-st-content-out 180ms cubic-bezier(0.4, 0, 0.2, 1) forwards; }
+
+@keyframes gx-st-overlay-in { from { opacity: 0; } to { opacity: 1; } }
+@keyframes gx-st-overlay-out { from { opacity: 1; } to { opacity: 0; } }
+@keyframes gx-st-content-in { from { transform: scale(0.96); opacity: 0.95; } to { transform: scale(1); opacity: 1; } }
+@keyframes gx-st-content-out { from { transform: scale(1); opacity: 1; } to { transform: scale(0.96); opacity: 0.95; } }
+
+/* 轻量滚动条微样式（作用域仅限该浮窗，不覆盖全局工具条规则） */
+#gongfa-shentong-modal .modal-body::-webkit-scrollbar { width: 6px; }
+#gongfa-shentong-modal .modal-body::-webkit-scrollbar-track { background: transparent; }
+#gongfa-shentong-modal .modal-body::-webkit-scrollbar-thumb {
+  background: rgba(var(--gx-accent-rgb, 201,170,113), 0.35);
+  border-radius: 20px;
+}

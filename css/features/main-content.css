@@ -1,0 +1,23 @@
+/* Phase 2 - features/main-content.css
+   中央内容区（.main-content）容器样式
+   来源：从 css/guixu.css 迁移，保持原选择器与声明，避免特异性变化
+   主题化增强：
+   - 默认回退：透明黑
+   - 主题开启：使用 --gx-surface-1 并叠加轻微强调色径向渐变
+*/
+
+/* --- 中央内容区 --- */
+.main-content {
+  padding: 20px;
+  overflow-y: auto;
+  /* 修复：默认（金色）主题下，中央正文区域背景透明度跟随“背景遮罩透明度（--guixu-bg-mask）”滑块 */
+  /* 说明：主题已在下方强制 transparent，此处仅影响默认主题 */
+  background: rgba(var(--gx-mask-rgb, 26, 26, 46), var(--guixu-bg-mask, 0.7));
+  /* 轻微的质感提升（对移动端影响极低） */
+  backdrop-filter: saturate(115%) blur(0.5px);
+}
+
+/* 启用主题时：中央面板背景完全透明，交由全局背景透明遮罩（.guixu-root-container::before + --guixu-bg-mask）控制 */
+.guixu-root-container.theme-peony .main-content {
+  background: transparent !important;
+}

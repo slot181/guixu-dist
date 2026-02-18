@@ -1,0 +1,107 @@
+/* =========================================
+   - 实用工具：滚动条与工具提示
+   - 局部作用域的 WebKit 滚动条 (仅限容器)
+   - 工具提示界面：装备、属性、交易
+   - 保持选择器不变，以避免优先级漂移
+   ========================================= */
+
+/* -----------------------------
+   Tooltip: Equipment
+   ----------------------------- */
+#equipment-tooltip {
+  display: none;
+  position: absolute;
+  /* 跟随鼠标 */
+  background: rgba(15, 15, 35, 0.95);
+  border: 1px solid #c9aa71;
+  border-radius: 6px;
+  padding: 15px;
+  color: #e0dcd1;
+  font-size: 12px;
+  z-index: 1001;
+  box-sizing: border-box;           /* 避免内边距撑爆宽度 */
+  width: max-content;               /* 随内容自适应宽度 */
+  max-width: min(92vw, 360px);      /* 小屏防溢出，桌面限定 */
+  /* 新增：限制垂直尺寸 + 内部滚动，避免移动端长描述被模态裁切 */
+  /* 使用统一变量以便运行时按容器高度自适配（与 .modal-tooltip/.attr-tooltip 对齐） */
+  max-height: var(--tooltip-max-h, min(68vh, 440px));
+  overflow-y: auto;
+  white-space: normal;              /* 允许正常换行 */
+  word-break: break-word;           /* 打断长词/连续字符 */
+  overflow-wrap: anywhere;          /* 移动端激进断行 */
+  pointer-events: none;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+}
+
+/* Equipment tooltip shared blocks */
+.tooltip-title {
+  font-size: 16px;
+  font-weight: bold;
+  margin-bottom: 10px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid rgba(201, 170, 113, 0.4);
+}
+
+.tooltip-section {
+  margin-top: 10px;
+}
+
+.tooltip-section-title {
+  color: #CCA348;
+  font-weight: 700;
+  font-style: italic;
+  margin-bottom: 5px;
+}
+
+.tooltip-attributes p {
+  margin: 3px 0;
+}
+
+.tooltip-attributes strong {
+  color: #c9aa71;
+  margin-right: 5px;
+}
+
+/* -----------------------------
+   Tooltip: Trade (item details)
+   ----------------------------- */
+/* 交易面板物品详情浮窗已迁移至全局模态系统通用浮窗样式：
+   - 使用类名：.modal-tooltip.attr-tooltip
+   - 统一样式来源：css/features/modals.css
+   说明：移除 #trade-tooltip 的局部样式，避免与全局样式冲突与重复维护。 */
+
+/* -----------------------------
+   Tooltip: Attribute breakdown
+   ----------------------------- */
+/* 属性分解悬浮详情样式已抽取到全局模态系统：
+   - 路径：css/features/modals.css
+   - 选择器：.modal-tooltip / .attr-tooltip 以及相关内容块（.attr-tip-title 等）
+   此处移除重复定义，避免加载顺序造成主题漂移与维护困难。 */
+
+/* -----------------------------
+   Scoped Scrollbars (WebKit only)
+   Notes:
+   - Scoped to descendants of .guixu-root-container to avoid host page pollution
+   - Safe defaults; adjust palette via CSS variables in tokens if needed
+   ----------------------------- */
+.guixu-root-container ::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+.guixu-root-container ::-webkit-scrollbar-thumb {
+  background: rgba(201, 170, 113, 0.35);
+  border-radius: 6px;
+  border: 1px solid rgba(201, 170, 113, 0.25);
+}
+.guixu-root-container ::-webkit-scrollbar-thumb:hover {
+  background: rgba(201, 170, 113, 0.5);
+}
+.guixu-root-container ::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 6px;
+}
+.guixu-root-container ::-webkit-scrollbar-corner {
+  background: transparent;
+}

@@ -1,0 +1,80 @@
+/* Phase 2 - features/guixu-system.css
+   归墟系统模态（#guixu-system-modal）专属样式
+   从 css/guixu.css 迁移，保持选择器与声明一致，避免特异性变化
+*/
+
+/* --- 归墟系统模态框美化 --- */
+/* 此处不再需要特定样式，已由 css/features/modals.css 中的全局 .modal-content 样式统一处理 */
+
+#guixu-system-modal .attribute-item {
+  padding: 10px 4px;                 /* 增加垂直内边距 */
+  font-size: 13px;                   /* 放大字体 */
+  border-bottom: 1px solid rgba(201, 170, 113, 0.1);
+}
+
+#guixu-system-modal .attribute-item:last-child {
+  border-bottom: none;
+}
+
+/* 行：归墟充能（从内联 margin-top:15px 抽离） */
+#guixu-system-modal .charge-row {
+  margin-top: 15px;
+}
+
+/* 底部动作区（从内联 padding/居中/按钮宽度抽离） */
+#guixu-system-modal .guixu-system-actions {
+  padding: 20px 10px;
+  text-align: center;
+}
+#guixu-system-modal .guixu-system-actions .interaction-btn {
+  width: 80%;
+  padding: 12px;                     /* 与历史内联一致 */
+  font-size: 16px;                   /* 按钮字号放大 */
+}
+
+/* 归墟面板：充能进度条渲染与顶部栏一致（火焰灵流：#dc2626→#f97316→#fef08a） */
+#guixu-system-modal .details-progress-fill {
+  position: relative;
+  overflow: hidden; /* 限制流光不超出已填充宽度 */
+  background-image: linear-gradient(to right, #dc2626, #f97316, #fef08a) !important; /* 与 .guixu-fill 保持一致 */
+  box-shadow: 0 0 7px 1px rgba(249, 115, 22, 0.6);
+  border-radius: 3px;
+}
+/* 扫描线/能量栅格纹理（与顶部 .guixu-fill 一致） */
+#guixu-system-modal .details-progress-fill::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: linear-gradient(45deg,
+    rgba(255,255,255,0.07) 25%, transparent 25%,
+    transparent 50%, rgba(255,255,255,0.07) 50%,
+    rgba(255,255,255,0.07) 75%, transparent 75%, transparent 100%);
+  background-size: 8px 8px;
+  opacity: .8;
+  pointer-events: none;
+}
+/* 流光动画（与顶部 .guixu-fill::after 一致） */
+#guixu-system-modal .details-progress-fill::after {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(100deg, transparent 30%, rgba(255,255,255,0.3) 50%, transparent 70%);
+  animation: gx-shimmer 2.5s infinite linear;
+  pointer-events: none;
+}
+
+/* 归墟空间：已取出物品的“取出”按钮禁用态（灰色、不可点） */
+#guixu-space-modal .take-item-btn[disabled],
+#guixu-space-modal .take-item-btn[aria-disabled="true"],
+#guixu-space-modal .take-item-btn:disabled {
+  opacity: .55;
+  cursor: not-allowed;
+  filter: grayscale(0.2);
+  background-color: rgba(120, 120, 120, 0.35);
+  color: rgba(255, 255, 255, 0.7);
+  border-color: rgba(120, 120, 120, 0.45);
+  pointer-events: none; /* 双保险，防止事件委托误触发 */
+}

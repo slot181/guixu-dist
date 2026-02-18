@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 中央分页指示（现代极简 · 宽间距版）-->
+<svg xmlns="http://www.w3.org/2000/svg" width="128" height="48" viewBox="0 0 128 48" fill="none">
+  <title>中央分页指示（现代极简）</title>
+  <desc>空心圆点 + 实心当前页。增加了点之间的间距，布局更舒展。</desc>
+  <style>
+    /* 未选中：空心描边圆 */
+    .dot { 
+      fill: none; 
+      stroke: currentColor; 
+      opacity: .5; 
+    }
+    /* 选中：实心填充圆 */
+    .active { 
+      fill: currentColor; 
+      opacity: 1; 
+    }
+    .hit { fill: transparent; pointer-events: all; }
+  </style>
+  
+  <rect class="hit" x="0" y="28" width="128" height="20" rx="2" />
+  <!-- 修改部分开始 -->
+  <g id="pager" aria-label="分页指示" stroke-width="1.5">
+    <circle id="page-0" class="dot" cx="10" cy="36" r="4"/>
+    <circle id="page-1" class="dot" cx="26" cy="36" r="4"/>
+    <circle id="page-2" class="dot" cx="42" cy="36" r="4"/>
+    <circle id="page-3" class="dot" cx="58" cy="36" r="4"/>
+    <circle id="page-4" class="active" cx="74" cy="36" r="4"/> <!-- 默认选中第4页 -->
+    <circle id="page-5" class="dot" cx="90" cy="36" r="4"/>
+    <circle id="page-6" class="dot" cx="106" cy="36" r="4"/>
+    <circle id="page-7" class="dot" cx="122" cy="36" r="4"/>
+    <!-- 如果需要9个点，这里的cx值会超出128的宽度，需要缩小半径或间距 -->
+  </g>
+  <!-- 修改部分结束 -->
+</svg>

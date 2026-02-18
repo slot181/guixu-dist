@@ -1,0 +1,37 @@
+/* Phase 2 - features/confirm-modal.css
+   自定义确认模态（#custom-confirm-modal .confirm-modal-*）专属样式
+   从 css/guixu.css 迁移，保持选择器与声明一致，避免特异性变化
+*/
+
+/* --- 自定义确认模态框 --- */
+.confirm-modal-content {
+  /* 与通用 .modal-content 保持一致：颜色随 --gx-mask-rgb，透明度随 --gx-panel-opacity */
+  background: rgba(var(--gx-mask-rgb, 26, 26, 46), var(--gx-panel-opacity, 1)); /* 透明度受设置中心控制 */
+  border: 1px solid var(--gx-border, #c9aa71);           /* 主题描边（默认紫金琉璃） */
+  border-radius: 8px;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.45); /* 磨砂风格阴影 */
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+
+  /* 原有尺寸与排版保持 */
+  width: auto;
+  max-width: 400px;
+  height: auto;
+  max-height: none;
+  text-align: center;
+  padding: 30px;
+}
+
+.confirm-modal-message {
+  font-size: 16px;
+  color: #ff6b6b;
+  /* 红色警告 */
+  margin-bottom: 25px;
+  line-height: 1.6;
+}
+
+.confirm-modal-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+}

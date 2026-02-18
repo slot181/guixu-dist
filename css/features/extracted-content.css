@@ -1,0 +1,125 @@
+/* Phase 2 - features/extracted-content.css
+   “提取记录”模态（#extracted-content-modal）专属样式
+   - 设置卡片区（浅金描边、毛玻璃）放在标签页上方，可折叠显示/隐藏
+   - 标签页一行四列渲染
+   - 内容区预格式化文本样式统一
+   注意：严格限定作用域，避免全局污染
+*/
+
+/* 兼容保留（旧结构自动写入区） */
+.auto-write-section {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 15px;
+  padding-top: 15px;
+  border-top: 1px solid rgba(201, 170, 113, 0.3);
+}
+.auto-write-label {
+  font-size: 12px;
+  color: #8b7355;
+  cursor: pointer;
+}
+#auto-write-checkbox { cursor: pointer; }
+
+/* =========================
+   提取记录面板布局（专属作用域）
+   ========================= */
+.guixu-root-container #extracted-content-modal .extracted-root {
+  display: flex;
+  flex-direction: column;
+  gap: 12px; /* 与仙途轨迹保持一致 */
+}
+
+/* 设置卡片区（浅金描边 + 毛玻璃） */
+.guixu-root-container #extracted-content-modal .ec-settings-card {
+  display: flex;            /* 折叠后由 JS 控制 display:none / flex */
+  flex-direction: column;
+  gap: 10px;
+  align-items: stretch;
+  margin: 6px 0 8px;
+  padding: 10px;
+  background: var(--gx-input-bg, rgba(26,26,46,0.5));
+  border: 1px solid var(--gx-input-border-color, rgba(201,170,113,0.35));
+  border-radius: var(--gx-input-radius, 8px);
+  color: var(--gx-accent, #c9aa71);
+  box-sizing: border-box;
+}
+
+/* 设置项编排（两开关） */
+.guixu-root-container #extracted-content-modal .ec-group-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 10px;
+  align-items: center;
+}
+.guixu-root-container #extracted-content-modal .ec-group-row.switches {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.guixu-root-container #extracted-content-modal .ec-setting-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--gx-accent, #c9aa71);
+}
+
+/* 标签页：一行四列（gx-tabs/gx-tab 使用全局视觉） */
+.guixu-root-container #extracted-content-modal .ec-tabs {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  padding-bottom: 8px; /* 与内容区间距 */
+  border-bottom: none;
+}
+.guixu-root-container #extracted-content-modal .ec-tabs .gx-tab {
+  width: 100%;
+  min-width: 0;
+}
+
+/* 预格式文本统一外观（与旧内联 style 等效，但移入 CSS 以利维护） */
+.guixu-root-container #extracted-content-modal .extracted-pre {
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  color: #e0dcd1;
+  font-size: 12px;
+  padding: 10px;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 4px;
+  min-height: 50px;
+}
+
+/* 内容面板容器（用于后续扩展，如按需隐藏某些子元素） */
+.guixu-root-container #extracted-content-modal .ec-panel {
+  /* 目前不强制布局，保留默认流式 */
+}
+
+/* 桌面端：压缩小按钮尺寸（与 relationships/history 统一）*/
+.guixu-root-container:not(.mobile-view) #extracted-content-modal .interaction-btn.btn-sm {
+  height: 28px !important;
+  padding: 0 10px !important;
+  font-size: 12px !important;
+  min-width: 0;
+}
+
+/* =========================
+   顶部栏布局修正（设置与关闭始终在右上角，与标题同一行）
+   ========================= */
+.guixu-root-container #extracted-content-modal .modal-header {
+  position: relative;            /* 供标题绝对居中 */
+  justify-content: flex-end;     /* 将动作区整体推到最右侧 */
+  align-items: center;
+}
+.guixu-root-container #extracted-content-modal .modal-header .header-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;             /* 保证贴右 */
+}
+.guixu-root-container #extracted-content-modal .modal-header #extracted-modal-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}

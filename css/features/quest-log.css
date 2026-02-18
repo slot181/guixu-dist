@@ -1,0 +1,662 @@
+/* 仙缘簿录（任务系统）- 紫金琉璃主题适配
+   作用域限制在 .guixu-root-container 内，避免污染宿主页面
+   注意：仅使用全局主题变量与通用按钮类，避免内联样式与颜色硬编码 */
+.guixu-root-container #quest-log-modal .modal-content {
+  /* 继承基础模态样式，仅微调最大尺寸以容纳双栏 */
+  max-width: 1100px;
+}
+/* 仅作用于仙缘簿录模态：由左右栏内部滚动，禁用 modal-body 整体滚动 */
+.guixu-root-container #quest-log-modal .modal-body {
+  /* 让任务主容器填满模态体高度，内部左右栏各自滚动 */
+  overflow: hidden;          /* 禁止由 modal-body 产生的整体滚动条 */
+  display: flex;             /* 使内部容器可以使用 flex:1 占满可用高度 */
+  flex-direction: column;
+  min-height: 0;             /* 关键：允许子元素在 Flex 容器中正确收缩并出现滚动 */
+}
+
+.guixu-root-container .gx-questlog {
+  display: grid;
+  grid-template-columns: 38% 62%;
+  gap: 12px;
+  background: var(--gx-surface-1);
+  border: 1px solid var(--gx-border);
+  border-radius: 10px;
+  padding: 10px;
+  flex: 1 1 auto; /* 填满 modal-body 的可用高度 */
+  min-height: 0;  /* 允许内部列产生滚动 */
+}
+
+.guixu-root-container .gx-ql-left,
+.guixu-root-container .gx-ql-right {
+  background: var(--gx-surface-2);
+  border: 1px solid var(--gx-border);
+  border-radius: 8px;
+  overflow: hidden;         /* 容器本身不滚动，由内部区域滚动 */
+  display: flex;
+  flex-direction: column;
+  min-height: 0;            /* 允许子滚动区正确计算高度 */
+}
+
+/* 左栏：头部（标题与小徽标） */
+.guixu-root-container .gx-ql-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--gx-border);
+  background: var(--gx-surface-3);
+  color: #e8e3d6;
+}
+.guixu-root-container .gx-ql-head .gx-ql-title {
+  display: flex;
+  align-items: center;
+  font-weight: 700;
+}
+.guixu-root-container .gx-ql-head .gx-ql-title i {
+  color: var(--gx-accent, #c9aa71);
+  margin-right: 8px;
+}
+
+/* 顶部标签（主线/支线/已交付） */
+.guixu-root-container .gx-ql-tabs {
+  display: flex;
+  border-bottom: 1px solid var(--gx-border);
+  background: var(--gx-surface-3);
+}
+.guixu-root-container .gx-ql-tab {
+  flex: 1;
+  padding: 8px 6px;
+  text-align: center;
+  font-size: 12px;
+  color: #bfb8a6;
+  cursor: pointer;
+  user-select: none;
+  border-bottom: 2px solid transparent;
+}
+.guixu-root-container .gx-ql-tab.active {
+  color: var(--gx-accent, #c9aa71);
+  border-bottom-color: var(--gx-accent, #c9aa71);
+}
+
+/* 分类筛选条 */
+.guixu-root-container .gx-ql-filter {
+  padding: 8px;
+  border-bottom: 1px solid var(--gx-border);
+  background: var(--gx-surface-2);
+}
+.guixu-root-container .gx-ql-filter-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
+  color: #a09c91;
+  font-size: 12px;
+}
+.guixu-root-container .gx-ql-filter-tags {
+  /* 仅保留筛选徽章按钮区域的布局与外观（无小标题、无清除按钮） */
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 8px;
+  border-bottom: 1px solid var(--gx-border);
+  background: var(--gx-surface-2);
+}
+.guixu-root-container .gx-ql-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 8px;
+  border: 1px solid var(--gx-border);
+  border-radius: 999px;
+  background: var(--gx-surface-1);
+  color: #d8d4c8;
+  font-size: 12px;
+  cursor: pointer;
+}
+.guixu-root-container .gx-ql-tag.active {
+  color: #161616;
+  background: var(--gx-accent, #c9aa71);
+  border-color: var(--gx-accent, #c9aa71);
+}
+
+/* 列表滚动区 */
+.guixu-root-container .gx-ql-list {
+  /* 列表在左栏内滚动，撑满剩余高度 */
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch; /* 移动端增强滚动体验 */
+  padding: 8px;
+}
+.guixu-root-container .gx-ql-item {
+  border-left: 3px solid transparent;
+  background: var(--gx-surface-1);
+  border: 1px solid var(--gx-border);
+  border-radius: 8px;
+  padding: 10px;
+  color: #e6e0d1;
+  margin-bottom: 8px;
+  cursor: pointer;
+  transition: background .15s ease, border-color .15s ease, box-shadow .2s ease;
+}
+.guixu-root-container .gx-ql-item:hover {
+  border-left-color: var(--gx-accent, #c9aa71);
+  box-shadow: 0 0 10px rgba(var(--gx-accent-rgb, 201,170,113), .18);
+}
+.guixu-root-container .gx-ql-item.active {
+  border-left-color: var(--gx-accent, #c9aa71);
+  background: rgba(var(--gx-mask-rgb, 26,26,46), .66);
+}
+
+/* 列表内头部行：标题 + 图钉标记 + 徽标 */
+.guixu-root-container .gx-ql-row1 {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+.guixu-root-container .gx-ql-leftline {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.guixu-root-container .gx-ql-name {
+  font-weight: 700;
+  font-size: 14px;
+}
+/* 图钉标记按钮：默认中性，标记后仅图标金色，背景保持透明 */
+.guixu-root-container .gx-ql-pin {
+  appearance: none;
+  background: transparent;
+  border: none; /* 去除边框 */
+  color: #bfb8a6;
+  padding: 0 4px; /* 收紧以贴合文字高度 */
+  border-radius: 4px;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 14px; /* 与 .gx-ql-name 一致 */
+  transition: color .15s ease, background .15s ease; /* 不再包含边框/阴影过渡 */
+}
+.guixu-root-container .gx-ql-pin i {
+  pointer-events: none;
+  font-size: inherit; /* 图标尺寸与文字一致 */
+}
+.guixu-root-container .gx-ql-pin:hover {
+  color: var(--gx-accent, #c9aa71);
+  background: transparent; /* 悬停不出现背景/边框效果 */
+}
+.guixu-root-container .gx-ql-pin.is-on {
+  color: var(--gx-accent, #c9aa71);
+  background: transparent; /* 标记状态保持完全透明 */
+  box-shadow: none; /* 去除任何阴影 */
+  border: none;     /* 去除边框 */
+}
+.guixu-root-container .gx-ql-badges {
+  display: inline-flex;
+  gap: 6px;
+}
+.guixu-root-container .gx-ql-badge {
+  font-size: 10px;
+  padding: 2px 6px;
+  border-radius: 999px;
+  border: 1px solid var(--gx-border);
+  background: var(--gx-surface-2);
+  color: #ccbfa3;
+}
+
+/* 任务类型色彩微调（主线/支线） */
+.guixu-root-container .gx-ql-badge.type-main {
+  color: #161616;
+  background: var(--gx-accent, #c9aa71);
+  border-color: var(--gx-accent, #c9aa71);
+}
+.guixu-root-container .gx-ql-badge.type-side {
+  color: #bfe3ff;
+  background: rgba(80, 125, 170, .25);
+  border-color: rgba(120, 170, 220, .35);
+}
+
+/* 状态徽标 */
+.guixu-root-container .gx-ql-badge.st-unavailable { color:#9ca3af; background: rgba(156,163,175,.18); border-color: rgba(156,163,175,.35); }
+.guixu-root-container .gx-ql-badge.st-available   { color:#22c55e; background: rgba(34,197,94,.18);  border-color: rgba(34,197,94,.35); }
+.guixu-root-container .gx-ql-badge.st-active      { color:#eab308; background: rgba(234,179,8,.18);  border-color: rgba(234,179,8,.35); }
+.guixu-root-container .gx-ql-badge.st-completed   { color:#a855f7; background: rgba(168,85,247,.18); border-color: rgba(168,85,247,.35); }
+.guixu-root-container .gx-ql-badge.st-turned-in   { color:#60a5fa; background: rgba(59,130,246,.18); border-color: rgba(59,130,246,.35); }
+.guixu-root-container .gx-ql-badge.st-failed      { color:#ef4444; background: rgba(239,68,68,.18);  border-color: rgba(239,68,68,.35); }
+
+/* 发光动画（全局使用：按钮/标签/卡片） */
+@keyframes gxGlowPulse {
+  0%   { box-shadow: 0 0 0 0 rgba(var(--gx-accent-rgb, 201,170,113), 0); }
+  50%  { box-shadow: 0 0 14px 2px rgba(var(--gx-accent-rgb, 201,170,113), .45); }
+  100% { box-shadow: 0 0 0 0 rgba(var(--gx-accent-rgb, 201,170,113), 0); }
+}
+
+/* “可提交（COMPLETED）”任务卡片发光提示 */
+.guixu-root-container .gx-ql-item.is-completed {
+  border-color: var(--gx-accent, #c9aa71);
+  box-shadow: 0 0 0 2px rgba(var(--gx-accent-rgb, 201,170,113), .28), 0 0 18px rgba(var(--gx-accent-rgb, 201,170,113), .22);
+}
+
+/* “新任务”卡片发光提示（直观更强） */
+.guixu-root-container .gx-ql-item.is-new {
+  border-color: var(--gx-accent, #c9aa71);
+  box-shadow: 0 0 0 2px rgba(var(--gx-accent-rgb, 201,170,113), .45), 0 0 16px rgba(var(--gx-accent-rgb, 201,170,113), .35);
+  animation: gxGlowPulse 1.8s ease-in-out infinite;
+}
+
+/* 顶部“已交付/可提交”标签发光提示（当存在可提交任务时） */
+.guixu-root-container .gx-ql-tabs .gx-ql-tab.has-completable {
+  color: var(--gx-accent, #c9aa71);
+  /* 修复：只要外发光，不要出现类似“被选中(active)”的底部下划线效果 */
+  border-bottom-color: transparent;
+  box-shadow: 0 0 0 1px rgba(var(--gx-accent-rgb, 201,170,113), .45) inset,
+              0 0 12px rgba(var(--gx-accent-rgb, 201,170,113), .28);
+  animation: gxGlowPulse 1.8s ease-in-out infinite;
+}
+
+/* 主界面右侧“仙缘簿录”按钮发光提示（出现新任务时） */
+.guixu-root-container #btn-quest-log.glow-notify {
+  border-color: var(--gx-accent, #c9aa71) !important;
+  box-shadow: 0 0 0 2px rgba(var(--gx-accent-rgb, 201,170,113), .45),
+              0 0 12px rgba(var(--gx-accent-rgb, 201,170,113), .35) !important;
+  animation: gxGlowPulse 1.8s ease-in-out infinite;
+}
+/* 分类/推荐境界行 */
+.guixu-root-container .gx-ql-row2 {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  color: #a09c91;
+  font-size: 12px;
+  margin-bottom: 6px;
+}
+.guixu-root-container .gx-ql-cat {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  border: 1px solid var(--gx-border);
+  background: var(--gx-surface-1);
+  color: #d0cabc;
+  font-size: 11px;
+}
+.guixu-root-container .gx-ql-desc {
+  font-size: 12px;
+  color: #bdb6a6;
+  line-height: 1.45;
+}
+
+/* 进度条（仅进行中显示） */
+.guixu-root-container .gx-ql-progress {
+  height: 6px;
+  border-radius: 999px;
+  background: rgba(0,0,0,.3);
+  overflow: hidden;
+  margin-top: 6px;
+  border: 1px solid var(--gx-border);
+}
+.guixu-root-container .gx-ql-progress .bar {
+  height: 100%;
+  width: 0%;
+  background: var(--gx-accent, #c9aa71);
+  box-shadow: 0 0 10px rgba(var(--gx-accent-rgb, 201,170,113), .35) inset;
+}
+
+/* 右栏：详情 */
+.guixu-root-container .gx-ql-detail {
+  padding: 12px;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch; /* 移动端增强滚动体验 */
+}
+.guixu-root-container .gx-ql-detail .gx-ql-section {
+  background: var(--gx-surface-1);
+  border: 1px solid var(--gx-border);
+  border-radius: 8px;
+  padding: 10px;
+  margin-bottom: 10px;
+}
+.guixu-root-container .gx-ql-section-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #e6dfcf;
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+.guixu-root-container .gx-ql-section-title i {
+  color: var(--gx-accent, #c9aa71);
+}
+.guixu-root-container .gx-ql-paragraph {
+  color: #d8d4c8;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+/* 目标列表 */
+.guixu-root-container .gx-ql-objs {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.guixu-root-container .gx-ql-obj {
+  padding: 8px 0;
+  border-bottom: 1px solid var(--gx-border);
+}
+.guixu-root-container .gx-ql-obj:last-child {
+  border-bottom: none;
+}
+.guixu-root-container .gx-ql-objrow {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  color: #e6dfcf;
+}
+.guixu-root-container .gx-ql-objrow i {
+  min-width: 18px;
+  color: var(--gx-accent, #c9aa71);
+  margin-top: 2px;
+}
+.guixu-root-container .gx-ql-objdesc {
+  flex: 1;
+}
+
+/* 奖励列表（仅展示，不实现发放逻辑） */
+.guixu-root-container .gx-ql-rewards {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.guixu-root-container .gx-ql-reward {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: #dcd6c7;
+  background: var(--gx-surface-2);
+  border: 1px solid var(--gx-border);
+  border-radius: 6px;
+  padding: 6px 8px;
+}
+
+/* 底部操作区 */
+.guixu-root-container .gx-ql-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 12px;
+}
+.guixu-root-container .gx-ql-actions.single {
+  grid-template-columns: 1fr;
+}
+
+/* 空状态 */
+.guixu-root-container .gx-ql-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #a09c91;
+  min-height: 180px;
+  text-align: center;
+}
+
+/* 移动端适配：改为单栏纵向堆叠 + 顶部双标签页（任务/详情） */
+.guixu-root-container.mobile-view .gx-questlog {
+  /* 移动端切换为纵向 Flex 布局：顶部标签固定，内容区自适应并内部滚动 */
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+.guixu-root-container.mobile-view .gx-ql-list {
+  flex: 1 1 auto;   /* 移动端同样占满剩余空间 */
+  min-height: 0;
+  max-height: none; /* 移除固定上限，交由容器高度控制 */
+}
+
+/* 移动端：顶部双标签页容器，使用全局通用标签样式（继承 .tabs/.tab-btn 视觉） */
+.guixu-root-container.mobile-view .gx-ql-mobile-tabs {
+  display: grid;
+  grid-template-columns: 1fr 1fr; /* 一行两列，均分宽度 */
+  gap: 0;
+  border-bottom: 1px solid var(--gx-border);
+  background: var(--gx-surface-3);
+}
+.guixu-root-container.mobile-view .gx-ql-mobile-tab {
+  /* 尽量复用全局通用风格：常见命名 .tab-btn，如果全局有该类会叠加效果 */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 6px;
+  cursor: pointer;
+  color: #bfb8a6;
+  user-select: none;
+  border-bottom: 2px solid transparent;
+}
+.guixu-root-container.mobile-view .gx-ql-mobile-tab.active {
+  color: var(--gx-accent, #c9aa71);
+  border-bottom-color: var(--gx-accent, #c9aa71);
+}
+
+/* 移动端：根据标签显示隐藏左右栏内容（不影响桌面端） */
+.guixu-root-container.mobile-view .gx-ql-left,
+.guixu-root-container.mobile-view .gx-ql-right {
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
+  /* 关键：在移动端让左右栏作为“可伸缩区”，为内部滚动预留空间 */
+  flex: 1 1 auto;
+  min-height: 0;
+}
+.guixu-root-container.mobile-view .gx-ql-left {
+  display: none;
+}
+.guixu-root-container.mobile-view .gx-questlog.show-left .gx-ql-left {
+  display: flex; /* 保持 Flex 布局，而非 block */
+}
+.guixu-root-container.mobile-view .gx-questlog.show-left .gx-ql-right {
+  display: none;
+}
+.guixu-root-container.mobile-view .gx-questlog.show-right .gx-ql-left {
+  display: none;
+}
+.guixu-root-container.mobile-view .gx-questlog.show-right .gx-ql-right {
+  display: flex; /* 保持 Flex 布局，而非 block */
+}
+
+/* 可选奖励 - 选择卡片（悬浮与选中高光）
+   要求：始终单列，每张卡片占满一整行宽度，避免留白 */
+.guixu-root-container .gx-ql-option-grid {
+  display: grid;
+  grid-template-columns: 1fr; /* 始终单列 */
+  gap: 8px;
+}
+.guixu-root-container .gx-ql-option-card {
+  background: var(--gx-surface-1);
+  border: 1px solid var(--gx-border);
+  border-radius: 8px;
+  padding: 10px;
+  color: #e6e0d1;
+  cursor: pointer;
+  transition: box-shadow .2s ease, border-color .2s ease, background .2s ease;
+  outline: none;
+}
+.guixu-root-container .gx-ql-option-card:hover,
+.guixu-root-container .gx-ql-option-card:focus {
+  border-color: var(--gx-accent, #c9aa71);
+  box-shadow: 0 0 0 3px rgba(var(--gx-accent-rgb, 201,170,113), .18) inset,
+              0 0 16px rgba(var(--gx-accent-rgb, 201,170,113), .18);
+}
+.guixu-root-container .gx-ql-option-card.selected {
+  border-color: var(--gx-accent, #c9aa71);
+  background: rgba(var(--gx-accent-rgb, 201,170,113), .06);
+  box-shadow: 0 0 0 2px rgba(var(--gx-accent-rgb, 201,170,113), .35) inset,
+              0 0 18px rgba(var(--gx-accent-rgb, 201,170,113), .25);
+}
+.guixu-root-container .gx-ql-option-title {
+  font-weight: 700;
+  color: #e6dfcf;
+  margin-bottom: 6px;
+}
+
+/* 解锁条件对比（满足/不满足/中性提示） */
+.guixu-root-container .gx-ql-cond-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.guixu-root-container .gx-ql-cond {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--gx-border);
+  color: #d8d4c8;
+  font-size: 13px;
+}
+.guixu-root-container .gx-ql-cond:last-child {
+  border-bottom: none;
+}
+.guixu-root-container .gx-ql-cond i {
+  color: #9ca3af;
+  min-width: 16px;
+}
+.guixu-root-container .gx-ql-cond.pass i { color: #22c55e; }
+.guixu-root-container .gx-ql-cond.fail i { color: #ef4444; }
+.guixu-root-container .gx-ql-cond.neutral i { color: #eab308; }
+.guixu-root-container .gx-ql-cond.fail {
+  background: rgba(239,68,68,.06);
+  border-color: rgba(239,68,68,.25);
+}
+
+/* 全局：默认隐藏移动端双标签栏（桌面端不显示） */
+.guixu-root-container .gx-ql-mobile-tabs {
+  display: none;
+}
+
+/* 全局：彻底隐藏筛选区域（即使有残留DOM也不显示） */
+.guixu-root-container .gx-ql-filter {
+  display: none !important;
+}
+
+/* 响应式兜底：当视口<=768px 时，按移动端规则布局与切换（不依赖 .mobile-view 类） */
+@media (max-width: 768px) {
+  /* 单栏堆叠 */
+  .guixu-root-container .gx-questlog {
+    /* 小屏兜底：同样切换为纵向 Flex，避免网格行高导致子滚动失效 */
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 auto;
+    min-height: 0;
+  }
+  .guixu-root-container .gx-ql-list {
+    flex: 1 1 auto;
+    min-height: 0;
+    max-height: none;
+  }
+
+  /* 移动端双标签页可见 */
+  .guixu-root-container .gx-ql-mobile-tabs {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0;
+    border-bottom: 1px solid var(--gx-border);
+    background: var(--gx-surface-3);
+  }
+  .guixu-root-container .gx-ql-mobile-tab {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px 6px;
+    cursor: pointer;
+    color: #bfb8a6;
+    user-select: none;
+    border-bottom: 2px solid transparent;
+  }
+  .guixu-root-container .gx-ql-mobile-tab.active {
+    color: var(--gx-accent, #c9aa71);
+    border-bottom-color: var(--gx-accent, #c9aa71);
+  }
+
+  /* 根据 show-left/show-right 切换内容可见性 */
+  .guixu-root-container .gx-ql-left,
+  .guixu-root-container .gx-ql-right {
+    border-top-left-radius: 0;
+    border-top-right-radius: 0;
+    /* 关键：让左右栏在小屏中也作为“可伸缩区”，内部列表/详情才能产生滚动 */
+    flex: 1 1 auto;
+    min-height: 0;
+  }
+  .guixu-root-container .gx-ql-left {
+    display: none;
+  }
+  .guixu-root-container .gx-questlog.show-left .gx-ql-left {
+    display: flex; /* 保持 Flex 布局，而非 block */
+  }
+  .guixu-root-container .gx-questlog.show-left .gx-ql-right {
+    display: none;
+  }
+  .guixu-root-container .gx-questlog.show-right .gx-ql-left {
+    display: none;
+  }
+  .guixu-root-container .gx-questlog.show-right .gx-ql-right {
+    display: flex; /* 保持 Flex 布局，而非 block */
+  }
+
+  /* 移动端：头部标题与境界等级不换行（单行展示），标题过长省略 */
+  .guixu-root-container .gx-ql-head {
+    white-space: nowrap;
+  }
+  .guixu-root-container .gx-ql-head .gx-ql-title {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .guixu-root-container .gx-ql-head .gx-ql-meta {
+    white-space: nowrap;
+    flex: none;
+    margin-left: 8px;
+  }
+
+  /* 移动端：右栏底部操作按钮布局
+     - 多个按钮：最多两列（1fr 1fr），自动换行，铺满一行
+     - 单个按钮：一列（1fr），占满整行 */
+  .guixu-root-container #quest-log-modal .gx-ql-actions {
+    grid-template-columns: 1fr 1fr;
+  }
+  /* 单个按钮容器使用 .single 时，强制单列满宽 */
+  .guixu-root-container #quest-log-modal .gx-ql-actions.single {
+    grid-template-columns: 1fr !important;
+  }
+  /* 回退保障：当容器里只有一个按钮时，即使未加 .single 也让其跨越整行 */
+  .guixu-root-container #quest-log-modal .gx-ql-actions > .interaction-btn:only-child,
+  .guixu-root-container #quest-log-modal .gx-ql-actions > .primary-btn:only-child,
+  .guixu-root-container #quest-log-modal .gx-ql-actions > .danger-btn:only-child {
+    grid-column: 1 / -1;
+  }
+  /* 奇数个按钮时，最后一个独占一整行，避免右侧留白 */
+  .guixu-root-container #quest-log-modal .gx-ql-actions > .interaction-btn:last-child:nth-child(odd),
+  .guixu-root-container #quest-log-modal .gx-ql-actions > .primary-btn:last-child:nth-child(odd),
+  .guixu-root-container #quest-log-modal .gx-ql-actions > .danger-btn:last-child:nth-child(odd) {
+    grid-column: 1 / -1;
+  }
+  /* 尺寸与收缩：防止按钮内容撑破容器 */
+  .guixu-root-container #quest-log-modal .gx-ql-actions .interaction-btn,
+  .guixu-root-container #quest-log-modal .gx-ql-actions .primary-btn,
+  .guixu-root-container #quest-log-modal .gx-ql-actions .danger-btn {
+    width: 100% !important;
+    max-width: 100%;
+    min-width: 0 !important;
+    box-sizing: border-box;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    justify-content: center;
+  }
+}

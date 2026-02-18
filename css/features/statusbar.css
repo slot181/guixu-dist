@@ -1,0 +1,286 @@
+/* Phase 1 - features/statusbar.css
+   顶部/底部状态栏与快速发送区域
+   从 css/guixu.css 迁移，保持选择器与特异性一致以避免回归抖动 */
+
+/* 顶部状态栏 */
+.top-status {
+  grid-column: 1 / -1;
+  /* 顶部栏背景完全透明，交由全局背景遮罩控制 */
+  background: transparent !important;
+  border-bottom: 1px solid #c9aa71;
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  padding: 0 10px;
+  box-shadow: 0 1px 8px rgba(201, 170, 113, 0.15);
+  position: relative;
+}
+
+/* 顶部栏标签：使用模块标题未修改前的字体风格（全局金色常规字样），提升明亮度 */
+.top-status .status-label {
+  color: #c9aa71 !important;   /* 统一金色，不使用低透明度，避免“暗淡” */
+  font-weight: 400 !important; /* 常规字重（区别于模块标题的加粗） */
+}
+
+/* 通用进度条（小条形） */
+.progress-bar {
+  width: 70px;
+  height: 5px;
+  background: rgba(0, 0, 0, 0.5);
+  border-radius: 3px;
+  overflow: hidden;
+  border: 1px solid #c9aa71;
+}
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #ff6b6b, #ffd93d);
+  border-radius: 2px;
+}
+
+/* 归墟充能条（火焰灵流风格，保持尺寸与布局不变） */
+.guixu-charge {
+  /* 使用可覆盖的 CSS 变量以便在移动端局部调窄，默认保持桌面宽度 */
+  width: var(--gx-guixu-charge-width, 100px); /* 默认 100px；移动端通过变量覆盖 */
+  height: 6px;                   /* 不改高度 */
+  background-color: rgba(10, 12, 24, 0.6);  /* 深色半透明轨道 */
+  border-radius: 4px;
+  border: 1px solid rgba(250, 204, 21, 0.20); /* 纤细金色描边 */
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.5); /* 轻内凹阴影 */
+  overflow: hidden;
+}
+.guixu-fill {
+  position: relative;            /* 允许伪元素覆盖纹理/流光 */
+  height: 100%;
+  width: var(--guixu-charge, 0%);
+  overflow: hidden;              /* 限制流光不超出已填充宽度 */
+  border-radius: 3px;
+  /* 火焰灵流：#dc2626 -> #f97316 -> #fef08a */
+  background-image: linear-gradient(to right, #dc2626, #f97316, #fef08a);
+  box-shadow: 0 0 7px 1px rgba(249, 115, 22, 0.6);
+}
+/* 扫描线/能量栅格纹理（不改变布局） */
+.guixu-fill::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: linear-gradient(45deg,
+    rgba(255,255,255,0.07) 25%, transparent 25%,
+    transparent 50%, rgba(255,255,255,0.07) 50%,
+    rgba(255,255,255,0.07) 75%, transparent 75%, transparent 100%);
+  background-size: 8px 8px;
+  opacity: .8;
+}
+/* 流光动画（使用全局 @keyframes gx-shimmer） */
+.guixu-fill::after {
+  content: '';
+  position: absolute;
+  top: -50%; left: -50%;
+  width: 200%; height: 200%;
+  background: linear-gradient(100deg, transparent 30%, rgba(255,255,255,0.3) 50%, transparent 70%);
+  animation: gx-shimmer 2.5s infinite linear;
+}
+
+/* 底部状态栏 */
+.bottom-status {
+  grid-column: 1 / -1;
+  /* 底部栏背景完全透明，交由全局背景遮罩控制 */
+  background: transparent !important;
+  border-top: 1px solid #c9aa71;
+  display: grid;
+  /* 三列：左(状态按钮) - 中(快速发送) - 右(预留)；允许左右列在中间过宽时收缩 */
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: center;
+  gap: 15px;
+  padding: 0 15px;
+  transition: height 0.2s ease-in-out;
+  position: relative; /* 作为版本徽标绝对定位的参照 */
+}
+
+/* 快速发送区域（居中） */
+.quick-send-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+/* 网格对齐：左侧按钮靠左，输入区居中 */
+#btn-status-pop {
+  justify-self: start;
+  min-width: 0;           /* 允许在左列内收缩 */
+}
+.bottom-status .quick-send-container {
+  justify-self: center;
+  min-width: 0;           /* 避免中列挤压两侧列导致溢出 */
+}
+
+/* 快速发送输入框 */
+.quick-send-input {
+  background: rgba(0, 0, 0, 0.5);
+  border: 1px solid #8b7355;
+  border-radius: 4px;
+  color: #e0dcd1;
+  padding: 5px 10px;
+  font-size: 12px;
+  width: 300px;   /* 宽度+20%（桌面端默认宽度从250px提升至300px；移动端有独立覆盖） */
+  height: 44px;   /* 固定高度，避免底部栏抖动（桌面端聚焦时有专门规则增高） */
+  resize: none;
+  line-height: 1.5;
+  font-family: inherit;
+  overflow-y: auto;
+  transition: none;
+}
+.quick-send-input:focus {
+  height: 44px; /* 保持固定，防止焦点时高度变化引发布局抖动 */
+}
+.quick-send-input::placeholder {
+  color: #8b7355;
+}
+
+/* 轻微调整快速发送容器的间距（保持居中时的视觉间隔） */
+.quick-send-container { margin: 0 10px; }
+
+/* 桌面端（全屏/非全屏）：输入框聚焦时增高，扩大可视区域；移动端不受影响 */
+.guixu-root-container:not(.mobile-view) .quick-send-input:focus {
+  height: 60px; /* 比默认44px更高，便于查看更多内容 */
+}
+
+/* 三段式快速发送布局（由 JS 构建 .qs-left/.qs-center/.qs-right 包裹） */
+/* 提取自 main.js 的动态样式，统一放入样式表，避免运行时注入 */
+.guixu-root-container .quick-send-container{
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 8px;
+}
+.guixu-root-container .quick-send-container .qs-left,
+.guixu-root-container .quick-send-container .qs-right{
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.guixu-root-container .quick-send-container .qs-center{
+  display: flex;
+  align-items: center;
+}
+.guixu-root-container .quick-send-container .qs-center #quick-send-input{
+  width: 100%;
+}
+/* 桌面端：扩大中心列最小宽度（输入栏随中心列拉伸） */
+.guixu-root-container:not(.mobile-view) .quick-send-container{
+  /* 内部三段式：按钮 | 输入 | 发送
+     去掉 300px 的列最小宽度约束，让外层 .bottom-status 统一控制输入宽度范围 */
+  grid-template-columns: auto 1fr auto;
+}
+
+/* 桌面端：底部栏三列布局（左：状态/按钮，中：输入组，右：版本徽标）
+   - 左/右列使用 minmax(0,1fr)：让中列在容器中绝对居中
+   - 中列使用 auto：由“输入组(按钮+输入+发送)”的实际宽度自适应；
+     输入框本身再通过 min/max-width 约束在 120~300px，满足“正常宽度=300px，上限固定，最小时可收缩” */
+.guixu-root-container:not(.mobile-view) .bottom-status{
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  grid-auto-flow: row; /* 避免自动布局把左侧多个元素挤进第2/3列 */
+}
+
+/* 桌面端：固定网格列归位（中列绝对居中） */
+.guixu-root-container:not(.mobile-view) #status-effects-wrapper,
+.guixu-root-container:not(.mobile-view) #btn-view-statuses,
+.guixu-root-container:not(.mobile-view) #btn-status-pop{
+  grid-column: 1;       /* 左列（若未分组时的兜底）*/
+  justify-self: start;
+}
+
+/* 左侧分组容器：将“状态卡片 + 状态一览按钮”收纳，避免挤占中列，并保证中列绝对居中 */
+.guixu-root-container:not(.mobile-view) .bottom-status .bottom-left-group{
+  grid-column: 1;
+  justify-self: start;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;           /* 防止子项撑破 */
+}
+
+.guixu-root-container:not(.mobile-view) .bottom-status .quick-send-container{
+  grid-column: 2;         /* 中列 */
+  justify-self: center;   /* 输入组位于中列居中 */
+}
+
+.guixu-root-container:not(.mobile-view) .bottom-status .version-badge{
+  grid-column: 3;         /* 右列 */
+  position: static;       /* 取消绝对定位，参与网格排版 */
+  right: auto;
+  bottom: auto;
+  justify-self: end;      /* 靠右对齐 */
+  margin-left: 8px;       /* 与中列留出安全间距 */
+}
+
+/* 桌面端：状态一览按钮基样式与紧凑模式（小圆+数量/无） */
+.guixu-root-container:not(.mobile-view) .status-pop-btn{
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 8px;
+  height: 28px;
+  line-height: 1;
+  border-radius: 14px;
+  background: rgba(15,15,35,0.35);
+  border: 1px solid rgba(201,170,113,0.45);
+  color: #c9aa71;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.guixu-root-container:not(.mobile-view) .status-pop-btn .effect-icon{
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+  background: linear-gradient(45deg, #8b7355, #c9aa71);
+  box-shadow: inset 0 0 4px rgba(201,170,113,0.35);
+}
+
+/* 紧凑小圆：隐藏图标与文字，使用 data-count 渲染数量/“无”
+   设计：完全沿用“状态一览按钮”的背景与边框风格（默认紫金琉璃/各主题由全局样式控制），
+   仅改变尺寸与圆角，不在此处重写背景/边框/颜色，避免与全局主题冲突 */
+.guixu-root-container:not(.mobile-view) .status-pop-btn.compact{
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  border-radius: 50%;
+  justify-content: center;
+  gap: 0;
+  /* 不覆盖 background/border/color，保持与正常展开一致的主题风格 */
+  transition: background-color .15s ease, box-shadow .15s ease, transform .12s ease; /* 小圆高光过渡 */
+}
+.guixu-root-container:not(.mobile-view) .status-pop-btn.compact .effect-icon,
+.guixu-root-container:not(.mobile-view) .status-pop-btn.compact span{
+  display: none !important;
+}
+.guixu-root-container:not(.mobile-view) .status-pop-btn.compact::after{
+  content: attr(data-count);
+  display: inline-block;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1;
+  color: currentColor; /* 与按钮文本色一致，随主题变化 */
+}
+/* 保持与正常展开一致：不在紧凑态中改写背景/边框/颜色 */
+.guixu-root-container:not(.mobile-view) .status-pop-btn.compact.has-status::after{
+  color: currentColor;
+}
+
+/* 紧凑小圆：悬停/键盘聚焦的高光效果（沿用全局 hover 风格并增强在小圆上的可见性） */
+.guixu-root-container:not(.mobile-view) .status-pop-btn.compact:hover,
+.guixu-root-container:not(.mobile-view) .status-pop-btn.compact:focus-visible{
+  background: rgba(var(--gx-accent-rgb, 201,170,113), 0.30); /* 与全局按钮 hover 透明度一致 */
+  box-shadow:
+    0 0 0 2px rgba(var(--gx-accent-rgb, 201,170,113), 0.22),
+    0 0 10px rgba(var(--gx-accent-rgb, 201,170,113), 0.28);
+  transform: scale(1.06); /* 轻微放大，提升反馈 */
+  outline: none;
+}
+
+/* 桌面端：输入栏宽度范围
+   - 最大宽度保持 300px（与当前“正常宽度”一致）
+   - 最小宽度收缩到 120px，以便在空间紧张时为左右按钮/徽标让位 */
+.guixu-root-container:not(.mobile-view) .quick-send-input{
+  min-width: 120px;     /* 更小的下限：点击后高度增大，窄宽度仍可用 */
+  max-width: 300px;     /* 保持当前默认视觉宽度上限 */
+  width: 100%;
+}

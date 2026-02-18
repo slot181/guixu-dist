@@ -1,0 +1,341 @@
+/* 世界舆图面板 - 紫金琉璃主题适配 */
+/* 作用域限制在 .guixu-root-container 内，避免污染宿主页面；仅使用全局变量与通用按钮类 */
+
+.guixu-root-container #world-map-modal .modal-content {
+  max-width: 1100px;
+  /* 让面板高度固定为视窗的 78vh，并使用弹性布局使 body 填满剩余高度 */
+  height: 78vh;
+  display: flex;
+  flex-direction: column;
+}
+.guixu-root-container #world-map-modal .modal-content .modal-body {
+  flex: 1 1 auto;
+  min-height: 0; /* 关键：允许子元素在固定高度内滚动 */
+}
+
+.guixu-root-container .gx-worldmap {
+  display: grid;
+  grid-template-columns: 36% 64%;
+  gap: 12px;
+  background: var(--gx-surface-1);
+  border: 1px solid var(--gx-border);
+  border-radius: 10px;
+  padding: 10px;
+  height: 100%; /* 主容器高度占满模态 body */
+  min-height: 0; /* 防止子元素撑破 */
+}
+
+.guixu-root-container .gwm-aside,
+.guixu-root-container .gwm-main {
+  background: var(--gx-surface-2);
+  border: 1px solid var(--gx-border);
+  border-radius: 8px;
+  overflow: hidden;
+  display: flex;            /* 使内部列表/详情区域可自适应高度 */
+  flex-direction: column;
+  min-height: 0;            /* 允许内部滚动 */
+}
+
+/* 左栏头部 */
+.guixu-root-container .gwm-head {
+  padding: 12px;
+  border-bottom: 1px solid var(--gx-border);
+  background: var(--gx-surface-3);
+  color: #e8e3d6;
+}
+.guixu-root-container .gwm-title {
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.guixu-root-container .gwm-title i {
+  color: var(--gx-accent, #c9aa71);
+}
+
+.guixu-root-container .gwm-sub {
+  margin-top: 4px;
+  color: #9ca3af;
+  font-size: 12px;
+}
+
+/* 搜索栏：使用全局通用输入样式，宽度铺满 */
+.guixu-root-container .gwm-search {
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--gx-border);
+  background: transparent; /* 继承左栏底色 */
+}
+.guixu-root-container .gwm-search .gx-input {
+  width: 100%;
+}
+
+/* 列表 */
+.guixu-root-container .gwm-list {
+  padding: 8px;
+  flex: 1 1 auto;     /* 充满左侧容器高度 */
+  min-height: 0;      /* 允许滚动 */
+  overflow-y: auto;
+}
+
+.guixu-root-container .gwm-acc-item {
+  background: var(--gx-surface-1);
+  border: 1px solid var(--gx-border);
+  border-radius: 8px;
+  margin-bottom: 8px;
+  overflow: hidden;
+  transition: border-color .2s ease, box-shadow .2s ease, background .2s ease; /* 高光过渡 */
+}
+
+.guixu-root-container .gwm-acc-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px;
+  cursor: pointer;
+  color: #e6e0d1;
+}
+
+/* 主地点卡片：悬停高光 */
+.guixu-root-container .gwm-acc-item:hover {
+  border-color: var(--gx-accent, #c9aa71);
+  box-shadow: 0 0 0 2px rgba(var(--gx-accent-rgb, 201,170,113), .20) inset,
+              0 0 16px rgba(var(--gx-accent-rgb, 201,170,113), .18);
+}
+
+.guixu-root-container .gwm-acc-header:hover {
+  background: rgba(var(--gx-mask-rgb, 26,26,46), .5);
+}
+
+.guixu-root-container .gwm-acc-left {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.guixu-root-container .gwm-pin {
+  color: #bfb8a6;
+  cursor: pointer;
+}
+.guixu-root-container .gwm-pin.marked {
+  color: var(--gx-accent, #c9aa71);
+}
+
+.guixu-root-container .gwm-acc-title {
+  font-weight: 700;
+  font-size: 14px;
+}
+
+.guixu-root-container .gwm-chevron {
+  color: #9ca3af;
+}
+
+.guixu-root-container .gwm-acc-content {
+  display: none;
+  padding: 6px 8px 10px 36px;
+}
+
+.guixu-root-container .gwm-acc-item.expanded .gwm-acc-content {
+  display: block;
+}
+
+.guixu-root-container .gwm-internal-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 8px 10px;
+  color: #cfc9bb;
+  border-radius: 6px;
+  cursor: pointer;
+  border: 1px solid transparent;  /* 让选中态能显式高光外边框 */
+  transition: border-color .2s ease, box-shadow .2s ease, background .2s ease;
+}
+
+.guixu-root-container .gwm-internal-btn:hover {
+  background: rgba(var(--gx-mask-rgb, 26,26,46), .45);
+  box-shadow: 0 0 0 2px rgba(var(--gx-accent-rgb, 201,170,113), .15) inset,
+              0 0 12px rgba(var(--gx-accent-rgb, 201,170,113), .15);
+}
+
+.guixu-root-container .gwm-internal-btn.active {
+  background: rgba(var(--gx-mask-rgb, 26,26,46), .66);
+  color: #e6e0d1;
+  border-color: var(--gx-accent, #c9aa71);
+  box-shadow: 0 0 0 2px rgba(var(--gx-accent-rgb, 201,170,113), .28) inset,
+              0 0 16px rgba(var(--gx-accent-rgb, 201,170,113), .22);
+}
+
+/* 右侧详情 */
+.guixu-root-container .gwm-main {
+  padding: 12px;
+  display: flex;            /* 详情区采用列布局，使正文可滚动 */
+  flex-direction: column;
+  overflow: hidden;
+}
+.guixu-root-container #gwm-detail {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;         /* 右栏在固定高度内滚动 */
+}
+
+.guixu-root-container .gwm-section {
+  background: var(--gx-surface-1);
+  border: 1px solid var(--gx-border);
+  border-radius: 8px;
+  padding: 12px;
+  margin-bottom: 12px;
+}
+
+.guixu-root-container .gwm-loc-title {
+  color: #e6dfcf;
+  font-weight: 800;
+  font-size: 22px;
+  margin: 0 0 6px 0;
+}
+
+.guixu-root-container .gwm-loc-meta {
+  color: #a09c91;
+  font-size: 12px;
+}
+
+.guixu-root-container .gwm-loc-desc {
+  color: #d8d4c8;
+  font-size: 13px;
+  line-height: 1.6;
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--gx-border);
+}
+
+.guixu-root-container .gwm-inline-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #e6dfcf;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+.guixu-root-container .gwm-inline-title i {
+  color: var(--gx-accent, #c9aa71);
+}
+
+.guixu-root-container .gwm-npc-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.guixu-root-container .gwm-npc-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--gx-surface-2);
+  border: 1px solid var(--gx-border);
+  border-radius: 8px;
+  padding: 10px;
+  color: #e6e0d1;
+}
+
+.guixu-root-container .gwm-npc-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.guixu-root-container .gwm-npc-state {
+  margin-left: 8px;
+  padding: 2px 6px;
+  font-size: 11px;
+  border-radius: 6px;
+  background: rgba(59,130,246,.18);
+  color: #7dd3fc;
+}
+
+.guixu-root-container .gwm-npc-card.visible {
+  box-shadow: 0 0 12px rgba(56,189,248,.25);
+  border-color: rgba(56,189,248,.35);
+}
+
+.guixu-root-container .gwm-npc-pin {
+  color: #9ca3af;
+  cursor: pointer;
+}
+.guixu-root-container .gwm-npc-pin.marked {
+  color: var(--gx-accent, #c9aa71);
+}
+
+/* 移动端适配 */
+.guixu-root-container.mobile-view .gx-worldmap {
+  grid-template-columns: 1fr;
+}
+.guixu-root-container.mobile-view .gwm-list {
+  max-height: 340px;
+}
+
+/* 小图标尺寸统一 */
+.guixu-root-container .gwm-icon {
+  width: 18px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #9ca3af;
+}
+
+/* 位置徽标：当前所在 */
+.guixu-root-container .gwm-here {
+  color: var(--gx-accent, #c9aa71);
+}
+
+/* 可访问的 hover/active 反馈 */
+.guixu-root-container .gwm-acc-header.active,
+.guixu-root-container .gwm-acc-header:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(var(--gx-accent-rgb, 201,170,113), .22) inset;
+}
+
+/* 内部地点图标色 */
+.guixu-root-container .gwm-internal-icon {
+  color: #6b7280;
+}
+
+/* 细分：状态标签颜色（简化） */
+.guixu-root-container .gwm-state-rest {
+  background: rgba(34,197,94,.18);
+  color: #86efac;
+}
+.guixu-root-container .gwm-state-walk {
+  background: rgba(59,130,246,.18);
+  color: #93c5fd;
+}
+/* =========================
+   移动端标签页与切换（不影响桌面端）
+   - 按要求使用全局模态系统通用样式：.gx-tabs / .gx-tab
+   - 移动端将“左栏(地图)”与“右栏(详情)”拆分为两个标签页
+   - 两个标签页按钮按一行两列铺满，不留空白宽度
+   - 桌面端保持双栏不变
+   ========================= */
+ 
+/* 桌面端隐藏移动端标签栏（保持桌面端双栏不变） */
+.guixu-root-container .wm-mobile-tabs { display: none; }
+ 
+/* 移动端显示标签栏：一行两列，铺满整行；复用全局 .gx-tabs/.gx-tab 视觉 */
+.guixu-root-container.mobile-view .wm-mobile-tabs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;   /* 一行两列 */
+  width: 100%;                      /* 占满整行 */
+  margin-bottom: 8px;               /* 与下方内容留出间距 */
+  overflow: visible;                /* 覆盖 .gx-tabs 可能的横向滚动 */
+  border-bottom: none;              /* 统一与其它面板的移动端标签视觉 */
+}
+/* 子项采用全局 .gx-tab，但在网格下拉满单元格、去最小宽度限制 */
+.guixu-root-container.mobile-view .wm-mobile-tabs .gx-tab {
+  min-width: 0;
+  width: 100%;
+}
+ 
+/* 移动端下内容切换：根据 data-mobile-tab 展示对应区域 */
+.guixu-root-container.mobile-view .gx-worldmap[data-mobile-tab="map"] .gwm-aside { display: flex; }
+.guixu-root-container.mobile-view .gx-worldmap[data-mobile-tab="map"] .gwm-main { display: none; }
+.guixu-root-container.mobile-view .gx-worldmap[data-mobile-tab="detail"] .gwm-aside { display: none; }
+.guixu-root-container.mobile-view .gx-worldmap[data-mobile-tab="detail"] .gwm-main { display: flex; }
+ 

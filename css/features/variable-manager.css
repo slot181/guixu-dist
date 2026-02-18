@@ -1,0 +1,238 @@
+/* Phase 2 - features/variable-manager.css
+   变量编辑器（#variable-manager-modal）专属样式
+   - 从 js/components/variable-manager.js 内联 <style> 抽离
+   - 仅作用于该模态，使用全局紫金琉璃变量，避免硬编码色值
+*/
+
+/* 容器与工具栏 */
+.guixu-root-container #variable-manager-modal #vm-root {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.guixu-root-container #variable-manager-modal #vm-toolbar {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.guixu-root-container #variable-manager-modal #vm-search {
+  flex: 1 1 260px;
+  min-width: 160px;
+}
+.guixu-root-container #variable-manager-modal #vm-content {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* 标签页（复用全局 gx-tabs/gx-tab，仅做少量补齐以免 JS 样式缺失） */
+.guixu-root-container #variable-manager-modal .vm-tabs {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding-bottom: 8px;
+  border-bottom: none;
+  scrollbar-width: thin;
+}
+.guixu-root-container #variable-manager-modal .vm-tab {
+  appearance: none;
+  border: none;
+  background: transparent;
+  color: inherit;
+  border-radius: 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 38px;
+  padding: 0 16px;
+  font-size: 14px;
+  white-space: nowrap;
+  cursor: pointer;
+  flex: 0 0 auto;
+  transition: color .3s ease, background-color .3s ease;
+}
+
+/* 组与条目外观 */
+.guixu-root-container #variable-manager-modal .vm-group {
+  border: 1px solid rgba(var(--gx-accent-rgb, 201,170,113), 0.25);
+  border-radius: 10px;
+  background: var(--gx-surface-2, rgba(26,26,46,0.48));
+}
+.guixu-root-container #variable-manager-modal .vm-group > .vm-group-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  color: var(--gx-accent, #c9aa71);
+  font-weight: 700;
+  font-size: 13px;
+  border-bottom: 1px dashed rgba(var(--gx-accent-rgb, 201,170,113), 0.25);
+  cursor: pointer; /* 全部页折叠交互：分组头可点击 */
+}
+.guixu-root-container #variable-manager-modal .vm-group .vm-actions {
+  margin-left: auto;
+  display: flex;
+  gap: 6px;
+}
+.guixu-root-container #variable-manager-modal .vm-group .vm-body {
+  padding: 8px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* 可折叠条目（details） */
+.guixu-root-container #variable-manager-modal details.vm-details {
+  border: 1px dashed rgba(var(--gx-accent-rgb, 201,170,113), 0.25);
+  border-radius: 8px;
+}
+.guixu-root-container #variable-manager-modal details.vm-details > summary {
+  list-style: none;
+  cursor: pointer;
+  padding: 6px 8px;
+  color: var(--gx-accent, #c9aa71);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.guixu-root-container #variable-manager-modal details.vm-details > summary .vm-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1 1 auto;
+}
+/* 避免 summary 内 attribute-value 推挤标题到右侧 */
+.guixu-root-container #variable-manager-modal details.vm-details > summary .attribute-value {
+  margin-left: 0 !important;
+}
+/* 删除按钮保持在右侧（桌面端） */
+.guixu-root-container #variable-manager-modal details.vm-details > summary .vm-actions {
+  margin-left: auto;
+  display: flex;
+  gap: 6px;
+}
+.guixu-root-container #variable-manager-modal details.vm-details > summary::-webkit-details-marker {
+  display: none;
+}
+.guixu-root-container #variable-manager-modal details.vm-details .vm-details-body {
+  padding: 6px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+/* KV 编辑行（复用 attributes-list 语义） */
+.guixu-root-container #variable-manager-modal .attributes-list {
+  padding: 2px;
+}
+.guixu-root-container #variable-manager-modal .attribute-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 6px 4px;
+  border-bottom: 1px solid rgba(var(--gx-accent-rgb, 201,170,113), 0.10);
+}
+.guixu-root-container #variable-manager-modal .attribute-item:last-child {
+  border-bottom: none;
+}
+
+/* 核心需求：变量编辑器标签=金色常规字重；值维持默认 */
+.guixu-root-container #variable-manager-modal .attribute-name {
+  color: var(--gx-accent, #c9aa71);   /* 金色 */
+  font-weight: 400;                    /* 常规字重 */
+  white-space: nowrap;
+}
+.guixu-root-container #variable-manager-modal .attribute-value {
+  color: var(--gx-input-color, #e0dcd1);
+  margin-left: auto;
+}
+
+/* 输入宽度 */
+.guixu-root-container #variable-manager-modal .kv-input { width: 100%; }
+.guixu-root-container #variable-manager-modal .kv-textarea {
+  width: 100%;
+  min-height: 40px;
+  resize: vertical;
+}
+
+/* 变更高亮 */
+.guixu-root-container #variable-manager-modal .vm-row-changed {
+  border: 1px solid rgba(218,165,32,0.7) !important;
+  box-shadow: 0 0 10px rgba(218,165,32,0.15) inset;
+  border-radius: 6px;
+}
+
+/* 移动端折叠与布局修正 */
+.guixu-root-container.mobile-view #variable-manager-modal .vm-group .vm-group-header { padding: 8px; }
+.guixu-root-container.mobile-view #variable-manager-modal .attribute-item { gap: 6px; }
+/* 顶层条目标题在移动端居中，删除按钮换至下一行居中 */
+.guixu-root-container.mobile-view #variable-manager-modal details.vm-details > summary { flex-wrap: wrap; }
+.guixu-root-container.mobile-view #variable-manager-modal details.vm-details > summary .vm-head {
+  order: 1; flex: 1 0 100%; justify-content: center; text-align: center;
+}
+.guixu-root-container.mobile-view #variable-manager-modal details.vm-details > summary .vm-actions {
+  order: 2; flex: 1 0 100%; justify-content: center; margin-left: 0;
+}
+
+/* 输入容器：替代内联 style="flex:1; max-width:70%" */
+.guixu-root-container #variable-manager-modal .vm-flex-value {
+  flex: 1;
+  max-width: 70%;
+}
+
+
+/* 全部页：分组折叠 */
+.guixu-root-container #variable-manager-modal .vm-group.collapsed > .vm-body {
+  display: none;
+}
+.guixu-root-container #variable-manager-modal .vm-group > .vm-group-header::after {
+  content: '▾';
+  margin-left: 6px;
+  font-size: 12px;
+  opacity: 0.8;
+}
+.guixu-root-container #variable-manager-modal .vm-group.collapsed > .vm-group-header::after {
+  content: '▸';
+}
+
+/* JSON编辑器按钮采用通用小按钮样式（与关闭按钮一致），不额外覆盖颜色/背景 */
+.guixu-root-container #variable-manager-modal #vm-json-editor-btn {
+  /* 继承 .modal-header .settings-toggle-btn 的规则 */
+}
+.guixu-root-container #variable-manager-modal #vm-json-editor-btn:hover {
+  /* 悬停仅高亮图标颜色，保持与关闭按钮一致 */
+  color: #c9aa71;
+  background: transparent;
+  border: none;
+}
+
+/* JSON编辑面板样式 */
+.guixu-root-container #variable-manager-modal .vm-json-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  height: 100%;
+}
+
+.guixu-root-container #variable-manager-modal .vm-json-editor {
+  flex: 1;
+  width: 100%;
+  min-height: 400px;
+  background: rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(var(--gx-accent-rgb, 201,170,113), 0.25);
+  border-radius: 8px;
+  color: var(--gx-input-color, #e0dcd1);
+  padding: 12px;
+  font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+  font-size: 13px;
+  line-height: 1.5;
+  resize: vertical;
+}
+
+.guixu-root-container #variable-manager-modal .vm-json-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+}

@@ -1,0 +1,647 @@
+/* Phase 2 - features/save-load.css
+   道途印记面板（#save-load-modal）与印记条目（.save-slot*）专属样式
+   从 css/guixu.css 迁移，保持选择器与声明一致以避免特异性变化
+*/
+
+/* 移动端-道途印记 浮窗与每条印记布局优化（不影响桌面） */
+.guixu-root-container.mobile-view #save-load-modal .modal-content {
+  width: 96vw;
+  max-width: 96vw;
+  /* 移动端必须给出“确定高度”，否则内部 save-manager-grid 的 height:100% 无法解析，
+     导致左侧两个滚动区（自动/手书印记列表）flex:1 计算为 0 高度，从而看起来“没有渲染卡片”。 */
+  height: 90vh;
+  height: 90dvh; /* 支持设备优先使用动态视口单位 */
+  max-height: 90vh;
+  overflow-x: hidden;
+}
+.guixu-root-container.mobile-view #save-load-modal .modal-body {
+  /* 移动端：主体仅允许纵向滚动，彻底禁止横向滚动条 */
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+.guixu-root-container.mobile-view #save-load-modal .modal-header {
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.guixu-root-container.mobile-view #save-slots-container .save-slot {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 10px;
+}
+.guixu-root-container.mobile-view #save-slots-container .save-slot-info {
+  width: 100%;
+}
+.guixu-root-container.mobile-view #save-slots-container .save-slot-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  width: 100%;
+  justify-content: stretch;
+}
+.guixu-root-container.mobile-view #save-slots-container .save-slot-actions > button {
+  height: 36px;
+  padding: 0 10px;
+  min-width: 0;
+  box-sizing: border-box;
+}
+/* 清理局部危险按钮视觉，改为复用全局 .danger-btn，仅保留布局钩子 */
+.clear-saves-btn {
+  margin-left: auto; /* 推到右侧 */
+}
+
+/* 移动端-天命印记列表：与手书印记一致的纵向布局与按钮网格 */
+.guixu-root-container.mobile-view #auto-save-slot-container > .save-slot,
+.guixu-root-container.mobile-view #auto-save-slot-container > .auto-save-slot {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: stretch !important;
+  gap: 10px !important;
+}
+.guixu-root-container.mobile-view #auto-save-slot-container .save-slot-info,
+.guixu-root-container.mobile-view #auto-save-slot-container .slot-info {
+  width: 100% !important;
+}
+.guixu-root-container.mobile-view #auto-save-slot-container .save-slot-actions,
+.guixu-root-container.mobile-view #auto-save-slot-container .slot-actions {
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  gap: 8px !important;
+  width: 100% !important;
+  justify-content: stretch !important;
+}
+.guixu-root-container.mobile-view #auto-save-slot-container button {
+  height: 36px !important;
+  padding: 0 10px !important;
+  min-width: 0 !important;
+  box-sizing: border-box !important;
+}
+
+/* 印记列表与条目（通用） */
+#save-slots-container,
+#auto-save-slot-container {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+.save-slot {
+  /* 改为全局通用卡片底色（与“游玩指南/功法面板”等一致） */
+  background: var(--gx-surface-2, rgba(26,26,46,0.48));
+  border: 1px solid rgba(var(--gx-accent-rgb, 201,170,113), 0.30);
+  border-radius: 6px;
+  padding: 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: background-color .2s ease, box-shadow .2s ease, border-color .2s ease;
+}
+/* 悬浮/聚焦：卡片柔光高亮，不改变边框颜色（统一全局风格） */
+.save-slot:hover,
+.save-slot:focus-visible {
+  background: rgba(26, 26, 46, 0.62);
+  box-shadow: 0 0 14px rgba(var(--gx-accent-rgb, 201,170,113), 0.20);
+}
+.save-slot-info {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.save-slot-info .slot-name {
+  font-size: 16px;
+  color: #e0dcd1;
+}
+.save-slot-info .slot-time {
+  font-size: 12px;
+  color: #8b7355;
+  margin-top: 5px;
+}
+.save-slot-info .slot-summary {
+  font-size: 11px;
+  color: #a09c91;
+  margin-top: 8px;
+  font-style: italic;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex-grow: 1;
+  min-width: 0;
+}
+.save-slot-actions {
+  display: flex;
+  gap: 8px;
+  /* 减小间距以容纳更多按钮 */
+  flex-shrink: 0;
+  /* 防止按钮被压缩 */
+}
+
+/* 天命印记区域 */
+.auto-save-section {
+  padding: 15px;
+  margin-bottom: 15px;
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(201, 170, 113, 0.3);
+  border-radius: 5px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.auto-save-title {
+  font-size: 16px;
+  color: #c9aa71;
+}
+.auto-save-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+}
+.auto-save-toggle label {
+  font-size: 14px;
+  color: #a09c91;
+  cursor: pointer;
+}
+.auto-save-toggle input[type="checkbox"] {
+  cursor: pointer;
+  width: 18px;
+  height: 18px;
+}
+
+/* 全屏（移动端）下的印记面板收紧与尺寸恢复 */
+.guixu-root-container:fullscreen.mobile-view #save-load-modal .modal-content,
+.guixu-root-container:-webkit-full-screen.mobile-view #save-load-modal .modal-content {
+  width: 90%;
+  max-width: 800px;
+  height: 90%;
+  max-height: 550px;
+}
+.guixu-root-container:fullscreen.mobile-view #save-load-modal .modal-body,
+.guixu-root-container:-webkit-full-screen.mobile-view #save-load-modal .modal-body {
+  overflow-y: auto;
+}
+/* 按钮紧凑尺寸：覆盖移动端放大规则，仅限道途印记面板 */
+.guixu-root-container:fullscreen.mobile-view #save-load-modal .save-slot-actions > button,
+.guixu-root-container:-webkit-full-screen.mobile-view #save-load-modal .save-slot-actions > button,
+.guixu-root-container:fullscreen.mobile-view #save-load-modal .slot-actions > button,
+.guixu-root-container:-webkit-full-screen.mobile-view #save-load-modal .slot-actions > button,
+.guixu-root-container:fullscreen.mobile-view #save-load-modal .interaction-btn,
+.guixu-root-container:-webkit-full-screen.mobile-view #save-load-modal .interaction-btn,
+.guixu-root-container:fullscreen.mobile-view #save-load-modal .clear-saves-btn,
+.guixu-root-container:-webkit-full-screen.mobile-view #save-load-modal .clear-saves-btn {
+  height: 32px !important;
+  padding: 0 12px !important;
+  font-size: 12px !important;
+  min-width: 0;
+  box-sizing: border-box;
+}
+/* 印记项间距微调，避免“过于疏松” */
+.guixu-root-container:fullscreen.mobile-view #save-load-modal .save-slot,
+.guixu-root-container:-webkit-full-screen.mobile-view #save-load-modal .save-slot {
+  gap: 10px;
+}
+
+/* 新增：道途印记双栏布局与详情面板（遵循紫金琉璃主题） */
+.guixu-root-container #save-load-modal .save-manager-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr; /* 左右等比分栏，随容器自适应 */
+  grid-template-rows: 1fr;        /* 单行铺满父容器高度，保证左右等高 */
+  gap: 14px;
+  align-items: stretch;
+  height: 100%;                   /* 与右侧面板保持等高 */
+  min-height: 0;                  /* 允许内部滚动 */
+}
+
+.guixu-root-container #save-load-modal .save-list-pane {
+  background: var(--gx-surface-2);
+  border: 1px solid var(--gx-border);
+  border-radius: 8px;
+  padding: 12px;
+  backdrop-filter: var(--gx-background-blur);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  height: 100%;     /* 桌面端：与右侧一致等高 */
+  min-height: 0;    /* 允许内部滚动区正常计算 */
+}
+/* 移动端：彻底取消“等高”依赖，避免父高不确定导致面板塌陷为 0 */
+.guixu-root-container.mobile-view #save-load-modal .save-list-pane {
+  display: block !important;     /* 强制块级，避免被 flex 等高链路影响 */
+  height: auto !important;
+  min-height: 1px !important;    /* 至少可见一条分隔 */
+  overflow: visible !important;
+  padding-bottom: 10px;          /* 与下块留缝，避免被下一块覆盖 */
+}
+
+.guixu-root-container #save-load-modal .save-list-title {
+  font-size: 14px;
+  color: var(--gx-accent);
+  margin: 12px 0 8px;
+  border-top: 1px solid rgba(var(--gx-accent-rgb), 0.3);
+  padding-top: 10px;
+}
+/* 去掉左侧面板首段（天命印记）的分割线 */
+.guixu-root-container #save-load-modal .save-list-pane .save-list-title:first-of-type {
+  border-top: none;
+  padding-top: 0;
+  margin-top: 0;
+}
+
+.guixu-root-container #save-load-modal .save-list-section {
+  /* 两个列表（天命印记/手书印记）均占据可用高度，并各自独立滚动 */
+  overflow-y: auto;
+  flex: 1 1 0;
+  min-height: 0;        /* 允许在弹性容器中正确滚动 */
+  padding-right: 4px;
+}
+/* 两个列表均已 flex:1，保留页脚贴底布局（见下方 margin-top:auto） */
+/* 左侧面板页脚（新建印记按钮容器）固定贴底 */
+.guixu-root-container #save-load-modal .save-list-pane > div:last-child {
+  margin-top: auto;     /* 将页脚推到底部 */
+}
+
+.guixu-root-container #save-load-modal .save-detail-pane {
+  background: var(--gx-surface-1);
+  border: 1px solid var(--gx-border);
+  border-radius: 8px;
+  padding: 14px;
+  backdrop-filter: var(--gx-background-blur);
+  overflow: auto;
+  height: 100%;     /* 右侧面板高度填满，保证左右等高 */
+  min-height: 0;    /* 允许内容滚动 */
+}
+
+/* 左侧条目选中高亮 */
+.guixu-root-container #save-load-modal .save-slot.active {
+  border-color: rgba(var(--gx-accent-rgb), 0.6);
+  box-shadow: inset 0 0 0 2px rgba(var(--gx-accent-rgb), 0.15);
+  background: rgba(0, 0, 0, 0.36);
+}
+
+/* 右侧详情结构 */
+.guixu-root-container #save-load-modal .save-detail {
+  /* 右侧详情区：使用满高纵向弹性布局，让底部按钮贴底，快照区自适应填充 */
+  display: flex;
+  flex-direction: column;
+  gap: 8px;        /* 缩小区块间距，使状态卡片更贴近底部按钮 */
+  height: 100%;
+  min-height: 0;
+}
+
+.guixu-root-container #save-load-modal .save-detail-header {
+  border-bottom: 1px solid rgba(var(--gx-accent-rgb), 0.25);
+  padding-bottom: 8px;
+}
+
+.guixu-root-container #save-load-modal .save-detail-title {
+  font-size: 18px;
+  color: #e0dcd1;
+  line-height: 1.35;
+}
+
+.guixu-root-container #save-load-modal .save-detail-meta {
+  font-size: 12px;
+  color: #8b7355;
+  margin-top: 4px;
+}
+
+.guixu-root-container #save-load-modal .save-detail-subtitle {
+  font-size: 13px;
+  color: var(--gx-accent);
+  margin-bottom: 8px;
+}
+
+.guixu-root-container #save-load-modal .save-detail-snapshot {
+  background: var(--gx-surface-3);
+  border: 1px solid rgba(var(--gx-accent-rgb), 0.25);
+  border-radius: 6px;
+  padding: 12px;
+  min-height: 200px; /* 扩大“记忆快照”卡片高度，增加左侧滚动可视区 */
+  /* 关键修复：建立包含块并裁剪内部溢出，避免多段落文本溢出到卡片外 */
+  position: relative;   /* 建立层叠上下文，防止后续模块覆盖 */
+  overflow: hidden;     /* 避免子元素溢出边框（与多行截断配合） */
+}
+
+.guixu-root-container #save-load-modal .save-detail-text {
+  color: #e0dcd1;
+  font-size: 13px;
+  line-height: 1.7;
+  /* 多段落安全截断：保留换行但压缩空白，防止段落间过大缝隙 */
+  white-space: pre-line;          /* 保留 \n，兼容 -webkit-line-clamp */
+  word-wrap: break-word;          /* 兼容旧浏览器 */
+  /* 多行省略（优先使用 line-clamp，退化为 max-height 裁剪） */
+  display: -webkit-box;           /* 触发 flex-like 盒模型 */
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 8;          /* 最多展示 8 行，多余隐藏 */
+  overflow: hidden;               /* 必须配合 line-clamp 才生效 */
+  max-height: calc(1.7em * 8);    /* 非 WebKit 兼容兜底：按行高裁剪 */
+}
+
+/* 设置子模块分割线：同层级的 .save-detail-stats 之间显示一条柔和分割线
+   说明：
+   - 仅在相邻模块之间添加，不影响模块首段
+   - 颜色与透明度遵循全局金色主题变量，保持风格一致 */
+.guixu-root-container #save-load-modal .save-detail .save-detail-stats + .save-detail-stats {
+  border-top: 1px solid rgba(var(--gx-accent-rgb), 0.25);
+  margin-top: 10px;
+  padding-top: 10px;
+}
+
+.guixu-root-container #save-load-modal .save-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(var(--save-stats-cols, 3), minmax(0, 1fr));
+  gap: 10px;
+  grid-auto-flow: row dense;
+}
+.guixu-root-container #save-load-modal .save-stats-grid.single-col {
+  grid-template-columns: 1fr;
+}
+/* 当最后一行只剩一个卡片时，自动铺满整行（两列/三列模式下） */
+.guixu-root-container #save-load-modal .save-stats-grid.cols-2 > .save-stat-card:last-child:nth-child(odd) {
+  grid-column: 1 / -1;
+}
+.guixu-root-container #save-load-modal .save-stats-grid.cols-3 > .save-stat-card:last-child:nth-child(3n+1) {
+  grid-column: 1 / -1;
+}
+
+.guixu-root-container #save-load-modal .save-stat-card {
+  background: var(--gx-surface-3);
+  border: 1px solid rgba(var(--gx-accent-rgb), 0.22);
+  border-radius: 6px;
+  padding: 8px;
+  text-align: center;
+}
+
+.guixu-root-container #save-load-modal .save-stat-key {
+  font-size: 11px;
+  color: #c9aa71;
+  letter-spacing: 0.5px;
+  margin-bottom: 4px;
+}
+
+.guixu-root-container #save-load-modal .save-stat-val {
+  font-size: 14px;
+  color: #e8e3d6;
+  font-weight: 600;
+}
+
+.guixu-root-container #save-load-modal .save-detail-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: auto;   /* 将底部动作区推到底部，贴着卡片底栏 */
+  padding-top: 6px;   /* 与上方状态卡片保持更紧凑的间距 */
+}
+/* 桌面端三列、移动端两列（由 JS 注入 cols-2/cols-3 类控制） */
+.guixu-root-container #save-load-modal .save-detail-actions.cols-2 {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+.guixu-root-container #save-load-modal .save-detail-actions.cols-3 {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+/* 若按钮个数为奇数，最后一个在两列模式下自动铺满整行；桌面三列不铺满，保持一行三列 */
+.guixu-root-container #save-load-modal .save-detail-actions.cols-2 > button:last-child:nth-child(odd) {
+  grid-column: 1 / -1;
+}
+
+/* 详情占位提示 */
+.guixu-root-container #save-load-modal .save-detail-placeholder {
+  width: 100%;
+  height: 100%;
+  min-height: 180px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: #8b7355;
+  text-align: center;
+  gap: 6px;
+}
+.guixu-root-container #save-load-modal .save-detail-placeholder .placeholder-icon {
+  font-size: 28px;
+  opacity: 0.9;
+}
+.guixu-root-container #save-load-modal .save-detail-placeholder .placeholder-title {
+  font-size: 15px;
+  color: #e0dcd1;
+}
+.guixu-root-container #save-load-modal .save-detail-placeholder .placeholder-sub {
+  font-size: 12px;
+  color: #a09c91;
+}
+
+/* 响应式：移动端改为上下布局，栅格降列 */
+.guixu-root-container.mobile-view #save-load-modal .save-manager-grid {
+  /* 移动端改为“上下堆叠”的自适应布局，彻底取消满高依赖 */
+  grid-template-columns: 1fr;          /* 单列 */
+  grid-template-rows: auto auto;       /* 两块自适应高度 */
+  height: auto;                         /* 关键：不再强制充满父容器高度 */
+  align-items: start;                   /* 避免被拉伸导致高度异常 */
+  /* 强制兜底：若上方 grid 未被正确覆盖，直接退化为块级流，彻底消除两栏导致的“只见一半”问题 */
+  display: block !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  overflow-x: hidden !important;
+  box-sizing: border-box !important;
+}
+
+/* 移动端：左侧列表面板不再等高，外层不裁剪，由内部列表各自滚动 */
+.guixu-root-container.mobile-view #save-load-modal .save-list-pane {
+  height: auto;
+  min-height: unset;
+  overflow: visible;
+  width: 100% !important;       /* 占满单列宽度，避免超出 */
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+/* 移动端：给两个列表明确的可视区高度与滚动，避免父高不确定时 flex:1 分到 0 */
+.guixu-root-container.mobile-view #save-load-modal .save-list-section {
+  max-height: 36vh;        /* 每个列表最多占 36% 视口高度，可视且可滚动 */
+  overflow-y: auto;
+  flex: unset;             /* 取消 flex:1，避免在父高不确定时被分配为 0 */
+}
+
+.guixu-root-container.mobile-view #save-load-modal .save-stats-grid {
+  --save-stats-cols: 2;
+}
+
+/* 移动端：彻底禁止道途印记面板横向滚动，所有子面板不超过容器宽度 */
+.guixu-root-container.mobile-view #save-load-modal .save-manager-grid,
+.guixu-root-container.mobile-view #save-load-modal .save-list-pane,
+.guixu-root-container.mobile-view #save-load-modal .save-detail-pane {
+  max-width: 100%;
+  overflow-x: hidden;
+  box-sizing: border-box; /* 包含内边距与边框，避免计算超宽 */
+}
+
+/* 印记卡片在小屏占满一行且不产生横向滚动 */
+.guixu-root-container.mobile-view #save-load-modal .save-slot {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* 右侧详情面板在移动端同样占满整行且不超宽 */
+.guixu-root-container.mobile-view #save-load-modal .save-detail-pane {
+  width: 100% !important;
+  max-width: 100% !important;
+  overflow-x: hidden !important;
+  box-sizing: border-box !important;
+}
+
+/* 详情内文本与标题允许换行，防止长字段把容器撑宽 */
+.guixu-root-container #save-load-modal .save-detail-title,
+.guixu-root-container #save-load-modal .save-detail-meta,
+.guixu-root-container #save-load-modal .save-detail-text {
+  word-break: break-word;
+  overflow-wrap: anywhere;
+}
+
+/* 顶部栏：标题居中 + 右上角图标按钮 */
+.guixu-root-container #save-load-modal .save-load-header {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 8px 10px;
+  position: relative;
+}
+.guixu-root-container #save-load-modal .save-title-centered {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  color: var(--gx-accent);
+  font-weight: 700;          /* 金色粗体 */
+  font-size: 16px;
+  letter-spacing: 0.03em;
+  white-space: nowrap;
+}
+.guixu-root-container #save-load-modal .header-actions {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+.guixu-root-container #save-load-modal .icon-btn {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--gx-accent);
+  background: var(--gx-surface-2);
+  border: 1px solid var(--gx-border);
+  box-shadow: var(--gx-glow-shadow);
+  cursor: pointer;
+}
+.guixu-root-container #save-load-modal .icon-btn:hover {
+  filter: brightness(1.08);
+}
+.guixu-root-container #save-load-modal .icon-btn:active {
+  transform: translateY(1px);
+}
+
+/* 右上角设置弹出层（复用紫金琉璃主题） */
+.guixu-root-container #save-load-modal .save-settings-popover {
+  position: absolute;
+  top: 36px;
+  right: 0;
+  /* 自适配小屏：避免弹出层撑破面板导致出现底部横向滚动条 */
+  width: auto;
+  min-width: clamp(220px, 90vw, 300px);
+  max-width: min(92vw, 360px);
+  background: var(--gx-surface-1);
+  border: 1px solid var(--gx-border);
+  border-radius: 8px;
+  padding: 10px;
+  box-shadow: var(--gx-glow-shadow);
+  backdrop-filter: var(--gx-background-blur);
+  z-index: 10;
+  box-sizing: border-box; /* 包含内边距与边框，避免超宽 */
+}
+.guixu-root-container #save-load-modal .save-settings-popover .auto-save-label {
+  color: var(--gx-accent);
+}
+.guixu-root-container #save-load-modal .save-settings-popover input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+}
+.guixu-root-container #save-load-modal .save-settings-popover .settings-actions > .interaction-btn,
+.guixu-root-container #save-load-modal .save-settings-popover .settings-actions > .danger-btn {
+  min-width: 100px;
+  height: 32px;
+  box-sizing: border-box;
+}
+/* 宽度断点兜底（嵌入式/未打上 .mobile-view 时也生效）
+   目的：在小屏下也强制改为上下布局，并给列表明确高度，避免“左侧列表区域不可见” */
+@media (max-width: 900px) {
+  .guixu-root-container #save-load-modal .modal-content {
+    width: 96vw;
+    max-width: 96vw;
+    height: 90dvh;      /* 使用动态视口高度，兼容地址栏伸缩 */
+    max-height: 90vh;
+    overflow-x: hidden;
+  }
+  .guixu-root-container #save-load-modal .save-manager-grid {
+    grid-template-columns: 1fr;     /* 单列上下堆叠 */
+    grid-template-rows: auto auto;  /* 两块自适应高度 */
+    height: auto;                   /* 取消满高链路 */
+    align-items: start;
+    /* 兜底：在未加 .mobile-view 的小屏嵌入环境中，直接退化为块级，杜绝两栏溢出 */
+    display: block !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    overflow-x: hidden !important;
+    box-sizing: border-box !important;
+  }
+  .guixu-root-container #save-load-modal .save-list-pane,
+  .guixu-root-container #save-load-modal .save-detail-pane {
+    display: block;
+    width: 100% !important;
+    max-width: 100% !important;
+    height: auto;
+    min-height: 1px;
+    overflow-x: hidden !important;
+    box-sizing: border-box !important;
+    padding-bottom: 10px;           /* 与详情区留缝（对左侧适用；右侧无影响） */
+  }
+  .guixu-root-container #save-load-modal .save-list-section {
+    max-height: 36vh;               /* 两个列表各自可滚动 */
+    overflow-y: auto;
+    flex: unset;                    /* 避免父高不确定时分到 0 */
+  }
+  .guixu-root-container #save-load-modal .save-stats-grid {
+    --save-stats-cols: 2;           /* 右侧统计在小屏降为两列 */
+  }
+}
+
+/* ========================= 移动端二级标签（印记/详情）与切换规则 ========================= */
+/* 桌面端隐藏移动标签，确保不影响桌面布局 */
+.guixu-root-container:not(.mobile-view) #save-load-modal .save-mobile-tabs { display: none !important; }
+
+/* 移动端显示：一行两列，铺满整行宽度 */
+.guixu-root-container.mobile-view #save-load-modal .save-mobile-tabs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;   /* 一行两列 */
+  gap: 0;
+  width: 100%;
+  margin: 8px 0;
+  padding: 0 0 6px;
+  border-bottom: 1px solid rgba(var(--gx-accent-rgb), 0.25);
+  box-sizing: border-box;
+}
+.guixu-root-container.mobile-view #save-load-modal .save-mobile-tabs .gx-tab {
+  min-width: 0;             /* 防止超宽 */
+  height: 32px;
+  line-height: 32px;
+  border-radius: 6px;
+}
+
+/* 通过 data-mobile-tab 切换左右两栏显示（仅影响移动端） */
+.guixu-root-container.mobile-view #save-load-modal .save-manager-grid[data-mobile-tab="list"] .save-list-pane { display: block !important; }
+.guixu-root-container.mobile-view #save-load-modal .save-manager-grid[data-mobile-tab="list"] .save-detail-pane { display: none !important; }
+.guixu-root-container.mobile-view #save-load-modal .save-manager-grid[data-mobile-tab="detail"] .save-list-pane { display: none !important; }
+.guixu-root-container.mobile-view #save-load-modal .save-manager-grid[data-mobile-tab="detail"] .save-detail-pane { display: block !important; }
