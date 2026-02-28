@@ -10,14 +10,14 @@
   /* 增加bottom值，将菜单上移 */
   right: 175px;
   /* 大致对齐到快速发送区域 */
-  background: rgba(15, 15, 35, 0.98);
-  border: 1px solid #c9aa71;
+  background: rgba(var(--gx-mask-rgb, 26, 26, 46), 0.96);
+  border: 1px solid rgba(var(--gx-accent-rgb, 201, 170, 113), 0.42);
   border-radius: 6px;
   z-index: 1002;
   width: 280px;
   max-height: 200px;
   overflow-y: auto;
-  box-shadow: 0 -4px 15px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 -6px 18px rgba(0, 0, 0, 0.45);
 }
 .quick-command-list {
   list-style: none;
@@ -26,24 +26,24 @@
 }
 .quick-command-item {
   padding: 8px 12px;
-  color: #a09c91;
+  color: rgba(var(--gx-accent-rgb, 201, 170, 113), 0.82);
   font-size: 12px;
   /* cursor: pointer; */
   /* 移除指针手势 */
-  border-bottom: 1px solid rgba(201, 170, 113, 0.1);
-  transition: background-color 0.2s;
+  border-bottom: 1px solid rgba(var(--gx-accent-rgb, 201, 170, 113), 0.16);
+  transition: background-color 0.2s, color 0.2s;
 }
 .quick-command-item:last-child {
   border-bottom: none;
 }
 .quick-command-item:hover {
-  background-color: rgba(201, 170, 113, 0.15);
-  color: #e0dcd1;
+  background-color: rgba(var(--gx-accent-rgb, 201, 170, 113), 0.14);
+  color: #e8e3d6;
 }
 .quick-command-empty {
   padding: 15px;
   text-align: center;
-  color: #8b7355;
+  color: var(--gx-placeholder-color, #8b7355);
   font-style: italic;
   font-size: 12px;
 }
@@ -52,14 +52,34 @@
 .command-center-actions {
   list-style-type: none;
   padding: 0;
+  margin: 0;
   margin-bottom: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 .command-center-action-item {
-  background: rgba(0, 0, 0, 0.3);
+  background: linear-gradient(
+    180deg,
+    rgba(var(--gx-mask-rgb, 26, 26, 46), calc(var(--gx-panel-opacity, 0.85) * 0.58)),
+    rgba(var(--gx-mask-rgb, 26, 26, 46), calc(var(--gx-panel-opacity, 0.85) * 0.44))
+  );
+  border: 1px solid rgba(var(--gx-accent-rgb, 201, 170, 113), 0.26);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.08), 0 4px 10px rgba(0,0,0,0.18);
   padding: 8px 12px;
-  border-radius: 4px;
-  margin-bottom: 8px;
+  border-radius: 8px;
   font-size: 14px;
+  line-height: 1.6;
+  color: #e0dcd1;
+  word-break: break-word;
+}
+.command-center-action-item:hover {
+  border-color: rgba(var(--gx-accent-rgb, 201, 170, 113), 0.42);
+  background: linear-gradient(
+    180deg,
+    rgba(var(--gx-mask-rgb, 26, 26, 46), calc(var(--gx-panel-opacity, 0.85) * 0.64)),
+    rgba(var(--gx-mask-rgb, 26, 26, 46), calc(var(--gx-panel-opacity, 0.85) * 0.50))
+  );
 }
 .command-center-footer {
   display: flex;
@@ -69,7 +89,7 @@
   margin-top: auto;
   /* 推到底部 */
   padding-top: 15px;
-  border-top: 1px solid rgba(201, 170, 113, 0.5);
+  border-top: 1px solid rgba(var(--gx-accent-rgb, 201, 170, 113), 0.34);
   /* 修复“应用/保存并关闭”错位换行问题 */
   flex-wrap: nowrap;
 }

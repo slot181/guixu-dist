@@ -872,3 +872,14 @@
 .guixu-root-container.mobile-view #inventory-modal .inv-pane-middle {
   order: 1;
 }
+
+/* 兜底：未标记 mobile-view 但屏幕较窄 */
+@media (max-width: 900px){
+  .guixu-root-container #inventory-modal .modal-content {
+    width: 96vw;
+    max-width: 96vw;
+    height: 90vh;
+    height: 90dvh;
+    max-height: 90vh;
+  }
+}

@@ -22,6 +22,14 @@
   line-height: 1;
   white-space: nowrap;
 }
+
+/* 菜单大厅页脚内复用版本徽标：从绝对定位改为页脚流式定位 */
+.start-lobby-footer .version-badge {
+  position: static;
+  right: auto;
+  bottom: auto;
+  z-index: 1;
+}
 .version-badge .vb-text { color: #c9aa71; }
 .version-badge .vb-pill {
   padding: 1px 5px;                  /* 小胶囊更小 */

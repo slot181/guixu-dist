@@ -33,7 +33,8 @@
   flex-shrink: 0;
 }
 
-.waiting-popup {
+.waiting-popup,
+.guixu-root-container .temp-message-popup {
   position: fixed; /* 固定相对视口，嵌入式/移动端均稳定 */
   top: 20px;
   left: 50%;
@@ -58,11 +59,28 @@
   white-space: normal;           /* 正常换行 */
   word-break: break-word;        /* 打断长词 */
   overflow-wrap: anywhere;       /* 移动端激进断行 */
+  pointer-events: none;
 }
 
-/* 顶部栏临时消息浮窗：统一抬升层级，防止被任何面板/模态遮挡 */
 .guixu-root-container .temp-message-popup {
-  z-index: 10120 !important; /* 高于所有面板(10080)与确认输入(10100)与设置说明(10110) */
+  font-weight: 600;
+  font-family: "Microsoft YaHei", sans-serif;
+  padding: 15px 25px;
+  max-width: min(92vw, 620px);
+}
+
+/* 等待浮窗图标统一样式 */
+.waiting-popup .waiting-icon {
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  font-size: 14px;
+  line-height: 1;
+  border: 1px solid rgba(201, 170, 113, 0.4);
+  background: rgba(201, 170, 113, 0.12);
+  color: #c9aa71;
 }
 
 /* 变体状态：loading/warning/info 显隐控制（提取自 main.js 内联逻辑） */

@@ -6,6 +6,26 @@
 /* --- 归墟系统模态框美化 --- */
 /* 此处不再需要特定样式，已由 css/features/modals.css 中的全局 .modal-content 样式统一处理 */
 
+/* 归墟系统/归墟空间容器卡片：透明度跟随“功能面板背景透明度” */
+#guixu-system-modal .panel-section,
+#guixu-space-modal .gx-item-card,
+#guixu-space-modal .modal-body > .attributes-list {
+  background: linear-gradient(
+    180deg,
+    rgba(var(--gx-mask-rgb, 26, 26, 46), calc(var(--gx-panel-opacity, 0.85) * 0.58)),
+    rgba(var(--gx-mask-rgb, 26, 26, 46), calc(var(--gx-panel-opacity, 0.85) * 0.44))
+  );
+  border: 1px solid rgba(var(--gx-accent-rgb, 201, 170, 113), 0.30);
+  border-radius: 12px;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.08), 0 8px 18px rgba(0,0,0,0.16);
+}
+
+#guixu-space-modal .modal-body {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
 #guixu-system-modal .attribute-item {
   padding: 10px 4px;                 /* 增加垂直内边距 */
   font-size: 13px;                   /* 放大字体 */
@@ -16,9 +36,44 @@
   border-bottom: none;
 }
 
+#guixu-system-modal .attribute-name,
+#guixu-space-modal .attribute-name {
+  color: var(--gx-accent, #c9aa71);
+  font-weight: 400;
+}
+
+#guixu-system-modal .attribute-value,
+#guixu-space-modal .attribute-value {
+  color: var(--gx-accent, #c9aa71);
+  font-weight: 700;
+}
+
+#guixu-system-modal .guixu-gold-label {
+  color: var(--gx-accent, #c9aa71);
+  font-weight: 400;
+}
+
+#guixu-system-modal .guixu-gold-value {
+  color: var(--gx-accent, #c9aa71);
+  font-weight: 700;
+}
+
 /* 行：归墟充能（从内联 margin-top:15px 抽离） */
 #guixu-system-modal .charge-row {
   margin-top: 15px;
+}
+
+#guixu-system-modal .guixu-space-entry-row {
+  align-items: center;
+  gap: 8px;
+}
+
+#guixu-system-modal #btn-open-guixu-space {
+  margin-left: auto;
+}
+
+#guixu-system-modal .guixu-remaining-days-row {
+  margin-top: 6px;
 }
 
 /* 底部动作区（从内联 padding/居中/按钮宽度抽离） */
@@ -30,6 +85,12 @@
   width: 80%;
   padding: 12px;                     /* 与历史内联一致 */
   font-size: 16px;                   /* 按钮字号放大 */
+}
+
+#guixu-system-modal .details-progress-bar {
+  background: rgba(var(--gx-mask-rgb, 26, 26, 46), 0.66);
+  border-color: rgba(var(--gx-accent-rgb, 201, 170, 113), 0.30);
+  box-shadow: inset 0 1px 3px rgba(0,0,0,0.35);
 }
 
 /* 归墟面板：充能进度条渲染与顶部栏一致（火焰灵流：#dc2626→#f97316→#fef08a） */
@@ -66,15 +127,51 @@
   pointer-events: none;
 }
 
+#guixu-space-modal .gx-item-card .gx-space-item-list {
+  padding: 8px;
+}
+
+#guixu-space-modal .gx-item-card .gx-space-item-desc {
+  margin: 6px 0;
+  background: rgba(var(--gx-mask-rgb, 26, 26, 46), calc(var(--gx-panel-opacity, 0.85) * 0.36));
+  border: 1px solid rgba(var(--gx-accent-rgb, 201, 170, 113), 0.20);
+  color: #a09c91;
+}
+
+#guixu-space-modal .gx-item-card .gx-space-item-actions {
+  justify-content: flex-end;
+}
+
+#guixu-space-modal .gx-item-card .gx-space-tooltip-trigger {
+  cursor: help;
+}
+
+#guixu-space-modal .gx-item-card:hover {
+  border-color: rgba(var(--gx-accent-rgb, 201, 170, 113), 0.46);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.12), 0 10px 22px rgba(0,0,0,0.18);
+}
+
 /* 归墟空间：已取出物品的“取出”按钮禁用态（灰色、不可点） */
 #guixu-space-modal .take-item-btn[disabled],
 #guixu-space-modal .take-item-btn[aria-disabled="true"],
-#guixu-space-modal .take-item-btn:disabled {
-  opacity: .55;
+#guixu-space-modal .take-item-btn:disabled,
+#guixu-space-modal .take-item-btn.is-retrieved {
+  opacity: .72;
   cursor: not-allowed;
-  filter: grayscale(0.2);
-  background-color: rgba(120, 120, 120, 0.35);
-  color: rgba(255, 255, 255, 0.7);
-  border-color: rgba(120, 120, 120, 0.45);
+  filter: grayscale(0.55) saturate(0.72);
+  background: linear-gradient(180deg, rgba(146, 146, 152, 0.26), rgba(116, 116, 124, 0.30));
+  color: rgba(232, 236, 244, 0.72);
+  border-color: rgba(166, 168, 178, 0.48);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.18);
   pointer-events: none; /* 双保险，防止事件委托误触发 */
+}
+
+/* 归墟空间二级面板：桌面端顶部返回/关闭按钮固定在右上角 */
+@media (min-width: 901px) {
+  #guixu-space-modal .modal-header #gx-space-head-actions {
+    margin-left: auto;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
 }

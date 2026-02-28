@@ -45,6 +45,9 @@
   color: var(--gx-accent, #c9aa71);
   box-sizing: border-box;
 }
+.guixu-root-container #extracted-content-modal .ec-settings-card.is-hidden {
+  display: none;
+}
 
 /* 设置项编排（两开关） */
 .guixu-root-container #extracted-content-modal .ec-group-row {
@@ -65,6 +68,9 @@
   font-size: 12px;
   color: var(--gx-accent, #c9aa71);
 }
+.guixu-root-container #extracted-content-modal .ec-setting-item input[type="checkbox"] {
+  margin: 0;
+}
 
 /* 标签页：一行四列（gx-tabs/gx-tab 使用全局视觉） */
 .guixu-root-container #extracted-content-modal .ec-tabs {
@@ -83,17 +89,40 @@
 .guixu-root-container #extracted-content-modal .extracted-pre {
   white-space: pre-wrap;
   word-wrap: break-word;
-  color: #e0dcd1;
+  color: var(--gx-input-color, #e0dcd1);
   font-size: 12px;
   padding: 10px;
-  background: rgba(0, 0, 0, 0.2);
-  border-radius: 4px;
+  background: rgba(var(--gx-mask-rgb, 26, 26, 46), calc(var(--gx-panel-opacity, 0.85) * 0.34));
+  border: 1px solid rgba(var(--gx-accent-rgb, 201,170,113), 0.2);
+  border-radius: 8px;
   min-height: 50px;
+  line-height: 1.68;
+  box-sizing: border-box;
 }
 
 /* 内容面板容器（用于后续扩展，如按需隐藏某些子元素） */
 .guixu-root-container #extracted-content-modal .ec-panel {
   /* 目前不强制布局，保留默认流式 */
+}
+.guixu-root-container #extracted-content-modal .ec-panel.is-hidden {
+  display: none;
+}
+.guixu-root-container #extracted-content-modal .ec-panel .panel-section {
+  background: linear-gradient(
+    180deg,
+    rgba(var(--gx-mask-rgb, 26, 26, 46), calc(var(--gx-panel-opacity, 0.85) * 0.62)),
+    rgba(var(--gx-mask-rgb, 26, 26, 46), calc(var(--gx-panel-opacity, 0.85) * 0.48))
+  );
+  border: 1px solid rgba(var(--gx-accent-rgb, 201,170,113), 0.28);
+}
+.guixu-root-container #extracted-content-modal .ec-section-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+}
+.guixu-root-container #extracted-content-modal .ec-section-head .interaction-btn {
+  flex: 0 0 auto;
 }
 
 /* 桌面端：压缩小按钮尺寸（与 relationships/history 统一）*/

@@ -73,9 +73,13 @@
   font-weight: 700;
   font-size: 14px;
   letter-spacing: .5px;
-  padding: 2px 0 10px;
-  margin: -2px 0 4px;                    /* 与面板内边距协调 */
+  padding: 0 0 6px;
+  margin: 0;                              /* 收紧标题与按钮区间距 */
   border-bottom: 1px solid rgba(201,170,113,.35); /* 与下方按钮之间的分割线 */
+}
+/* 桌面端兜底：不渲染移动端“菜单栏”标题 */
+.guixu-root-container:not(.mobile-view) .interaction-panel > .mobile-func-header {
+  display: none !important;
 }
 /* 功能按钮：两列排布，统一高度 */
 .mobile-view.show-interaction-panel .interaction-panel .interaction-btn {

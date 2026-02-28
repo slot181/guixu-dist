@@ -91,6 +91,15 @@
   position: relative; /* 供内部浮层（如 tooltip）相对定位 */
 }
 
+/* 移动端：统一模态框尺寸基线（右栏二级面板一致） */
+.guixu-root-container.mobile-view .modal-content {
+  width: 96vw;
+  max-width: 96vw;
+  height: 90vh;
+  height: 90dvh;
+  max-height: 90vh;
+}
+
 /* 通用悬浮详情浮窗（作为全局模态系统的一部分）
    说明：
    - 统一用于“修行概览属性卡片”等局部悬浮详情，移除面向业务的行内样式
@@ -188,6 +197,107 @@
 .guixu-root-container #custom-number-prompt-modal.modal-overlay,
 .guixu-root-container #custom-text-prompt-modal.modal-overlay {
   z-index: 10100 !important; /* 高于通用模态(10080)、底栏(10010)与悬浮菜单/按钮(10055/10060/10065) */
+}
+
+/* 顶层输入类弹窗（数字/文本）统一视觉与排版
+   目标：
+   1) 统一使用全局输入/按钮体系
+   2) 修复输入框与按钮过近的问题
+   3) 桌面与移动端保持一致的紧凑结构 */
+.guixu-root-container #custom-number-prompt-modal .custom-prompt-content,
+.guixu-root-container #custom-text-prompt-modal .custom-prompt-content {
+  width: min(92vw, 520px);
+  max-width: 520px;
+  height: auto;
+  max-height: 84vh;
+  padding: 18px;
+  text-align: left;
+}
+.guixu-root-container #custom-text-prompt-modal .custom-prompt-content {
+  max-width: 640px;
+}
+/* 紧凑版弹窗：用于数量输入、命名等轻量交互，视觉贴近删除确认框 */
+.guixu-root-container #custom-number-prompt-modal .custom-prompt-content.custom-prompt-content--compact,
+.guixu-root-container #custom-text-prompt-modal .custom-prompt-content.custom-prompt-content--compact {
+  width: min(90vw, 400px);
+  max-width: 400px;
+  padding: 16px;
+}
+.guixu-root-container #custom-number-prompt-modal .custom-prompt-body,
+.guixu-root-container #custom-text-prompt-modal .custom-prompt-body {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.guixu-root-container #custom-number-prompt-modal .custom-prompt-message,
+.guixu-root-container #custom-text-prompt-modal .custom-prompt-message {
+  margin: 0;
+  color: var(--guixu-story-default-color, #DEDEE6);
+  font-size: 14px;
+  line-height: 1.6;
+}
+.guixu-root-container #custom-number-prompt-modal .custom-number-input {
+  width: 100%;
+  min-height: 34px;
+  margin: 0;
+}
+.guixu-root-container #custom-text-prompt-modal .custom-text-input {
+  width: 100%;
+  min-height: 220px;
+  padding: 8px 10px;
+  color: #e0dcd1;
+  border: 1px solid #8b7355;
+  border-radius: 6px;
+  background: var(--gx-input-bg, rgba(26,26,46,0.5));
+  box-sizing: border-box;
+  font-size: 13px;
+  line-height: 1.5;
+  resize: vertical;
+}
+.guixu-root-container #custom-text-prompt-modal .custom-singleline-input {
+  width: 100%;
+  min-height: 34px;
+  margin: 0;
+}
+.guixu-root-container #custom-number-prompt-modal .custom-prompt-buttons,
+.guixu-root-container #custom-text-prompt-modal .custom-prompt-buttons {
+  margin-top: 14px;
+  gap: 10px;
+  justify-content: flex-end;
+}
+.guixu-root-container #custom-number-prompt-modal .custom-prompt-buttons,
+.guixu-root-container #custom-text-prompt-modal .custom-prompt-content.custom-prompt-content--compact .custom-prompt-buttons {
+  justify-content: center;
+  margin-top: 12px;
+}
+.guixu-root-container #custom-number-prompt-modal .custom-prompt-buttons > .interaction-btn,
+.guixu-root-container #custom-text-prompt-modal .custom-prompt-buttons > .interaction-btn {
+  min-width: 96px;
+  min-height: 34px;
+  padding: 0 12px;
+  box-sizing: border-box;
+}
+/* 紧凑版文案居中，贴近确认框视觉 */
+.guixu-root-container #custom-number-prompt-modal .custom-prompt-message,
+.guixu-root-container #custom-text-prompt-modal .custom-prompt-content.custom-prompt-content--compact .custom-prompt-message {
+  text-align: center;
+  font-size: 13px;
+}
+@media (max-width: 900px) {
+  .guixu-root-container #custom-number-prompt-modal .custom-prompt-content,
+  .guixu-root-container #custom-text-prompt-modal .custom-prompt-content {
+    width: 94vw;
+    max-width: 94vw;
+    max-height: 88vh;
+  }
+  .guixu-root-container #custom-number-prompt-modal .custom-prompt-buttons,
+  .guixu-root-container #custom-text-prompt-modal .custom-prompt-buttons {
+    justify-content: stretch;
+  }
+  .guixu-root-container #custom-number-prompt-modal .custom-prompt-buttons > .interaction-btn,
+  .guixu-root-container #custom-text-prompt-modal .custom-prompt-buttons > .interaction-btn {
+    flex: 1 1 0;
+  }
 }
 
 /* 桌面端全屏模式：功能面板整体放大约 1/3（不影响移动端） */

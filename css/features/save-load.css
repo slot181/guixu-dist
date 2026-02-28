@@ -115,6 +115,9 @@
   color: #8b7355;
   margin-top: 5px;
 }
+.save-slot-info .slot-time.slot-time-empty {
+  font-style: italic;
+}
 .save-slot-info .slot-summary {
   font-size: 11px;
   color: #a09c91;
@@ -132,6 +135,12 @@
   /* 减小间距以容纳更多按钮 */
   flex-shrink: 0;
   /* 防止按钮被压缩 */
+}
+
+.save-list-error {
+  color: #ff6b6b;
+  padding: 20px;
+  text-align: center;
 }
 
 /* 天命印记区域 */
@@ -257,6 +266,17 @@
 .guixu-root-container #save-load-modal .save-list-pane > div:last-child {
   margin-top: auto;     /* 将页脚推到底部 */
 }
+.guixu-root-container #save-load-modal #auto-save-slot-container {
+  margin-bottom: 15px;
+}
+.guixu-root-container #save-load-modal .save-list-footer {
+  padding-top: 10px;
+  margin-top: 10px;
+  border-top: 1px solid rgba(var(--gx-accent-rgb, 201,170,113), 0.25);
+}
+.guixu-root-container #save-load-modal #btn-create-new-save {
+  width: 100%;
+}
 
 .guixu-root-container #save-load-modal .save-detail-pane {
   background: var(--gx-surface-1);
@@ -307,6 +327,9 @@
   font-size: 13px;
   color: var(--gx-accent);
   margin-bottom: 8px;
+}
+.guixu-root-container #save-load-modal .save-subtitle-icon {
+  margin-right: 6px;
 }
 
 .guixu-root-container #save-load-modal .save-detail-snapshot {
@@ -390,6 +413,12 @@
   margin-top: auto;   /* 将底部动作区推到底部，贴着卡片底栏 */
   padding-top: 6px;   /* 与上方状态卡片保持更紧凑的间距 */
 }
+.guixu-root-container #save-load-modal .save-detail-actions > .interaction-btn {
+  width: 100%;
+  min-height: 36px;
+  padding: 0 12px;
+  box-sizing: border-box;
+}
 /* 桌面端三列、移动端两列（由 JS 注入 cols-2/cols-3 类控制） */
 .guixu-root-container #save-load-modal .save-detail-actions.cols-2 {
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -426,6 +455,49 @@
 .guixu-root-container #save-load-modal .save-detail-placeholder .placeholder-sub {
   font-size: 12px;
   color: #a09c91;
+}
+
+/* 右侧“印记设置”内容区结构化样式（替代内联样式） */
+.guixu-root-container #save-load-modal .save-settings-desc {
+  margin: 4px 0 8px;
+  color: #8b7355;
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.guixu-root-container #save-load-modal .save-settings-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.guixu-root-container #save-load-modal .save-settings-row.save-settings-row-compact {
+  margin-bottom: 10px;
+}
+
+.guixu-root-container #save-load-modal .save-settings-row.save-settings-toggle-row {
+  justify-content: flex-start;
+}
+
+.guixu-root-container #save-load-modal .save-settings-label {
+  color: #e0dcd1;
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+.guixu-root-container #save-load-modal .save-settings-input {
+  width: 80px;
+  background: rgba(0, 0, 0, 0.5);
+  border: 1px solid #8b7355;
+  color: #e0dcd1;
+  border-radius: 6px;
+  padding: 4px;
+  font-size: 12px;
+}
+
+.guixu-root-container #save-load-modal .save-settings-checkbox {
+  cursor: pointer;
 }
 
 /* 响应式：移动端改为上下布局，栅格降列 */
@@ -575,47 +647,13 @@
   height: 32px;
   box-sizing: border-box;
 }
-/* 宽度断点兜底（嵌入式/未打上 .mobile-view 时也生效）
-   目的：在小屏下也强制改为上下布局，并给列表明确高度，避免“左侧列表区域不可见” */
-@media (max-width: 900px) {
-  .guixu-root-container #save-load-modal .modal-content {
-    width: 96vw;
-    max-width: 96vw;
-    height: 90dvh;      /* 使用动态视口高度，兼容地址栏伸缩 */
-    max-height: 90vh;
-    overflow-x: hidden;
-  }
-  .guixu-root-container #save-load-modal .save-manager-grid {
-    grid-template-columns: 1fr;     /* 单列上下堆叠 */
-    grid-template-rows: auto auto;  /* 两块自适应高度 */
-    height: auto;                   /* 取消满高链路 */
-    align-items: start;
-    /* 兜底：在未加 .mobile-view 的小屏嵌入环境中，直接退化为块级，杜绝两栏溢出 */
-    display: block !important;
-    width: 100% !important;
-    max-width: 100% !important;
-    overflow-x: hidden !important;
-    box-sizing: border-box !important;
-  }
-  .guixu-root-container #save-load-modal .save-list-pane,
-  .guixu-root-container #save-load-modal .save-detail-pane {
-    display: block;
-    width: 100% !important;
-    max-width: 100% !important;
-    height: auto;
-    min-height: 1px;
-    overflow-x: hidden !important;
-    box-sizing: border-box !important;
-    padding-bottom: 10px;           /* 与详情区留缝（对左侧适用；右侧无影响） */
-  }
-  .guixu-root-container #save-load-modal .save-list-section {
-    max-height: 36vh;               /* 两个列表各自可滚动 */
-    overflow-y: auto;
-    flex: unset;                    /* 避免父高不确定时分到 0 */
-  }
-  .guixu-root-container #save-load-modal .save-stats-grid {
-    --save-stats-cols: 2;           /* 右侧统计在小屏降为两列 */
-  }
+/* 小屏仅在 mobile-view 下转为单列，桌面端始终保持双栏 */
+.guixu-root-container.mobile-view #save-load-modal .modal-content {
+  width: 96vw;
+  max-width: 96vw;
+  height: 90dvh;
+  max-height: 90vh;
+  overflow-x: hidden;
 }
 
 /* ========================= 移动端二级标签（印记/详情）与切换规则 ========================= */

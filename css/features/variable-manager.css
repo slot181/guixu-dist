@@ -57,7 +57,7 @@
 .guixu-root-container #variable-manager-modal .vm-group {
   border: 1px solid rgba(var(--gx-accent-rgb, 201,170,113), 0.25);
   border-radius: 10px;
-  background: var(--gx-surface-2, rgba(26,26,46,0.48));
+  background: rgba(var(--gx-mask-rgb, 26, 26, 46), calc(var(--gx-panel-opacity, 0.85) * 0.58));
 }
 .guixu-root-container #variable-manager-modal .vm-group > .vm-group-header {
   display: flex;
@@ -75,6 +75,9 @@
   display: flex;
   gap: 6px;
 }
+.guixu-root-container #variable-manager-modal .vm-actions-padded {
+  padding: 8px;
+}
 .guixu-root-container #variable-manager-modal .vm-group .vm-body {
   padding: 8px 10px;
   display: flex;
@@ -86,6 +89,7 @@
 .guixu-root-container #variable-manager-modal details.vm-details {
   border: 1px dashed rgba(var(--gx-accent-rgb, 201,170,113), 0.25);
   border-radius: 8px;
+  background: rgba(var(--gx-mask-rgb, 26, 26, 46), calc(var(--gx-panel-opacity, 0.85) * 0.42));
 }
 .guixu-root-container #variable-manager-modal details.vm-details > summary {
   list-style: none;
@@ -136,6 +140,10 @@
 }
 .guixu-root-container #variable-manager-modal .attribute-item:last-child {
   border-bottom: none;
+}
+.guixu-root-container #variable-manager-modal .vm-empty {
+  color: var(--gx-placeholder-color, #8b7355);
+  font-size: 12px;
 }
 
 /* 核心需求：变量编辑器标签=金色常规字重；值维持默认 */
@@ -203,7 +211,7 @@
 }
 .guixu-root-container #variable-manager-modal #vm-json-editor-btn:hover {
   /* 悬停仅高亮图标颜色，保持与关闭按钮一致 */
-  color: #c9aa71;
+  color: var(--gx-accent, #c9aa71);
   background: transparent;
   border: none;
 }
@@ -220,7 +228,7 @@
   flex: 1;
   width: 100%;
   min-height: 400px;
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(var(--gx-mask-rgb, 26, 26, 46), calc(var(--gx-panel-opacity, 0.85) * 0.72));
   border: 1px solid rgba(var(--gx-accent-rgb, 201,170,113), 0.25);
   border-radius: 8px;
   color: var(--gx-input-color, #e0dcd1);
@@ -233,6 +241,48 @@
 
 .guixu-root-container #variable-manager-modal .vm-json-actions {
   display: flex;
+  flex-wrap: wrap;
+  align-items: stretch;
   gap: 8px;
   justify-content: flex-end;
+}
+.guixu-root-container #variable-manager-modal .vm-json-actions .interaction-btn,
+.guixu-root-container #variable-manager-modal .vm-json-actions .danger-btn {
+  min-width: 0;
+}
+.guixu-root-container #variable-manager-modal .vm-inline-danger {
+  margin-left: 6px;
+}
+
+/* 异常回退提示与 JSON 说明块 */
+.guixu-root-container #variable-manager-modal .vm-fallback {
+  padding: 40px 20px;
+  text-align: center;
+  color: var(--gx-accent, #c9aa71);
+}
+.guixu-root-container #variable-manager-modal .vm-fallback-icon {
+  font-size: 48px;
+  margin-bottom: 20px;
+}
+.guixu-root-container #variable-manager-modal .vm-fallback-title {
+  margin-bottom: 15px;
+  font-size: 16px;
+}
+.guixu-root-container #variable-manager-modal .vm-fallback-hint {
+  font-size: 13px;
+  color: var(--gx-placeholder-color, #8b7355);
+  margin-bottom: 20px;
+}
+.guixu-root-container #variable-manager-modal .vm-fallback-sub {
+  font-size: 12px;
+  color: var(--gx-placeholder-color, #8b7355);
+}
+.guixu-root-container #variable-manager-modal .vm-json-head {
+  color: var(--gx-accent, #c9aa71);
+  font-size: 13px;
+  padding: 8px;
+}
+.guixu-root-container #variable-manager-modal .vm-json-hint {
+  color: var(--gx-placeholder-color, #8b7355);
+  font-size: 12px;
 }

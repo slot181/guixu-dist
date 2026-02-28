@@ -250,10 +250,10 @@
 .guixu-root-container.mobile-view #statuses-modal .statuses-split.tab-status .statuses-right-detail { display: none; }
 .guixu-root-container.mobile-view #statuses-modal .statuses-split.tab-detail .statuses-left-list { display: none; }
 
-/* 移动端：状态卡片改为一行两列且铺满 */
+/* 移动端：状态卡片改为一行一列且铺满 */
 .guixu-root-container.mobile-view #statuses-modal .statuses-left-list {
   display: grid;
-  grid-template-columns: 1fr 1fr; /* 一行两列，铺满 */
+  grid-template-columns: 1fr; /* 一行一列，铺满 */
   gap: 8px;
   padding-right: 0;
   /* 移除 max-height，让容器在父级网格内占满高度并内部滚动 */

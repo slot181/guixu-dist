@@ -35,3 +35,41 @@
   justify-content: center;
   gap: 20px;
 }
+
+/* 紧缩确认弹窗（用于仙缘簿录等面板内确认交互） */
+#custom-confirm-modal.confirm-modal-overlay--compact .confirm-modal-content,
+#custom-confirm-modal .confirm-modal-content.confirm-modal-content--compact {
+  width: min(86vw, 340px);
+  max-width: 86vw;
+  height: auto !important;
+  max-height: min(58vh, 320px);
+  padding: 16px 14px;
+  border-radius: 10px;
+}
+#custom-confirm-modal.confirm-modal-overlay--compact .confirm-modal-message,
+#custom-confirm-modal .confirm-modal-content.confirm-modal-content--compact .confirm-modal-message {
+  margin-bottom: 12px;
+  font-size: 14px;
+  line-height: 1.5;
+}
+#custom-confirm-modal.confirm-modal-overlay--compact .confirm-modal-buttons,
+#custom-confirm-modal .confirm-modal-content.confirm-modal-content--compact .confirm-modal-buttons {
+  gap: 10px;
+}
+#custom-confirm-modal.confirm-modal-overlay--compact .confirm-modal-buttons > .interaction-btn,
+#custom-confirm-modal.confirm-modal-overlay--compact .confirm-modal-buttons > .primary-btn,
+#custom-confirm-modal .confirm-modal-content.confirm-modal-content--compact .confirm-modal-buttons > .interaction-btn,
+#custom-confirm-modal .confirm-modal-content.confirm-modal-content--compact .confirm-modal-buttons > .primary-btn {
+  min-width: 0;
+  height: 34px;
+  flex: 1 1 0;
+}
+
+/* 移动端：custom-confirm 不走通用 90vh 模态高度，保持紧凑确认框 */
+.guixu-root-container.mobile-view #custom-confirm-modal .confirm-modal-content {
+  width: min(90vw, 360px);
+  max-width: 90vw;
+  height: auto !important;
+  max-height: min(66vh, 360px);
+  padding: 20px 16px;
+}

@@ -319,15 +319,16 @@
   width: 100%;
 }
 @media (max-width: 900px) {
-  .guixu-root-container .gx-titles-panel {
+  /* 仅在移动视图下启用窄屏纵向布局，避免桌面端在嵌入窄窗口时被改成上下结构 */
+  .guixu-root-container.mobile-view .gx-titles-panel {
     flex-direction: column;
   }
-  .guixu-root-container .gx-titles-left,
-  .guixu-root-container .gx-titles-right {
+  .guixu-root-container.mobile-view .gx-titles-left,
+  .guixu-root-container.mobile-view .gx-titles-right {
     width: 100%;
     min-width: 0;
   }
-  .guixu-root-container .gx-bonuses-list {
+  .guixu-root-container.mobile-view .gx-bonuses-list {
     grid-template-columns: 1fr;
   }
 }
@@ -360,13 +361,13 @@
 .guixu-root-container.mobile-view .gx-titles-panel[data-active-tab="details"] .gx-titles-left { display: none; }
 .guixu-root-container.mobile-view .gx-titles-panel[data-active-tab="details"] .gx-titles-right { display: flex; }
 
-/* 移动端：两列栅格卡片，铺满行宽；去除分割线 */
+/* 移动端：单列卡片，铺满行宽；去除分割线 */
 .guixu-root-container.mobile-view .gx-titles-left { border-right: none; width: 100%; min-width: 0; }
 .guixu-root-container.mobile-view .gx-titles-right { width: 100%; min-width: 0; flex: 1 1 auto; min-height: 0; } /* 关键：让右栏在移动端填满剩余高度，从而内部详情可滚动 */
 
 .guixu-root-container.mobile-view .gx-title-list {
   display: grid;
-  grid-template-columns: repeat(2, 1fr); /* 严格两列，均分行宽 */
+  grid-template-columns: 1fr; /* 一行一列，单卡片独占整行 */
   gap: 8px 8px;
   padding: 8px;
   width: 100%;

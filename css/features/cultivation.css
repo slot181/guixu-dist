@@ -1227,6 +1227,26 @@
   flex: unset;
 }
 
+/* 移动端：详情页“主修/辅修”按钮防溢出 */
+.guixu-root-container.mobile-view #gongfa-panel-modal .save-detail-pane .confirm-modal-buttons {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+.guixu-root-container.mobile-view #gongfa-panel-modal .save-detail-pane .confirm-modal-buttons .interaction-btn {
+  width: 100%;
+  min-width: 0;
+  padding: 0 8px;
+  font-size: 12px;
+}
+
+/* 超窄屏：主修/辅修改为上下排列，彻底避免挤出容器 */
+@media (max-width: 420px) {
+  .guixu-root-container.mobile-view #gongfa-panel-modal .save-detail-pane .confirm-modal-buttons {
+    grid-template-columns: 1fr;
+  }
+}
+
 /* ========== 神通浮窗（#gongfa-shentong-modal）视觉补全 ========== */
 /* 类型徽章（浮窗专用） */
 #gongfa-shentong-modal .st-type-badge {
@@ -1261,6 +1281,34 @@
   color: #e9d5ff;
   background: linear-gradient(180deg, rgba(147,51,234,0.16), rgba(107,33,168,0.16));
   border-color: rgba(147,51,234,0.45);
+}
+
+/* 移动端：神通弹窗保持紧缩模态，不跟随通用全屏化尺寸 */
+.guixu-root-container.mobile-view #gongfa-shentong-modal .confirm-modal-content {
+  width: min(420px, 92vw) !important;
+  max-width: 92vw !important;
+  height: auto !important;
+  max-height: min(82vh, 680px) !important;
+  padding: 14px !important;
+  border-radius: 12px !important;
+}
+.guixu-root-container.mobile-view #gongfa-shentong-modal .modal-body {
+  padding-top: 4px;
+  overflow-y: auto;
+}
+.guixu-root-container.mobile-view #gongfa-shentong-modal .st-modal {
+  padding: 12px;
+}
+
+/* 兜底：未切换 mobile-view 但视口较窄时，同样使用紧缩模态 */
+@media (max-width: 900px) {
+  #gongfa-shentong-modal .confirm-modal-content {
+    width: min(420px, 92vw) !important;
+    max-width: 92vw !important;
+    height: auto !important;
+    max-height: min(82vh, 680px) !important;
+    padding: 14px !important;
+  }
 }
 
 /* 浮窗卡片结构与面板内保持一致 */

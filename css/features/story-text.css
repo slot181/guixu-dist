@@ -16,6 +16,26 @@
   color: var(--guixu-story-default-color, var(--guixu-story-color, #DEDEE6)) !important;
 }
 
+/* 嵌入式宿主防御：正文富文本元素使用统一间距，避免被宿主站点样式污染 */
+.game-text-container .story-paragraph :is(p, ul, ol, blockquote, pre, hr) {
+  margin: 0 0 0.9em 0;
+}
+.game-text-container .story-paragraph :is(h1, h2, h3, h4, h5, h6) {
+  margin: 0 0 0.6em 0;
+  line-height: 1.4;
+}
+.game-text-container .story-paragraph :is(ul, ol) {
+  padding-left: 1.35em;
+}
+.game-text-container .story-paragraph a {
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.game-text-container .story-paragraph code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+}
+
 /* 取消宿主站点段落首行缩进对正文的影响（防御宿主页面 p{text-indent} 规则） */
 .game-text-container,
 .game-text-container gametxt,
@@ -193,7 +213,7 @@
 #guixu-thinking-content.thinking-box {
   display: none;
   margin-top: 2px;
-  background: rgba(15, 15, 35, var(--guixu-thinking-bg-opacity, 0.85));
+  background: rgba(var(--gx-mask-rgb, 15, 15, 35), var(--guixu-thinking-bg-opacity, 0.85));
   border-radius: 10px;
   padding: 12px;
   max-height: 280px;
@@ -201,6 +221,9 @@
   color: var(--guixu-thinking-color, #e0dcd1) !important;
   box-shadow: 0 8px 20px rgba(0,0,0,0.45);
   backdrop-filter: blur(1px);
+}
+#guixu-thinking-content.thinking-box.is-open {
+  display: block;
 }
 #guixu-thinking-content pre {
   white-space: pre-wrap;
@@ -213,7 +236,7 @@
 /* 行动方针容器与标签（与 JS 注入保持一致） */
 #guixu-action-guidelines {
   margin-top: 8px;
-  border-top: 1px solid rgba(201, 170, 113, 0.3);
+  border-top: 1px solid rgba(var(--gx-accent-rgb, 201, 170, 113), 0.3);
   padding-top: 6px;
   display: flex;
   flex-direction: column;
@@ -221,7 +244,7 @@
 }
 #guixu-action-guidelines .guideline-label {
   font-size: 12px;
-  color: #8b7355;
+  color: var(--guixu-guideline-text-color, #8b7355);
 }
 
 /* 新增：用户偏好隐藏“行动选项”（仅隐藏正文下方操作按钮区，不影响其他面板） */

@@ -6,71 +6,71 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>归墟 - 宿命轮回</title>
 
-  
-  
-  
-  <link rel="stylesheet" href="http://127.0.0.1:5500/css/base/tokens.css">
-  <link rel="stylesheet" href="http://127.0.0.1:5500/css/base/layout.css">
-  
-  <link rel="stylesheet" href="http://127.0.0.1:5500/css/components/common-ui.css">
-  <link rel="stylesheet" href="http://127.0.0.1:5500/css/components/navigation.css">
-  
+  <!-- 字体：移除 Google Fonts 外链，使用系统字体栈，避免在中国大陆加载失败 -->
+  <!-- 阶段1：模块化样式引入顺序（base -> components -> features -> utilities -> views -> states） -->
+  <!-- 基础 -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/slot181/guixu-dist@main/css/base/tokens.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/slot181/guixu-dist@main/css/base/layout.css">
+  <!-- 组件基元 -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/slot181/guixu-dist@main/css/components/common-ui.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/slot181/guixu-dist@main/css/components/navigation.css"><!-- 顶部面板导航组件样式 -->
+  <!-- 全局引入 Font Awesome 图标（用于修行概览选项卡小图标） -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
-  
-  <link rel="stylesheet" href="http://127.0.0.1:5500/css/features/modals.css">
-  
-  <link rel="stylesheet" href="http://127.0.0.1:5500/css/features/titles.css">
-  
-  <link rel="stylesheet" href="http://127.0.0.1:5500/css/features/version-badge.css">
-  <link rel="stylesheet" href="http://127.0.0.1:5500/css/features/inventory.css">
-  <link rel="stylesheet" href="http://127.0.0.1:5500/css/features/relationships.css">
-  <link rel="stylesheet" href="http://127.0.0.1:5500/css/features/trade.css">
-  <link rel="stylesheet" href="http://127.0.0.1:5500/css/features/timeline.css">
-  <link rel="stylesheet" href="http://127.0.0.1:5500/css/features/statuses.css">
-  <link rel="stylesheet" href="http://127.0.0.1:5500/css/features/statusbar.css">
-  <link rel="stylesheet" href="http://127.0.0.1:5500/css/features/worldline.css">
-  <link rel="stylesheet" href="http://127.0.0.1:5500/css/features/command-center.css">
-  <link rel="stylesheet" href="http://127.0.0.1:5500/css/features/story-text.css">
-  <link rel="stylesheet" href="http://127.0.0.1:5500/css/features/cultivation.css">
-  <link rel="stylesheet" href="http://127.0.0.1:5500/css/features/controls.css">
-  <link rel="stylesheet" href="http://127.0.0.1:5500/css/features/settings.css">
-  <link rel="stylesheet" href="http://127.0.0.1:5500/css/features/intro-modal.css">
-  <link rel="stylesheet" href="http://127.0.0.1:5500/css/features/interaction-panel.css">
-  <link rel="stylesheet" href="http://127.0.0.1:5500/css/features/main-content.css">
-  <link rel="stylesheet" href="http://127.0.0.1:5500/css/features/character-details.css">
-  <link rel="stylesheet" href="http://127.0.0.1:5500/css/features/save-load.css">
-  <link rel="stylesheet" href="http://127.0.0.1:5500/css/features/history.css">
-  <link rel="stylesheet" href="http://127.0.0.1:5500/css/features/guixu-system.css">
-  <link rel="stylesheet" href="http://127.0.0.1:5500/css/features/variable-manager.css">
-  <link rel="stylesheet" href="http://127.0.0.1:5500/css/features/confirm-modal.css">
-  <link rel="stylesheet" href="http://127.0.0.1:5500/css/features/extracted-content.css">
-  <link rel="stylesheet" href="http://127.0.0.1:5500/css/features/waiting.css">
-  
-  <link rel="stylesheet" href="http://127.0.0.1:5500/css/features/quest-log.css">
-  
-  <link rel="stylesheet" href="http://127.0.0.1:5500/css/features/world-map.css">
-  
-  <link rel="stylesheet" href="http://127.0.0.1:5500/css/features/start-lobby.css">
-  
-  <link rel="stylesheet" href="http://127.0.0.1:5500/css/utilities/scrollbar-tooltips.css">
-  <link rel="stylesheet" href="http://127.0.0.1:5500/css/features/themes.css">
-  
-  <link rel="stylesheet" href="http://127.0.0.1:5500/css/views/desktop.css">
-  <link rel="stylesheet" href="http://127.0.0.1:5500/css/views/mobile.css">
-  <link rel="stylesheet" href="http://127.0.0.1:5500/css/states/fullscreen.css">
-  <link rel="stylesheet" href="http://127.0.0.1:5500/css/states/windowed.css">
+  <!-- 功能域 -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/slot181/guixu-dist@main/css/features/modals.css">
+  <!-- 新增：已获道号面板样式（紫金琉璃主题适配） -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/slot181/guixu-dist@main/css/features/titles.css">
+  <!-- 细粒度 features（版本徽标/背包/关系/交易/时间线/状态） -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/slot181/guixu-dist@main/css/features/version-badge.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/slot181/guixu-dist@main/css/features/inventory.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/slot181/guixu-dist@main/css/features/relationships.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/slot181/guixu-dist@main/css/features/trade.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/slot181/guixu-dist@main/css/features/timeline.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/slot181/guixu-dist@main/css/features/statuses.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/slot181/guixu-dist@main/css/features/statusbar.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/slot181/guixu-dist@main/css/features/worldline.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/slot181/guixu-dist@main/css/features/command-center.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/slot181/guixu-dist@main/css/features/story-text.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/slot181/guixu-dist@main/css/features/cultivation.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/slot181/guixu-dist@main/css/features/controls.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/slot181/guixu-dist@main/css/features/settings.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/slot181/guixu-dist@main/css/features/intro-modal.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/slot181/guixu-dist@main/css/features/interaction-panel.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/slot181/guixu-dist@main/css/features/main-content.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/slot181/guixu-dist@main/css/features/character-details.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/slot181/guixu-dist@main/css/features/save-load.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/slot181/guixu-dist@main/css/features/history.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/slot181/guixu-dist@main/css/features/guixu-system.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/slot181/guixu-dist@main/css/features/variable-manager.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/slot181/guixu-dist@main/css/features/confirm-modal.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/slot181/guixu-dist@main/css/features/extracted-content.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/slot181/guixu-dist@main/css/features/waiting.css">
+  <!-- 新增：仙缘簿录（任务系统）样式 -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/slot181/guixu-dist@main/css/features/quest-log.css">
+  <!-- 新增：世界舆图面板样式（紫金琉璃主题适配） -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/slot181/guixu-dist@main/css/features/world-map.css">
+  <!-- 新增：菜单大厅样式（全屏覆盖容器） -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/slot181/guixu-dist@main/css/features/start-lobby.css">
+  <!-- 工具/杂项 -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/slot181/guixu-dist@main/css/utilities/scrollbar-tooltips.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/slot181/guixu-dist@main/css/features/themes.css">
+  <!-- 视图与状态（同时引入，靠作用域避免互踩） -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/slot181/guixu-dist@main/css/views/desktop.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/slot181/guixu-dist@main/css/views/mobile.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/slot181/guixu-dist@main/css/states/fullscreen.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/slot181/guixu-dist@main/css/states/windowed.css">
 
 </head>
 
 <body>
   <div id="guixu-viewport" class="guixu-viewport">
     <div class="guixu-root-container">
-    
+    <!-- 视图按钮 -->
     <button id="view-toggle-btn" class="view-toggle-btn" title="切换视图">📱</button>
     <button id="fullscreen-btn" class="fullscreen-btn" title="进入全屏">⛶</button>
 
     <div class="game-container">
-      
+      <!-- 顶部状态栏 -->
       <div class="top-status">
         <div class="status-item">
           <div class="status-label">境界</div>
@@ -89,7 +89,7 @@
         </div>
       </div>
 
-      
+      <!-- 左侧角色面板 -->
       <div class="character-panel">
         <div class="panel-section">
           <div class="section-title">核心属性 <span style="font-size: 10px; color: #8b7355">(当前/上限)</span></div>
@@ -138,21 +138,21 @@
         <div class="panel-section">
           <div class="section-title">天赋灵根</div>
           <div id="talent-linggen-list" class="attributes-list">
-            
+            <!-- 天赋和灵根动态填充 -->
           </div>
         </div>
 
-        
+        <!-- 移除主界面左侧面板的旧“当前装备”区块；装备槽迁移至我的行囊面板 -->
       </div>
 
-      
+      <!-- 中央内容区 -->
       <div class="main-content">
         <div id="game-text-display" class="game-text-container">
           <gametxt> 欢迎来到《归墟》的世界。你的宿命，由此开始。 </gametxt>
         </div>
       </div>
 
-      
+      <!-- 右侧交互面板 -->
       <div class="interaction-panel">
         <button id="btn-inventory" class="interaction-btn">我的行囊</button>
         <button id="btn-gongfa-panel" class="interaction-btn">功法绝学</button>
@@ -163,17 +163,17 @@
         <button id="btn-show-extracted" class="interaction-btn">提取记录</button>
         <button id="btn-destiny-track" class="interaction-btn">仙途轨迹</button>
         <button id="btn-quest-log" class="interaction-btn">仙缘簿录</button>
-        
+        <!-- 新增：世界舆图按钮 -->
         <button id="btn-world-map" class="interaction-btn">世界舆图</button>
         <button id="btn-save-load-manager" class="interaction-btn">道途印记</button>
         <button id="btn-settings" class="interaction-btn">设置中心</button>
         <button id="btn-intro-guide" class="interaction-btn">游玩指南</button>
 
-        
+        <!-- 世界书控制（已移入“道途印记”设置面板） -->
 
       </div>
 
-      
+      <!-- 底部状态与快速发送 -->
       <div id="bottom-status-container" class="bottom-status">
         <div id="status-effects-wrapper" style="display: flex; gap: 8px; overflow-x: auto">
           <div class="status-effect">
@@ -190,14 +190,14 @@
       </div>
     </div>
 
-    
+    <!-- 各种模态窗口 -->
     <div id="inventory-modal" class="modal-overlay">
       <div class="modal-content">
         <div class="modal-header">
           <h2 class="modal-title">我的行囊</h2>
           <button class="modal-close-btn">&times;</button>
         </div>
-        <div class="modal-body"></div>
+        <div class="modal-body"><!-- 动态填充 --></div>
       </div>
     </div>
     <div id="relationships-modal" class="modal-overlay">
@@ -206,7 +206,7 @@
           <h2 class="modal-title">人物关系</h2>
           <button class="modal-close-btn">&times;</button>
         </div>
-        <div class="modal-body"></div>
+        <div class="modal-body"><!-- 动态填充 --></div>
       </div>
     </div>
     <div id="gongfa-panel-modal" class="modal-overlay">
@@ -215,7 +215,7 @@
           <h2 class="modal-title">功法绝学</h2>
           <button class="modal-close-btn">&times;</button>
         </div>
-        <div class="modal-body"></div>
+        <div class="modal-body"><!-- 动态填充 --></div>
       </div>
     </div>
     <div id="history-modal" class="modal-overlay">
@@ -227,7 +227,7 @@
             <button class="modal-close-btn">&times;</button>
           </div>
         </div>
-        <div id="history-modal-body" class="modal-body"></div>
+        <div id="history-modal-body" class="modal-body"><!-- 动态填充 --></div>
       </div>
     </div>
     <div id="command-center-modal" class="modal-overlay">
@@ -236,7 +236,7 @@
           <h2 class="modal-title">指令中心</h2>
           <button class="modal-close-btn">&times;</button>
         </div>
-        <div class="modal-body"></div>
+        <div class="modal-body"><!-- 动态填充 --></div>
         <div class="command-center-footer">
           <button id="btn-refresh-storage" class="interaction-btn">刷新缓存</button>
           <div>
@@ -256,7 +256,7 @@
           </div>
         </div>
         <div class="modal-body">
-          
+          <!-- 内容由 js/components/extracted-content.js 动态生成 -->
         </div>
       </div>
     </div>
@@ -266,32 +266,32 @@
           <h2 class="modal-title">归墟系统</h2>
           <button class="modal-close-btn">&times;</button>
         </div>
-        <div class="modal-body"></div>
+        <div class="modal-body"><!-- 动态填充 --></div>
       </div>
     </div>
 
-    
+    <!-- 新增：归墟空间模态框（由 GuixuSystemComponent 动态填充内容） -->
     <div id="guixu-space-modal" class="modal-overlay">
       <div class="modal-content">
         <div class="modal-header">
           <h2 class="modal-title">归墟空间</h2>
           <button class="modal-close-btn">&times;</button>
         </div>
-        <div class="modal-body"></div>
+        <div class="modal-body"><!-- 动态填充 --></div>
       </div>
     </div>
-    
+    <!-- 新增：变量编辑器模态框 -->
     <div id="variable-manager-modal" class="modal-overlay">
       <div class="modal-content">
         <div class="modal-header">
           <h2 class="modal-title">变量编辑器</h2>
           <div class="header-actions">
-            
+            <!-- 统一与关闭按钮视觉：复用 settings-toggle-btn 基础样式 -->
             <button id="vm-json-editor-btn" class="settings-toggle-btn gx-icon-btn" title="JSON编辑器" aria-label="JSON编辑器"><i class="fas fa-code"></i></button>
             <button class="modal-close-btn">&times;</button>
           </div>
         </div>
-        <div class="modal-body"></div>
+        <div class="modal-body"><!-- 动态填充 --></div>
         <div class="command-center-footer">
           <button id="vm-btn-reset" class="interaction-btn">重置未保存修改</button>
           <div>
@@ -301,25 +301,25 @@
         </div>
       </div>
     </div>
-    
+    <!-- 新增：角色详情模态框 -->
     <div id="character-details-modal" class="modal-overlay">
       <div class="modal-content">
         <div class="modal-header">
           <h2 class="modal-title">角色详情</h2>
           <button class="modal-close-btn">&times;</button>
         </div>
-        <div class="modal-body"></div>
+        <div class="modal-body"><!-- 动态填充 --></div>
       </div>
     </div>
 
-    
+    <!-- 新增：交易面板模态框 -->
     <div id="trade-modal" class="modal-overlay">
       <div class="modal-content">
         <div class="modal-header">
           <h2 class="modal-title">交易面板</h2>
           <button class="modal-close-btn">&times;</button>
         </div>
-        <div class="modal-body"></div>
+        <div class="modal-body"><!-- 动态填充 --></div>
       </div>
     </div>
 
@@ -336,31 +336,31 @@
     <div id="quick-command-popup"></div>
     <div id="save-load-modal" class="modal-overlay">
       <div class="modal-content">
-        <div class="modal-header save-load-header" style="position:relative;">
-          
+        <div class="modal-header save-load-header">
+          <!-- 居中金色标题 -->
           <h2 class="modal-title save-title-centered">道途印记</h2>
-          
+          <!-- 右上角图标按钮区 -->
           <div class="header-actions">
             <button id="save-panel-settings-btn" class="settings-toggle-btn gx-icon-btn" title="设置" aria-label="设置">⚙</button>
             <button class="modal-close-btn">&times;</button>
           </div>
         </div>
         <div class="modal-body">
-          
+          <!-- 新布局：双栏结构（左侧列表 + 右侧详情），使用紫金琉璃全局变量 -->
           <div class="save-manager-grid">
-            
+            <!-- 左侧：印记列表 -->
             <aside class="save-list-pane">
               <h3 class="save-list-title">天命印记</h3>
-              <div id="auto-save-slot-container" class="save-list-section" style="margin-bottom: 15px;"></div>
+              <div id="auto-save-slot-container" class="save-list-section"></div>
               <h3 class="save-list-title">手书印记</h3>
               <div id="save-slots-container" class="save-list-section"></div>
-              <div style="padding-top:10px; margin-top:10px; border-top:1px solid rgba(201,170,113,0.25);">
-                
-                <button id="btn-create-new-save" class="interaction-btn btn-create btn-md" style="width:100%;">新落印记</button>
+              <div class="save-list-footer">
+                <!-- 视觉升级：使用通用“新建类按钮”样式（btn-create），与基础按钮区分 -->
+                <button id="btn-create-new-save" class="interaction-btn btn-create btn-md">新落印记</button>
               </div>
             </aside>
 
-            
+            <!-- 右侧：详情面板（默认展示提示，占位待 JS 渲染或显示“设置”） -->
             <main id="save-detail-pane" class="save-detail-pane" aria-live="polite">
               <div class="save-detail-placeholder">
                 <div class="placeholder-icon">📜</div>
@@ -399,7 +399,7 @@
       </div>
     </div>
     <div id="settings-modal" class="modal-overlay">
-      <div class="modal-content" style="max-width: 600px;">
+      <div class="modal-content settings-modal-content">
         <div class="modal-header">
           <h2 class="modal-title">设置中心</h2>
           <button class="modal-close-btn">&times;</button>
@@ -407,35 +407,50 @@
         <div class="modal-body">
           <div class="panel-section">
             <div class="section-title">背景图</div>
-            <div class="attributes-list" style="padding: 10px;">
-              <div class="attribute-item" style="gap:8px; align-items:center;">
-                <span class="attribute-name" style="min-width:70px;">背景库</span>
-                <select id="pref-bg-select" class="gx-select" style="flex:1; background: rgba(0,0,0,0.5); border: 1px solid #8b7355; color: #e0dcd1; border-radius: 4px; padding: 6px; font-size: 12px;">
+            <div class="attributes-list settings-list">
+              <div class="attribute-item settings-row settings-row-inline">
+                <span class="attribute-name settings-label-70">背景库</span>
+                <select id="pref-bg-select" class="gx-select settings-flex-select">
                   <option value="">（未选择）</option>
                 </select>
-                <button id="pref-bg-upload" class="interaction-btn" style="padding: 4px 8px; font-size: 12px;">本地上传</button>
-                <button id="pref-bg-delete" class="interaction-btn danger-btn" style="padding: 4px 8px; font-size: 12px;">删除背景</button>
-                <button id="pref-bg-clear" class="interaction-btn" style="padding: 4px 8px; font-size: 12px;">清除背景</button>
+                <button id="pref-bg-upload" class="interaction-btn">本地上传</button>
+                <button id="pref-bg-delete" class="interaction-btn danger-btn">删除背景</button>
+                <button id="pref-bg-clear" class="interaction-btn">清除背景</button>
               </div>
-              <div class="attribute-item" style="margin-top:8px;">
-                <div id="pref-bg-preview" class="bg-preview" style="width:100%;"></div>
+              <div class="attribute-item settings-preview-row">
+                <div id="pref-bg-preview" class="bg-preview settings-bg-preview"></div>
+              </div>
+            </div>
+          </div>
+          <div class="panel-section" id="panel-lobby-bg">
+            <div class="section-title">菜单大厅背景</div>
+            <div class="attributes-list">
+              <div class="attribute-item lobby-bg-row">
+                <span class="attribute-name lobby-bg-label">背景库</span>
+                <select id="pref-lobby-bg-select" class="gx-select">
+                  <option value="">（未选择）</option>
+                </select>
+                <button id="pref-lobby-bg-clear" class="interaction-btn">清除大厅背景</button>
+              </div>
+              <div class="attribute-item lobby-bg-preview-row">
+                <div id="pref-lobby-bg-preview" class="bg-preview"></div>
               </div>
             </div>
           </div>
           <div class="panel-section">
             <div class="section-title">背景遮罩透明度</div>
-            <div class="attributes-list" style="padding: 10px;">
-              <div class="attribute-item" style="gap:10px; align-items:center;">
-                <input id="pref-bg-mask" type="range" min="0" max="1.0" step="0.01" style="flex:1;">
+            <div class="attributes-list settings-list">
+              <div class="attribute-item settings-row settings-row-inline">
+                <input id="pref-bg-mask" type="range" min="0" max="1.0" step="0.01" class="settings-range-input">
                 <span id="pref-bg-mask-val" class="attribute-value">0.70</span>
               </div>
             </div>
           </div>
           <div class="panel-section">
             <div class="section-title">背景显示方式</div>
-            <div class="attributes-list" style="padding: 10px;">
-              <div class="attribute-item" style="gap:10px; align-items:center;">
-                <select id="pref-bg-fit-mode" class="gx-select" style="flex:1; background: rgba(0,0,0,0.5); border: 1px solid #8b7355; color: #e0dcd1; border-radius: 4px; padding: 6px; font-size: 12px;">
+            <div class="attributes-list settings-list">
+              <div class="attribute-item settings-row settings-row-inline">
+                <select id="pref-bg-fit-mode" class="gx-select settings-flex-select">
                   <option value="cover">拉伸填充（cover）</option>
                   <option value="contain">完整适配（contain）</option>
                   <option value="repeat">平铺（repeat）</option>
@@ -447,13 +462,13 @@
       </div>
       <div class="panel-section">
         <div class="section-title">背景压缩</div>
-        <div class="attributes-list" style="padding: 10px;">
-          <div class="attribute-item" style="gap:10px; align-items:center;">
-            <span class="attribute-name" style="min-width:90px;">质量</span>
-            <input id="pref-bg-quality" type="range" min="0.6" max="1.0" step="0.01" value="0.90" style="flex:1;">
+        <div class="attributes-list settings-list">
+          <div class="attribute-item settings-row settings-row-inline">
+            <span class="attribute-name settings-label-90">质量</span>
+            <input id="pref-bg-quality" type="range" min="0.6" max="1.0" step="0.01" value="0.90" class="settings-range-input">
             <span id="pref-bg-quality-val" class="attribute-value">0.90</span>
           </div>
-          <div class="attribute-item" style="gap:8px; align-items:center;">
+          <div class="attribute-item settings-row settings-row-inline-tight">
             <input id="pref-bg-keep-size" type="checkbox" />
             <label for="pref-bg-keep-size" class="auto-write-label">保留原始尺寸（不缩放）</label>
           </div>
@@ -461,9 +476,9 @@
       </div>
       <div class="panel-section">
         <div class="section-title">故事文本字号</div>
-            <div class="attributes-list" style="padding: 10px;">
-              <div class="attribute-item" style="gap:10px; align-items:center;">
-                <input id="pref-story-font-size" type="range" min="12" max="20" step="1" style="flex:1;">
+            <div class="attributes-list settings-list">
+              <div class="attribute-item settings-row settings-row-inline">
+                <input id="pref-story-font-size" type="range" min="12" max="20" step="1" class="settings-range-input">
                 <span id="pref-story-font-size-val" class="attribute-value">14px</span>
               </div>
             </div>
@@ -474,7 +489,7 @@
           <button id="pref-reset-defaults" class="interaction-btn">恢复默认</button>
           <div>
             <button id="pref-apply" class="interaction-btn">应用</button>
-            <button id="pref-save-close" class="interaction-btn primary-btn" style="margin-left: 10px;">保存并关闭</button>
+            <button id="pref-save-close" class="interaction-btn primary-btn">保存并关闭</button>
           </div>
         </div>
       </div>
@@ -486,47 +501,61 @@
           <input id="statuses-search-input" class="gx-input" type="text" placeholder="搜索状态..." style="margin-left:auto; background: rgba(0,0,0,0.5); border: 1px solid #8b7355; color: #e0dcd1; border-radius: 4px; padding: 6px; font-size: 12px; width: 220px;">
           <button class="modal-close-btn">&times;</button>
         </div>
-        <div class="modal-body"></div>
+        <div class="modal-body"><!-- 动态填充 --></div>
       </div>
     </div>
 
-    
+    <!-- 新增：仙缘簿录（任务系统）模态框 -->
     <div id="quest-log-modal" class="modal-overlay">
       <div class="modal-content">
         <div class="modal-header">
           <h2 class="modal-title">仙缘簿录</h2>
           <button class="modal-close-btn">&times;</button>
         </div>
-        <div class="modal-body"></div>
+        <div class="modal-body"><!-- 由 js/components/quest-log.js 动态渲染 --></div>
       </div>
     </div>
 
-    
+    <!-- 新增：世界舆图面板模态框 -->
     <div id="world-map-modal" class="modal-overlay">
       <div class="modal-content">
         <div class="modal-header">
           <h2 class="modal-title">世界舆图</h2>
           <button class="modal-close-btn">&times;</button>
         </div>
-        <div class="modal-body"></div>
+        <div class="modal-body"><!-- 由 js/components/world-map.js 动态渲染 --></div>
       </div>
     </div>
 
     <input type="file" id="import-file-input" style="display: none;" accept=".json" />
 
   </div>
-  
-  
+  <!-- 菜单大厅（全屏覆盖容器） -->
+  <!-- 加入 .guixu-theme-scope 以桥接主题变量（start-lobby-overlay 位于根容器之外，无法继承变量） -->
   <div id="start-lobby-overlay" class="start-lobby-overlay guixu-theme-scope" aria-hidden="true">
     <div class="start-lobby-content">
       <h1 class="start-lobby-title">归墟 菜单大厅</h1>
       <button id="start-lobby-start-btn" class="interaction-btn primary-btn btn-lg">开始游玩</button>
     </div>
+    <footer id="start-lobby-footer" class="start-lobby-footer" aria-label="菜单大厅页脚">
+      <div class="start-lobby-footer-left">归墟 · 菜单大厅</div>
+      <div id="start-lobby-footer-right" class="start-lobby-footer-right">
+        <a
+          class="start-lobby-footer-link"
+          href="https://github.com/slot181/guixu-dist"
+          target="_blank"
+          rel="noopener noreferrer"
+          title="GitHub 仓库"
+          aria-label="打开归墟远程仓库（GitHub）"
+        >
+          <i class="fa-brands fa-github" aria-hidden="true"></i>
+        </a>
+      </div>
+    </footer>
   </div>
 </div>
 </div>
-
-  <script src="dist/guixu.obf.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/slot181/guixu-dist@main/dist/guixu.obf.js"></script>
 </body>
 
 </html>

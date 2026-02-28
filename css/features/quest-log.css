@@ -14,7 +14,19 @@
   min-height: 0;             /* 关键：允许子元素在 Flex 容器中正确收缩并出现滚动 */
 }
 
+/* 移动端：统一模态尺寸基线 */
+.guixu-root-container.mobile-view #quest-log-modal .modal-content {
+  width: 96vw;
+  max-width: 96vw;
+  height: 90vh;
+  height: 90dvh;
+  max-height: 90vh;
+}
+
 .guixu-root-container .gx-questlog {
+  /* 仙缘簿录内部“软线条”变量，仅作用于该面板 */
+  --ql-line-soft: rgba(var(--gx-accent-rgb, 201,170,113), 0.18);
+  --ql-line-faint: rgba(var(--gx-accent-rgb, 201,170,113), 0.10);
   display: grid;
   grid-template-columns: 38% 62%;
   gap: 12px;
@@ -29,7 +41,7 @@
 .guixu-root-container .gx-ql-left,
 .guixu-root-container .gx-ql-right {
   background: var(--gx-surface-2);
-  border: 1px solid var(--gx-border);
+  border: 1px solid var(--ql-line-faint);
   border-radius: 8px;
   overflow: hidden;         /* 容器本身不滚动，由内部区域滚动 */
   display: flex;
@@ -43,7 +55,7 @@
   align-items: center;
   justify-content: space-between;
   padding: 10px 12px;
-  border-bottom: 1px solid var(--gx-border);
+  border-bottom: 1px solid var(--ql-line-faint);
   background: var(--gx-surface-3);
   color: #e8e3d6;
 }
@@ -56,11 +68,14 @@
   color: var(--gx-accent, #c9aa71);
   margin-right: 8px;
 }
+.guixu-root-container .gx-ql-meta-text {
+  margin-left: 6px;
+}
 
 /* 顶部标签（主线/支线/已交付） */
 .guixu-root-container .gx-ql-tabs {
   display: flex;
-  border-bottom: 1px solid var(--gx-border);
+  border-bottom: 1px solid var(--ql-line-faint);
   background: var(--gx-surface-3);
 }
 .guixu-root-container .gx-ql-tab {
@@ -81,7 +96,7 @@
 /* 分类筛选条 */
 .guixu-root-container .gx-ql-filter {
   padding: 8px;
-  border-bottom: 1px solid var(--gx-border);
+  border-bottom: 1px solid var(--ql-line-faint);
   background: var(--gx-surface-2);
 }
 .guixu-root-container .gx-ql-filter-row {
@@ -98,7 +113,7 @@
   flex-wrap: wrap;
   gap: 6px;
   padding: 8px;
-  border-bottom: 1px solid var(--gx-border);
+  border-bottom: 1px solid var(--ql-line-faint);
   background: var(--gx-surface-2);
 }
 .guixu-root-container .gx-ql-tag {
@@ -106,7 +121,7 @@
   align-items: center;
   gap: 6px;
   padding: 4px 8px;
-  border: 1px solid var(--gx-border);
+  border: 1px solid var(--ql-line-faint);
   border-radius: 999px;
   background: var(--gx-surface-1);
   color: #d8d4c8;
@@ -131,7 +146,7 @@
 .guixu-root-container .gx-ql-item {
   border-left: 3px solid transparent;
   background: var(--gx-surface-1);
-  border: 1px solid var(--gx-border);
+  border: 1px solid var(--ql-line-faint);
   border-radius: 8px;
   padding: 10px;
   color: #e6e0d1;
@@ -141,7 +156,9 @@
 }
 .guixu-root-container .gx-ql-item:hover {
   border-left-color: var(--gx-accent, #c9aa71);
-  box-shadow: 0 0 10px rgba(var(--gx-accent-rgb, 201,170,113), .18);
+  border-color: var(--ql-line-soft);
+  background: rgba(var(--gx-mask-rgb, 26,26,46), .58);
+  box-shadow: 0 0 0 1px var(--ql-line-soft) inset;
 }
 .guixu-root-container .gx-ql-item.active {
   border-left-color: var(--gx-accent, #c9aa71);
@@ -202,7 +219,7 @@
   font-size: 10px;
   padding: 2px 6px;
   border-radius: 999px;
-  border: 1px solid var(--gx-border);
+  border: 1px solid var(--ql-line-faint);
   background: var(--gx-surface-2);
   color: #ccbfa3;
 }
@@ -238,10 +255,17 @@
 .guixu-root-container .gx-ql-item.is-completed {
   border-color: var(--gx-accent, #c9aa71);
   box-shadow: 0 0 0 2px rgba(var(--gx-accent-rgb, 201,170,113), .28), 0 0 18px rgba(var(--gx-accent-rgb, 201,170,113), .22);
+  animation: gxGlowPulse 1.8s ease-in-out infinite;
 }
 
 /* “新任务”卡片发光提示（直观更强） */
 .guixu-root-container .gx-ql-item.is-new {
+  border-color: var(--gx-accent, #c9aa71);
+  box-shadow: 0 0 0 2px rgba(var(--gx-accent-rgb, 201,170,113), .45), 0 0 16px rgba(var(--gx-accent-rgb, 201,170,113), .35);
+  animation: gxGlowPulse 1.8s ease-in-out infinite;
+}
+/* “可接取(AVAILABLE)”任务卡片发光提示 */
+.guixu-root-container .gx-ql-item.is-available {
   border-color: var(--gx-accent, #c9aa71);
   box-shadow: 0 0 0 2px rgba(var(--gx-accent-rgb, 201,170,113), .45), 0 0 16px rgba(var(--gx-accent-rgb, 201,170,113), .35);
   animation: gxGlowPulse 1.8s ease-in-out infinite;
@@ -264,6 +288,16 @@
               0 0 12px rgba(var(--gx-accent-rgb, 201,170,113), .35) !important;
   animation: gxGlowPulse 1.8s ease-in-out infinite;
 }
+/* 移动端 FAB“功能”按钮：同步仙缘簿录提醒高光 */
+.guixu-root-container.mobile-view #fab-functions.glow-notify-quest {
+  box-shadow:
+    inset 0 1px 2px rgba(255, 255, 255, 0.14),
+    inset 0 0 0 1.5px rgba(var(--gx-accent-rgb, 201,170,113), 0.66),
+    inset 0 -3px 6px rgba(0, 0, 0, 0.48),
+    0 6px 14px rgba(0, 0, 0, 0.44),
+    0 0 16px rgba(var(--gx-accent-rgb, 201,170,113), 0.34) !important;
+  animation: gxGlowPulse 1.2s ease-in-out infinite;
+}
 /* 分类/推荐境界行 */
 .guixu-root-container .gx-ql-row2 {
   display: flex;
@@ -280,7 +314,7 @@
   gap: 6px;
   padding: 2px 8px;
   border-radius: 999px;
-  border: 1px solid var(--gx-border);
+  border: 1px solid var(--ql-line-faint);
   background: var(--gx-surface-1);
   color: #d0cabc;
   font-size: 11px;
@@ -290,6 +324,23 @@
   color: #bdb6a6;
   line-height: 1.45;
 }
+.guixu-root-container .gx-ql-inline-icon {
+  margin-right: 4px;
+}
+.guixu-root-container .gx-ql-progress-summary {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+}
+.guixu-root-container .gx-ql-chain-info {
+  margin-top: 6px;
+  color: #c9bd9f;
+  font-size: 12px;
+}
+.guixu-root-container .gx-ql-chain-icon {
+  margin-right: 6px;
+  color: var(--gx-accent, #c9aa71);
+}
 
 /* 进度条（仅进行中显示） */
 .guixu-root-container .gx-ql-progress {
@@ -298,7 +349,7 @@
   background: rgba(0,0,0,.3);
   overflow: hidden;
   margin-top: 6px;
-  border: 1px solid var(--gx-border);
+  border: 1px solid var(--ql-line-faint);
 }
 .guixu-root-container .gx-ql-progress .bar {
   height: 100%;
@@ -317,7 +368,7 @@
 }
 .guixu-root-container .gx-ql-detail .gx-ql-section {
   background: var(--gx-surface-1);
-  border: 1px solid var(--gx-border);
+  border: 1px solid var(--ql-line-faint);
   border-radius: 8px;
   padding: 10px;
   margin-bottom: 10px;
@@ -329,6 +380,9 @@
   color: #e6dfcf;
   font-weight: 700;
   margin-bottom: 6px;
+}
+.guixu-root-container .gx-ql-section-title.split {
+  justify-content: space-between;
 }
 .guixu-root-container .gx-ql-section-title i {
   color: var(--gx-accent, #c9aa71);
@@ -347,7 +401,7 @@
 }
 .guixu-root-container .gx-ql-obj {
   padding: 8px 0;
-  border-bottom: 1px solid var(--gx-border);
+  border-bottom: 1px solid var(--ql-line-faint);
 }
 .guixu-root-container .gx-ql-obj:last-child {
   border-bottom: none;
@@ -362,6 +416,9 @@
   min-width: 18px;
   color: var(--gx-accent, #c9aa71);
   margin-top: 2px;
+}
+.guixu-root-container .gx-ql-objrow i.gx-ql-obj-icon.is-pass {
+  color: #22c55e;
 }
 .guixu-root-container .gx-ql-objdesc {
   flex: 1;
@@ -380,7 +437,7 @@
   font-size: 12px;
   color: #dcd6c7;
   background: var(--gx-surface-2);
-  border: 1px solid var(--gx-border);
+  border: 1px solid var(--ql-line-faint);
   border-radius: 6px;
   padding: 6px 8px;
 }
@@ -404,6 +461,19 @@
   color: #a09c91;
   min-height: 180px;
   text-align: center;
+}
+.guixu-root-container .gx-ql-empty-icon {
+  font-size: 28px;
+  display: block;
+  margin-bottom: 8px;
+}
+.guixu-root-container .gx-ql-link-arrow,
+.guixu-root-container .gx-ql-btn-icon {
+  margin-right: 6px;
+}
+.guixu-root-container .gx-ql-stamp-icon {
+  margin-right: 6px;
+  color: var(--gx-accent, #c9aa71);
 }
 
 /* 移动端适配：改为单栏纵向堆叠 + 顶部双标签页（任务/详情） */

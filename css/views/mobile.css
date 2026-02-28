@@ -797,19 +797,40 @@
 /* 组/条目摘要行：允许换行；标题（键名）居中；删除键换到下一行且居中（移动端） */
 .guixu-root-container.mobile-view #variable-manager-modal details.vm-details > summary {
   flex-wrap: wrap !important;
+  align-items: flex-start !important;
+  min-width: 0;
+  overflow-x: hidden;
 }
-/* 新增：标题容器 .vm-head 居中显示（顶层对象的子对象键名） */
+/* 标题容器允许多段文本自动换行，避免长ID挤出容器 */
 .guixu-root-container.mobile-view #variable-manager-modal details.vm-details > summary .vm-head {
   order: 1;
   flex: 1 0 100%;
   display: flex;
-  align-items: center;
-  justify-content: center;  /* 关键：标题水平居中 */
-  text-align: center;       /* 多行时文本居中 */
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: flex-start;
+  gap: 4px 6px;
+  min-width: 0;
+  text-align: left;
 }
-/* 防止标题内的 attribute-value 被 margin-left:auto 挤到右侧 */
-.guixu-root-container.mobile-view #variable-manager-modal details.vm-details > summary .attribute-value {
+/* 防止标题内 attribute-value 被推挤到右侧，并固定占据第一行 */
+.guixu-root-container.mobile-view #variable-manager-modal details.vm-details > summary .vm-head > .attribute-value {
   margin-left: 0 !important;
+  flex: 1 1 100%;
+  min-width: 0;
+  white-space: normal !important;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  line-height: 1.35;
+}
+/* 允许长ID（例如 NPC_Aristotle_Muhammad）在移动端自动断行 */
+.guixu-root-container.mobile-view #variable-manager-modal details.vm-details > summary .vm-head > .attribute-name {
+  min-width: 0;
+  max-width: 100%;
+  white-space: normal !important;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  line-height: 1.35;
 }
 .guixu-root-container.mobile-view #variable-manager-modal details.vm-details > summary .vm-actions {
   order: 2;                                /* 放到下一行 */
@@ -830,8 +851,6 @@
   margin-left: 0 !important;
   justify-content: flex-start !important;
 }
-
-/* 属性行：允许换行；值区占满整行；删除键与输入同容器不再撑出 */
 
 /* 属性行：允许换行；值区占满整行；删除键与输入同容器不再撑出 */
 .guixu-root-container.mobile-view #variable-manager-modal .attributes-list .attribute-item {
@@ -875,6 +894,30 @@
   padding: 6px 0 !important;
   gap: 6px !important;
 }
+
+/* 变量编辑器 JSON 模式：按钮区网格化，避免窄屏下按钮溢出容器无法点击 */
+.guixu-root-container.mobile-view #variable-manager-modal .vm-json-panel {
+  min-height: 0;
+}
+.guixu-root-container.mobile-view #variable-manager-modal .vm-json-editor {
+  min-height: min(46vh, 360px);
+}
+.guixu-root-container.mobile-view #variable-manager-modal .vm-json-actions {
+  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+.guixu-root-container.mobile-view #variable-manager-modal .vm-json-actions .interaction-btn,
+.guixu-root-container.mobile-view #variable-manager-modal .vm-json-actions .danger-btn {
+  width: 100%;
+  min-width: 0 !important;
+  height: 34px !important;
+  box-sizing: border-box !important;
+}
+.guixu-root-container.mobile-view #variable-manager-modal .vm-json-actions #vm-json-apply-btn {
+  grid-column: 1 / -1;
+}
  
 /* =========================
    移动端-我的行囊（Inventory）面板
@@ -891,7 +934,8 @@
   /* 与设置中心/存档面板一致的移动端尺寸策略，确保有稳定的高度参照 */
   width: 96vw;
   max-width: 96vw;
-  height: auto;
+  height: 90vh;
+  height: 90dvh;
   max-height: 90vh;
   max-height: 90dvh;            /* 兼容动态视口单位，地址栏伸缩时更稳定 */
   overflow-x: hidden;            /* 禁止横向滚动条 */
@@ -982,11 +1026,51 @@
   /* 主滚动容器：只滚列表，不滚头部与标签 */
   flex: 1 1 auto;
   min-height: 0;
-  overflow: auto;
+  /* 仅允许纵向滚动，彻底消除底部横向拖动条 */
+  overflow-y: auto;
+  overflow-x: hidden;
+  /* 移动端始终单列，避免窄屏下双列卡片挤压导致内容溢出 */
+  grid-template-columns: minmax(0, 1fr);
+  align-content: start;
   -webkit-overflow-scrolling: touch;
 }
 .guixu-root-container.mobile-view #relationships-modal .relationship-card {
   /* 防止卡片在窄屏被撑出容器（不改 overflow，以免“更多”菜单被剪裁） */
+  min-width: 0;
   max-width: 100%;
   box-sizing: border-box;
+}
+.guixu-root-container.mobile-view #relationships-modal .relationship-body {
+  min-width: 0;
+}
+.guixu-root-container.mobile-view #relationships-modal .relationship-meta {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: stretch;
+  justify-content: stretch;
+  gap: 8px;
+}
+.guixu-root-container.mobile-view #relationships-modal .relationship-meta .rel-badge {
+  min-width: 0;
+  max-width: 100%;
+  width: 100%;
+  box-sizing: border-box;
+  justify-content: flex-start !important;
+  padding: 0 10px !important;
+  min-height: 32px !important;
+  white-space: normal !important;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+.guixu-root-container.mobile-view #relationships-modal .relationship-meta .rel-badge .rel-value,
+.guixu-root-container.mobile-view #relationships-modal .relationship-meta .rel-badge .tier-value {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+@media (max-width: 520px) {
+  .guixu-root-container.mobile-view #relationships-modal .relationship-meta {
+    grid-template-columns: 1fr;
+  }
 }

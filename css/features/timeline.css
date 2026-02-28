@@ -127,7 +127,13 @@
   font-style: italic;
 }
 .timeline-detailed-info {
+  margin-top: 15px;
+  padding-top: 15px;
+  border-top: 1px solid rgba(201, 170, 113, 0.3);
   animation: fadeIn 0.3s ease-in-out;
+}
+.timeline-detailed-info.is-hidden {
+  display: none;
 }
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(-10px); }
@@ -152,6 +158,18 @@
 
 /* 将事件卡片设为可点击（去除行内 cursor 需求） */
 .timeline-event { cursor: pointer; }
+.timeline-event.is-expandable { cursor: pointer; }
+
+.timeline-auto-system {
+  white-space: pre-wrap;
+  font-size: 11px;
+  color: #a09c91;
+  margin: 4px 0 0;
+}
+
+.timeline-empty {
+  padding: 16px 0;
+}
 
 /* --- 印记/涟漪 时间线卡片美化（覆盖默认白底） --- */
 .timeline-line {

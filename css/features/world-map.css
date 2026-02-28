@@ -13,12 +13,22 @@
   min-height: 0; /* 关键：允许子元素在固定高度内滚动 */
 }
 
+/* 移动端：统一模态尺寸基线 */
+.guixu-root-container.mobile-view #world-map-modal .modal-content {
+  width: 96vw;
+  max-width: 96vw;
+  height: 90vh;
+  height: 90dvh;
+  max-height: 90vh;
+}
+
 .guixu-root-container .gx-worldmap {
   display: grid;
   grid-template-columns: 36% 64%;
   gap: 12px;
   background: var(--gx-surface-1);
-  border: 1px solid var(--gx-border);
+  border: 1px solid rgba(var(--gx-accent-rgb, 201,170,113), 0.35);
+  box-shadow: 0 0 0 1px rgba(var(--gx-accent-rgb, 201,170,113), 0.16) inset;
   border-radius: 10px;
   padding: 10px;
   height: 100%; /* 主容器高度占满模态 body */
@@ -28,7 +38,7 @@
 .guixu-root-container .gwm-aside,
 .guixu-root-container .gwm-main {
   background: var(--gx-surface-2);
-  border: 1px solid var(--gx-border);
+  border: 1px solid rgba(var(--gx-accent-rgb, 201,170,113), 0.12);
   border-radius: 8px;
   overflow: hidden;
   display: flex;            /* 使内部列表/详情区域可自适应高度 */
@@ -39,7 +49,7 @@
 /* 左栏头部 */
 .guixu-root-container .gwm-head {
   padding: 12px;
-  border-bottom: 1px solid var(--gx-border);
+  border-bottom: 1px solid rgba(var(--gx-accent-rgb, 201,170,113), 0.10);
   background: var(--gx-surface-3);
   color: #e8e3d6;
 }
@@ -62,7 +72,7 @@
 /* 搜索栏：使用全局通用输入样式，宽度铺满 */
 .guixu-root-container .gwm-search {
   padding: 8px 12px;
-  border-bottom: 1px solid var(--gx-border);
+  border-bottom: 1px solid rgba(var(--gx-accent-rgb, 201,170,113), 0.10);
   background: transparent; /* 继承左栏底色 */
 }
 .guixu-root-container .gwm-search .gx-input {
@@ -79,7 +89,7 @@
 
 .guixu-root-container .gwm-acc-item {
   background: var(--gx-surface-1);
-  border: 1px solid var(--gx-border);
+  border: 1px solid rgba(var(--gx-accent-rgb, 201,170,113), 0.12);
   border-radius: 8px;
   margin-bottom: 8px;
   overflow: hidden;
@@ -97,19 +107,19 @@
 
 /* 主地点卡片：悬停高光 */
 .guixu-root-container .gwm-acc-item:hover {
-  border-color: var(--gx-accent, #c9aa71);
-  box-shadow: 0 0 0 2px rgba(var(--gx-accent-rgb, 201,170,113), .20) inset,
-              0 0 16px rgba(var(--gx-accent-rgb, 201,170,113), .18);
+  border-color: rgba(var(--gx-accent-rgb, 201,170,113), 0.28);
+  box-shadow: 0 0 0 1px rgba(var(--gx-accent-rgb, 201,170,113), .18) inset;
 }
 
 .guixu-root-container .gwm-acc-header:hover {
-  background: rgba(var(--gx-mask-rgb, 26,26,46), .5);
+  background: rgba(var(--gx-mask-rgb, 26,26,46), .54);
 }
 
 .guixu-root-container .gwm-acc-left {
   display: inline-flex;
   align-items: center;
-  gap: 10px;
+  gap: 6px;
+  min-width: 0;
 }
 
 .guixu-root-container .gwm-pin {
@@ -123,6 +133,10 @@
 .guixu-root-container .gwm-acc-title {
   font-weight: 700;
   font-size: 14px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
 }
 
 .guixu-root-container .gwm-chevron {
@@ -132,16 +146,23 @@
 .guixu-root-container .gwm-acc-content {
   display: none;
   padding: 6px 8px 10px 36px;
+  background: linear-gradient(180deg, rgba(var(--gx-mask-rgb, 26,26,46), .52), rgba(var(--gx-mask-rgb, 26,26,46), .36));
+  border-top: 1px solid rgba(var(--gx-accent-rgb, 201,170,113), 0.25);
+  box-shadow: 0 0 0 1px rgba(var(--gx-accent-rgb, 201,170,113), .18) inset, 0 6px 16px rgba(0,0,0,.18);
+  border-radius: 8px;
 }
 
 .guixu-root-container .gwm-acc-item.expanded .gwm-acc-content {
   display: block;
 }
+.guixu-root-container .gwm-acc-item.expanded {
+  background: rgba(var(--gx-mask-rgb, 26,26,46), 0.22);
+}
 
 .guixu-root-container .gwm-internal-btn {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   width: 100%;
   padding: 8px 10px;
   color: #cfc9bb;
@@ -149,20 +170,22 @@
   cursor: pointer;
   border: 1px solid transparent;  /* 让选中态能显式高光外边框 */
   transition: border-color .2s ease, box-shadow .2s ease, background .2s ease;
+  min-width: 0;
+  font-size: 13px;
+  justify-content: flex-start;
+  text-align: left;
 }
 
 .guixu-root-container .gwm-internal-btn:hover {
   background: rgba(var(--gx-mask-rgb, 26,26,46), .45);
-  box-shadow: 0 0 0 2px rgba(var(--gx-accent-rgb, 201,170,113), .15) inset,
-              0 0 12px rgba(var(--gx-accent-rgb, 201,170,113), .15);
+  box-shadow: 0 0 0 1px rgba(var(--gx-accent-rgb, 201,170,113), .16) inset;
 }
 
 .guixu-root-container .gwm-internal-btn.active {
   background: rgba(var(--gx-mask-rgb, 26,26,46), .66);
   color: #e6e0d1;
-  border-color: var(--gx-accent, #c9aa71);
-  box-shadow: 0 0 0 2px rgba(var(--gx-accent-rgb, 201,170,113), .28) inset,
-              0 0 16px rgba(var(--gx-accent-rgb, 201,170,113), .22);
+  border-color: rgba(var(--gx-accent-rgb, 201,170,113), 0.35);
+  box-shadow: 0 0 0 1px rgba(var(--gx-accent-rgb, 201,170,113), .28) inset;
 }
 
 /* 右侧详情 */
@@ -180,7 +203,7 @@
 
 .guixu-root-container .gwm-section {
   background: var(--gx-surface-1);
-  border: 1px solid var(--gx-border);
+  border: 1px solid rgba(var(--gx-accent-rgb, 201,170,113), 0.12);
   border-radius: 8px;
   padding: 12px;
   margin-bottom: 12px;
@@ -204,7 +227,18 @@
   line-height: 1.6;
   margin-top: 10px;
   padding-top: 10px;
-  border-top: 1px solid var(--gx-border);
+  border-top: 1px solid rgba(var(--gx-accent-rgb, 201,170,113), 0.10);
+}
+
+.guixu-root-container .gwm-inner-title {
+  color: #e6e0d1;
+  font-weight: 700;
+}
+
+.guixu-root-container .gwm-inner-desc {
+  margin-top: 4px;
+  color: #bdb6a6;
+  font-size: 12px;
 }
 
 .guixu-root-container .gwm-inline-title {
@@ -230,7 +264,7 @@
   align-items: center;
   justify-content: space-between;
   background: var(--gx-surface-2);
-  border: 1px solid var(--gx-border);
+  border: 1px solid rgba(var(--gx-accent-rgb, 201,170,113), 0.12);
   border-radius: 8px;
   padding: 10px;
   color: #e6e0d1;
@@ -240,6 +274,10 @@
   display: flex;
   align-items: center;
   gap: 10px;
+}
+
+.guixu-root-container .gwm-npc-name {
+  font-weight: 700;
 }
 
 .guixu-root-container .gwm-npc-state {
@@ -264,12 +302,33 @@
   color: var(--gx-accent, #c9aa71);
 }
 
+.guixu-root-container .gwm-empty {
+  color: #a09c91;
+  font-size: 12px;
+  padding: 8px;
+}
+
+.guixu-root-container .gwm-empty-inline {
+  padding: 0;
+}
+
 /* 移动端适配 */
 .guixu-root-container.mobile-view .gx-worldmap {
   grid-template-columns: 1fr;
+  align-content: start;
+  justify-items: stretch;
 }
 .guixu-root-container.mobile-view .gwm-list {
   max-height: 340px;
+}
+/* 移动端：标签栏与主体容器拉满宽度，贴合顶部 */
+.guixu-root-container.mobile-view .wm-mobile-tabs,
+.guixu-root-container.mobile-view .gwm-aside,
+.guixu-root-container.mobile-view .gwm-main {
+  width: 100%;
+  justify-self: stretch;
+  align-self: stretch;
+  margin: 0;
 }
 
 /* 小图标尺寸统一 */
@@ -296,6 +355,25 @@
 /* 内部地点图标色 */
 .guixu-root-container .gwm-internal-icon {
   color: #6b7280;
+}
+
+/* 内部地点名称：单行优先，超长省略 */
+.guixu-root-container .gwm-internal-btn span {
+  flex: 1 1 auto;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-align: left;
+}
+
+@media (max-width: 1200px) {
+  .guixu-root-container .gwm-acc-title {
+    font-size: 13px;
+  }
+  .guixu-root-container .gwm-internal-btn {
+    font-size: 12px;
+  }
 }
 
 /* 细分：状态标签颜色（简化） */

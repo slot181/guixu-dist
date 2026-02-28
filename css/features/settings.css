@@ -14,6 +14,66 @@
   background-repeat: no-repeat;
 }
 
+/* 设置中心：结构化类（用于替代内联样式） */
+#settings-modal .settings-modal-content {
+  max-width: 600px;
+}
+#settings-modal .settings-list {
+  padding: 10px;
+}
+#settings-modal .settings-row {
+  align-items: center;
+}
+#settings-modal .settings-row-inline {
+  gap: 10px;
+}
+#settings-modal .settings-row-inline-tight {
+  gap: 8px;
+}
+#settings-modal .settings-preview-row {
+  margin-top: 8px;
+}
+#settings-modal .settings-bg-preview {
+  width: 100%;
+}
+#settings-modal .settings-range-input,
+#settings-modal .settings-flex-select {
+  flex: 1 1 auto;
+}
+#settings-modal .settings-label-70 {
+  min-width: 70px;
+}
+#settings-modal .settings-label-90 {
+  min-width: 90px;
+}
+#settings-modal .settings-help-text {
+  padding: 0 10px 8px;
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--gx-placeholder-color, #8b7355);
+}
+#settings-modal .info-icon {
+  margin-left: 8px;
+}
+
+/* 设置中心：问号说明浮窗（由 JS 仅控制显隐与定位） */
+#guixu-info-tooltip.guixu-info-tooltip {
+  position: fixed;
+  z-index: 10110;
+  max-width: min(300px, calc(100vw - 16px));
+  padding: 8px 10px;
+  background: rgba(var(--gx-mask-rgb, 26, 26, 46), calc(var(--gx-panel-opacity, 0.85) * 0.96));
+  color: #e0dcd1;
+  border: 1px solid rgba(var(--gx-accent-rgb, 201, 170, 113), 0.42);
+  border-radius: 8px;
+  font-size: 12px;
+  line-height: 1.58;
+  display: none;
+  box-shadow: 0 8px 18px rgba(0,0,0,0.35);
+  pointer-events: none;
+}
+
 /* 设置中心：背景库路径（下拉）限制宽度，避免挤压按钮 */
 #settings-modal .attributes-list .attribute-item {
   flex-wrap: nowrap;
@@ -28,6 +88,34 @@
 #settings-modal #pref-bg-clear {
   white-space: nowrap;
   flex: 0 0 auto;
+}
+
+/* 设置中心：菜单大厅背景选择与预览 */
+#settings-modal .lobby-bg-row {
+  flex-wrap: nowrap;
+  gap: 8px;
+  align-items: center;
+}
+#settings-modal .lobby-bg-label {
+  min-width: 70px;
+}
+#settings-modal #pref-lobby-bg-select {
+  flex: 1 1 auto;
+  min-width: 160px;
+  max-width: 50%;
+}
+#settings-modal #pref-lobby-bg-clear {
+  white-space: nowrap;
+  flex: 0 0 auto;
+}
+#settings-modal .lobby-bg-preview-row {
+  margin-top: 8px;
+}
+#settings-modal #pref-lobby-bg-preview {
+  width: 100%;
+}
+#settings-modal #panel-lobby-bg .attributes-list {
+  padding: 10px;
 }
 /* 设置中心按钮统一尺寸，保证4字中文完整显示且与 danger 样式等宽等高 */
 #settings-modal .attributes-list .interaction-btn,
@@ -72,6 +160,26 @@
 .guixu-root-container.mobile-view #settings-modal #pref-bg-delete,
 .guixu-root-container.mobile-view #settings-modal #pref-bg-clear {
   flex: 1 1 calc(33% - 6px) !important;
+  min-width: 0 !important;
+}
+/* 副API：移动端 CORS 输入框必须可收缩，避免被内联 min-width 撑出卡片 */
+.guixu-root-container.mobile-view #settings-modal #panel-aux-api #aux-cors-template {
+  flex: 1 1 100% !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+}
+.guixu-root-container.mobile-view #settings-modal .lobby-bg-row {
+  flex-wrap: wrap !important;
+  gap: 6px !important;
+}
+.guixu-root-container.mobile-view #settings-modal #pref-lobby-bg-select {
+  flex: 1 1 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+}
+.guixu-root-container.mobile-view #settings-modal #pref-lobby-bg-clear {
+  flex: 1 1 100% !important;
   min-width: 0 !important;
 }
 
@@ -159,6 +267,17 @@
 .guixu-root-container #settings-modal .static-db-list {
   padding: 10px !important; /* 由 JS 去除了行内 padding，这里用类统一接管 */
 }
+.guixu-root-container #settings-modal .static-db-scroll {
+  margin: 0 10px 8px;
+  max-height: 240px;
+  overflow-y: auto;
+  border: 1px solid rgba(var(--gx-accent-rgb, 201, 170, 113), 0.24);
+  border-radius: 10px;
+  background: rgba(var(--gx-mask-rgb, 26, 26, 46), calc(var(--gx-panel-opacity, 0.85) * 0.38));
+}
+.guixu-root-container #settings-modal .static-db-scroll .static-db-list {
+  padding: 8px !important;
+}
 .guixu-root-container #settings-modal .static-db-row {
   display: grid;
   grid-template-columns: 1fr minmax(160px, 220px) auto; /* 名称自适应、选择最小宽、徽标自适应 */
@@ -180,10 +299,20 @@
   color: var(--gx-accent, #c9aa71);
   white-space: nowrap;
 }
+.guixu-root-container #settings-modal .static-db-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+  padding: 0 10px 10px;
+  box-sizing: border-box;
+}
 
 /* 移动端：纵向堆叠，避免超长名称挤压选择框，保证卡片不被破坏 */
 .guixu-root-container.mobile-view #settings-modal .static-db-row {
   grid-template-columns: 1fr;  /* 名称一行、选择一行、徽标一行 */
+}
+.guixu-root-container.mobile-view #settings-modal .static-db-scroll {
+  max-height: 34vh;
 }
 .guixu-root-container.mobile-view #settings-modal .static-db-select {
   width: 100% !important;
@@ -193,4 +322,337 @@
   justify-self: end;           /* 徽标靠右对齐，节省空间 */
   font-size: 12px;
   opacity: .9;
+}
+.guixu-root-container.mobile-view #settings-modal .static-db-actions {
+  display: grid !important;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  width: 100%;
+}
+.guixu-root-container.mobile-view #settings-modal .static-db-actions > .interaction-btn {
+  width: 100%;
+  min-width: 0;
+  height: 34px;
+  padding: 0 10px;
+  box-sizing: border-box;
+}
+
+/* 设置中心：重点卡片（正文字体与颜色/记忆总结/副API设置）统一布局与控件接管 */
+.guixu-root-container #settings-modal :is(#panel-story-font-color, #panel-memory-summary, #panel-aux-api) .attributes-list {
+  padding: 10px !important;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.guixu-root-container #settings-modal :is(#panel-story-font-color, #panel-memory-summary, #panel-aux-api) .attribute-item {
+  gap: 10px !important;
+  align-items: center !important;
+  flex-wrap: wrap;
+}
+.guixu-root-container #settings-modal :is(#panel-story-font-color, #panel-memory-summary, #panel-aux-api) .attribute-name {
+  min-width: 90px;
+}
+.guixu-root-container #settings-modal :is(#panel-story-font-color, #panel-memory-summary, #panel-aux-api) .attribute-value {
+  color: var(--gx-input-color, #e0dcd1) !important;
+}
+
+/* 设置中心通用：滑块、单选、勾选改为主题可控视觉 */
+.guixu-root-container #settings-modal input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 8px;
+  border-radius: 999px;
+  border: 1px solid rgba(var(--gx-accent-rgb, 201, 170, 113), 0.28);
+  background: linear-gradient(
+    180deg,
+    rgba(var(--gx-mask-rgb, 26, 26, 46), calc(var(--gx-panel-opacity, 0.85) * 0.44)),
+    rgba(var(--gx-mask-rgb, 26, 26, 46), calc(var(--gx-panel-opacity, 0.85) * 0.32))
+  );
+  box-shadow: inset 0 1px 2px rgba(0,0,0,0.24);
+}
+.guixu-root-container #settings-modal input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 1px solid rgba(var(--gx-accent-rgb, 201, 170, 113), 0.68);
+  background: linear-gradient(
+    180deg,
+    rgba(var(--gx-accent-rgb, 201, 170, 113), 0.98),
+    rgba(var(--gx-accent-rgb, 201, 170, 113), 0.78)
+  );
+  box-shadow: 0 4px 10px rgba(0,0,0,0.28), inset 0 1px 0 rgba(255,255,255,0.36);
+  cursor: pointer;
+}
+.guixu-root-container #settings-modal input[type="range"]::-moz-range-thumb {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 1px solid rgba(var(--gx-accent-rgb, 201, 170, 113), 0.68);
+  background: linear-gradient(
+    180deg,
+    rgba(var(--gx-accent-rgb, 201, 170, 113), 0.98),
+    rgba(var(--gx-accent-rgb, 201, 170, 113), 0.78)
+  );
+  box-shadow: 0 4px 10px rgba(0,0,0,0.28), inset 0 1px 0 rgba(255,255,255,0.36);
+  cursor: pointer;
+}
+.guixu-root-container #settings-modal input[type="checkbox"],
+.guixu-root-container #settings-modal input[type="radio"] {
+  width: 16px;
+  height: 16px;
+  margin: 0;
+  accent-color: var(--gx-accent, #c9aa71);
+  cursor: pointer;
+}
+
+/* 正文字体与颜色卡片：颜色输入统一为主题化小色块 */
+.guixu-root-container #settings-modal #panel-story-font-color input[type="color"] {
+  width: 44px !important;
+  min-width: 44px;
+  height: 28px !important;
+  padding: 2px !important;
+  border-radius: 6px !important;
+  border: 1px solid var(--gx-input-border-color, rgba(201,170,113,0.35)) !important;
+  background: var(--gx-input-bg, rgba(26,26,46,0.5)) !important;
+  box-sizing: border-box;
+  cursor: pointer;
+}
+
+/* 记忆总结卡片：可读性与操作区一致化 */
+.guixu-root-container #settings-modal #panel-memory-summary #pref-memory-user-placeholder {
+  max-width: 220px !important;
+}
+.guixu-root-container #settings-modal #panel-memory-summary :is(#pref-chapter-every-sections, #pref-volume-every-chapters) {
+  width: 120px !important;
+}
+
+/* 副API设置卡片：去内联化后的布局类 */
+.guixu-root-container #settings-modal #panel-aux-api .aux-settings-list {
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.guixu-root-container #settings-modal #panel-aux-api .aux-settings-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.guixu-root-container #settings-modal #panel-aux-api .aux-settings-label {
+  min-width: 90px;
+}
+.guixu-root-container #settings-modal #panel-aux-api .aux-settings-option {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.guixu-root-container #settings-modal #panel-aux-api .aux-settings-open-editor {
+  margin-left: auto;
+}
+.guixu-root-container #settings-modal #panel-aux-api .aux-range-input {
+  flex: 1 1 200px;
+  min-width: 180px;
+}
+.guixu-root-container #settings-modal #panel-aux-api .aux-token-input {
+  width: 120px !important;
+}
+.guixu-root-container #settings-modal #panel-aux-api .aux-provider-group {
+  border: 1px dashed rgba(var(--gx-accent-rgb, 201, 170, 113), 0.42);
+  border-radius: 8px;
+  padding: 10px;
+  margin: 0;
+  background: rgba(var(--gx-mask-rgb, 26, 26, 46), calc(var(--gx-panel-opacity, 0.85) * 0.34));
+}
+.guixu-root-container #settings-modal #panel-aux-api .aux-provider-group.is-hidden {
+  display: none;
+}
+.guixu-root-container #settings-modal #panel-aux-api .aux-provider-legend {
+  padding: 0 6px;
+  color: var(--gx-accent, #c9aa71);
+  font-size: 12px;
+}
+.guixu-root-container #settings-modal #panel-aux-api .aux-endpoint-input {
+  flex: 1 1 280px;
+  min-width: 180px;
+}
+.guixu-root-container #settings-modal #panel-aux-api .aux-cors-template-input {
+  flex: 1 1 260px;
+  min-width: 260px;
+}
+.guixu-root-container #settings-modal #panel-aux-api .aux-settings-help-row {
+  align-items: flex-start !important;
+}
+.guixu-root-container #settings-modal #panel-aux-api .aux-settings-help-text {
+  color: var(--gx-placeholder-color, #8b7355);
+  font-size: 12px;
+  line-height: 1.6;
+}
+.guixu-root-container #settings-modal #panel-aux-api .aux-test-btn {
+  margin-left: auto;
+}
+
+/* 副API消息构建器（二级面板） */
+.guixu-root-container #aux-message-editor-modal.is-open {
+  display: flex;
+}
+.guixu-root-container #aux-message-editor-modal .aux-message-editor-content {
+  width: min(860px, 95vw) !important;
+  max-width: 95vw !important;
+  height: auto !important;
+  max-height: 85vh !important;
+  max-height: 85dvh !important;
+  overflow: hidden !important;
+}
+.guixu-root-container #aux-message-editor-modal .aux-message-editor-content .modal-body {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  overflow: hidden;
+}
+.guixu-root-container #aux-message-editor-modal .aux-message-editor-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 2px;
+  flex-wrap: wrap;
+}
+.guixu-root-container #aux-message-editor-modal .aux-message-editor-hint {
+  margin-left: auto;
+  color: var(--gx-placeholder-color, #8b7355);
+  font-size: 12px;
+  line-height: 1.6;
+}
+.guixu-root-container #aux-message-editor-modal .aux-message-editor-list {
+  padding: 10px;
+  max-height: 55vh;
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.guixu-root-container #aux-message-editor-modal .aux-msg-row {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: stretch;
+  border: 1px solid rgba(var(--gx-accent-rgb, 201, 170, 113), 0.24);
+  border-radius: 10px;
+  padding: 10px;
+  background: rgba(var(--gx-mask-rgb, 26, 26, 46), calc(var(--gx-panel-opacity, 0.85) * 0.42));
+}
+.guixu-root-container #aux-message-editor-modal .aux-msg-row-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+}
+.guixu-root-container #aux-message-editor-modal .aux-msg-role-label {
+  min-width: 42px;
+}
+.guixu-root-container #aux-message-editor-modal .aux-msg-role-select {
+  flex: 1 1 180px;
+}
+.guixu-root-container #aux-message-editor-modal .aux-msg-actions {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.guixu-root-container #aux-message-editor-modal .aux-msg-action-btn {
+  min-width: 34px;
+  height: 34px;
+  padding: 0 10px;
+}
+.guixu-root-container #aux-message-editor-modal .aux-msg-delete {
+  min-width: 90px;
+}
+.guixu-root-container #aux-message-editor-modal .aux-msg-textarea {
+  width: 100%;
+  min-height: 120px;
+  height: auto;
+  padding: 8px 10px;
+  resize: vertical;
+  line-height: 1.6;
+}
+.guixu-root-container #aux-message-editor-modal .aux-msg-hint {
+  color: var(--gx-placeholder-color, #8b7355);
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+/* 移动端：副API消息构建器卡片按钮防溢出 */
+.guixu-root-container.mobile-view #aux-message-editor-modal .aux-message-editor-content {
+  width: 96vw !important;
+  max-width: 96vw !important;
+  max-height: 90vh !important;
+  max-height: 90dvh !important;
+}
+.guixu-root-container.mobile-view #aux-message-editor-modal .aux-message-editor-toolbar {
+  gap: 8px;
+}
+.guixu-root-container.mobile-view #aux-message-editor-modal .aux-message-editor-btn {
+  min-width: 0 !important;
+  height: 34px !important;
+  padding: 0 10px !important;
+  flex: 1 1 calc(50% - 4px);
+}
+.guixu-root-container.mobile-view #aux-message-editor-modal .aux-message-editor-hint {
+  margin-left: 0;
+  flex: 1 1 100%;
+}
+.guixu-root-container.mobile-view #aux-message-editor-modal .aux-message-editor-list {
+  padding: 8px;
+}
+.guixu-root-container.mobile-view #aux-message-editor-modal .aux-msg-row {
+  padding: 8px;
+}
+.guixu-root-container.mobile-view #aux-message-editor-modal .aux-msg-row-head {
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.guixu-root-container.mobile-view #aux-message-editor-modal .aux-msg-role-label {
+  min-width: auto;
+}
+.guixu-root-container.mobile-view #aux-message-editor-modal .aux-msg-role-select {
+  flex: 1 1 calc(100% - 56px);
+  min-width: 0;
+}
+.guixu-root-container.mobile-view #aux-message-editor-modal .aux-msg-actions {
+  margin-left: 0;
+  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+.guixu-root-container.mobile-view #aux-message-editor-modal .aux-msg-action-btn {
+  min-width: 0;
+  width: 100%;
+}
+.guixu-root-container.mobile-view #aux-message-editor-modal .aux-msg-delete {
+  min-width: 0;
+}
+
+/* 移动端：副API设置卡片按列自适应，避免控件挤压 */
+.guixu-root-container.mobile-view #settings-modal #panel-aux-api .aux-settings-open-editor,
+.guixu-root-container.mobile-view #settings-modal #panel-aux-api .aux-settings-fill-btn {
+  margin-left: 0;
+  flex: 1 1 calc(50% - 4px) !important;
+}
+.guixu-root-container.mobile-view #settings-modal #panel-aux-api .aux-provider-group .aux-settings-label {
+  min-width: 70px;
+}
+.guixu-root-container.mobile-view #settings-modal #panel-aux-api .aux-endpoint-input {
+  flex: 1 1 100%;
+  min-width: 0;
+}
+.guixu-root-container.mobile-view #settings-modal #panel-aux-api .aux-cors-template-input {
+  flex: 1 1 100%;
+  min-width: 0;
+}
+.guixu-root-container.mobile-view #settings-modal #panel-aux-api .aux-test-btn {
+  margin-left: 0;
+  flex: 1 1 100%;
 }
