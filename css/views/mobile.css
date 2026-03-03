@@ -47,17 +47,23 @@
    说明：在嵌入式环境下父级多为 auto/min-height，子项百分比高度无法吃到父级高度，
    导致 .game-container 未铺满根容器，底部栏上方出现“与最外边边框之间的空隙”。
    这里直接用动态视口单位为 .game-container 提供最小高度，以充满可视区。 */
-.guixu-root-container.mobile-view:not(:fullscreen) .game-container {
+.guixu-root-container.mobile-view:not(:fullscreen):not(.embedded-env) .game-container {
   min-height: calc(100dvh - 0px);
   min-height: calc(100svh - 0px);
   min-height: calc(100vh - 0px);
 }
 
 /* 进一步兜底：使“根容器”在移动端非全屏时至少等于可视高度，避免根容器比视口矮导致底部出现留白 */
-.guixu-root-container.mobile-view:not(:fullscreen) {
+.guixu-root-container.mobile-view:not(:fullscreen):not(.embedded-env) {
   min-height: 100dvh;
   min-height: 100svh;
   min-height: 100vh;
+}
+
+/* 嵌入式（酒馆楼层）下禁用 vh/dvh 最小高度链，避免“容器高度自举放大”导致无限延伸 */
+.guixu-root-container.mobile-view.embedded-env:not(:fullscreen),
+.guixu-root-container.mobile-view.embedded-env:not(:fullscreen) .game-container {
+  min-height: 0 !important;
 }
 
 /* 让所有面板占据整行 */
