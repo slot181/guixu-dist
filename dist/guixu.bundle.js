@@ -26178,16 +26178,17 @@ if (avatar) {
           background: (allowCustomize.background == null ? true : !!allowCustomize.background),
           staticDatabases: (allowCustomize.staticDatabases == null ? true : !!allowCustomize.staticDatabases),
         },
-        // 绑定条目（需求三/四）：使用 name + id 双字段校验
+        // 绑定条目（需求三/四）：使用 name/id + author/dataVersion
         linked: {
           // 默认天赋：允许多个
-          talents: Array.isArray(linked?.talents) ? linked.talents : (linked?.talent ? [linked.talent] : []),
-          background: {
-            name: String(linked?.background?.name ?? ''),
-            id: String(linked?.background?.id ?? ''),
-          },
+          talents: (Array.isArray(linked?.talents) ? linked.talents : (linked?.talent ? [linked.talent] : []))
+            .map((x) => this._enrichDungeonLinkedMeta('talent', x))
+            .filter((x) => x.name && x.id),
+          background: this._enrichDungeonLinkedMeta('background', linked?.background),
           // 默认静态库：允许多个
-          staticDbs: Array.isArray(linked?.staticDbs) ? linked.staticDbs : (linked?.staticDb ? [linked.staticDb] : []),
+          staticDbs: (Array.isArray(linked?.staticDbs) ? linked.staticDbs : (linked?.staticDb ? [linked.staticDb] : []))
+            .map((x) => this._enrichDungeonLinkedMeta('database', x))
+            .filter((x) => x.name && x.id),
           difficulty: String(linked?.difficulty ?? 'normal'),
         }
       };
@@ -26217,17 +26218,128 @@ if (avatar) {
           staticDatabases: (v?.allowCustomize?.staticDatabases == null ? true : !!v.allowCustomize.staticDatabases),
         },
         linked: {
-          // 默认天赋：允许多个（数组元素：{name,id}）
-          talents: Array.isArray(v?.linked?.talents) ? v.linked.talents : [],
-          background: {
-            name: String(v?.linked?.background?.name ?? ''),
-            id: String(v?.linked?.background?.id ?? ''),
-          },
-          // 默认静态库：允许多个（数组元素：{name,id}）
-          staticDbs: Array.isArray(v?.linked?.staticDbs) ? v.linked.staticDbs : [],
+          // 默认天赋：允许多个（数组元素：{name,id,author,dataVersion}）
+          talents: (Array.isArray(v?.linked?.talents) ? v.linked.talents : [])
+            .map((x) => this._enrichDungeonLinkedMeta('talent', x))
+            .filter((x) => x.name && x.id),
+          background: this._enrichDungeonLinkedMeta('background', v?.linked?.background),
+          // 默认静态库：允许多个（数组元素：{name,id,author,dataVersion}）
+          staticDbs: (Array.isArray(v?.linked?.staticDbs) ? v.linked.staticDbs : [])
+            .map((x) => this._enrichDungeonLinkedMeta('database', x))
+            .filter((x) => x.name && x.id),
           difficulty: String(v?.linked?.difficulty ?? 'normal'),
         }
       };
+    },
+
+    // 副本绑定条目：统一抽取元数据（英文字段：author、dataVersion）
+    _normalizeDungeonLinkedMeta(kind, source) {
+      const obj = (source && typeof source === 'object') ? source : {};
+      const raw = (obj.raw && typeof obj.raw === 'object') ? obj.raw : {};
+      if (kind === 'talent') {
+        return {
+          name: String(obj?.name || obj?.天赋 || raw?.天赋 || '').trim(),
+          id: String(obj?.id || obj?.天赋id || raw?.天赋id || '').trim(),
+          author: String(obj?.author || obj?.作者 || raw?.作者 || '').trim(),
+          dataVersion: String(obj?.dataVersion || obj?.version || raw?.version || '').trim()
+        };
+      }
+      if (kind === 'background') {
+        return {
+          name: String(obj?.name || obj?.背景 || raw?.背景 || '').trim(),
+          id: String(obj?.id || obj?.背景id || raw?.背景id || '').trim(),
+          author: String(obj?.author || obj?.作者 || raw?.作者 || '').trim(),
+          dataVersion: String(obj?.dataVersion || obj?.version || raw?.version || '').trim()
+        };
+      }
+      return {
+        name: String(obj?.name || obj?.名称 || raw?.name || '').trim(),
+        id: String(obj?.id || raw?.id || '').trim(),
+        author: String(obj?.author || raw?.author || '').trim(),
+        dataVersion: String(obj?.dataVersion || obj?.version || raw?.version || '').trim()
+      };
+    },
+
+    _isDungeonLinkedMetaMatch(kind, linkedRef, targetRef) {
+      const norm = (v) => String(v || '').trim().toLowerCase();
+      const l = this._normalizeDungeonLinkedMeta(kind, linkedRef);
+      const t = this._normalizeDungeonLinkedMeta(kind, targetRef);
+      if (norm(l.name) !== norm(t.name)) return false;
+      if (norm(l.id) !== norm(t.id)) return false;
+      const needAuthor = !!norm(l.author);
+      const needDataVersion = !!norm(l.dataVersion);
+      if (needAuthor && norm(l.author) !== norm(t.author)) return false;
+      if (needDataVersion && norm(l.dataVersion) !== norm(t.dataVersion)) return false;
+      return true;
+    },
+
+    // 副本绑定条目：按 name/id 必选，author/dataVersion 有值时参与精确匹配
+    _findDungeonLinkedLocalItem(kind, linkedRef) {
+      const ref = this._normalizeDungeonLinkedMeta(kind, linkedRef);
+      if (!ref.name || !ref.id) return null;
+      const list = (kind === 'talent')
+        ? (this._talentList || [])
+        : ((kind === 'background')
+          ? (this._bgList || [])
+          : ([]).concat(this._cwDbList || [], this._staticDbList || []));
+      for (const item of list) {
+        const meta = this._normalizeDungeonLinkedMeta(kind, item);
+        if (this._isDungeonLinkedMetaMatch(kind, ref, meta)) return item;
+      }
+      return null;
+    },
+
+    // 副本绑定条目：按四元组（name/id/author/dataVersion）从云端定位，兼容旧数据回退
+    _findDungeonLinkedRemoteItem(kind, linkedRef) {
+      const ref = this._normalizeDungeonLinkedMeta(kind, linkedRef);
+      if (!ref.name || !ref.id) return null;
+      const list = this._shareRemoteCache?.[kind] || [];
+      const norm = (v) => String(v || '').trim().toLowerCase();
+      for (const item of list) {
+        const baseMeta = this._normalizeDungeonLinkedMeta(kind, item);
+        if (norm(baseMeta.name) !== norm(ref.name)) continue;
+        if (norm(baseMeta.id) !== norm(ref.id)) continue;
+        if (ref.author && norm(baseMeta.author) !== norm(ref.author)) continue;
+        const versions = Array.isArray(item?.versions) ? item.versions : [];
+        if (ref.dataVersion && versions.length) {
+          const hit = versions.find((ver) => norm(ver?.dataVersion) === norm(ref.dataVersion));
+          if (!hit) continue;
+          return Object.assign({}, item, {
+            raw: hit?.raw || item?.raw,
+            path: hit?.path || item?.path,
+            uploadedAt: String(hit?.uploadedAt || item?.uploadedAt || ''),
+            dataVersion: String(hit?.dataVersion || item?.dataVersion || '')
+          });
+        }
+        if (ref.dataVersion && !versions.length) {
+          if (norm(item?.dataVersion) !== norm(ref.dataVersion)) continue;
+        }
+        return item;
+      }
+      return null;
+    },
+
+    _enrichDungeonLinkedMeta(kind, linkedRef) {
+      const base = this._normalizeDungeonLinkedMeta(kind, linkedRef);
+      if (!base.name || !base.id) return base;
+      const hit = this._findDungeonLinkedLocalItem(kind, base);
+      if (!hit) return base;
+      const full = this._normalizeDungeonLinkedMeta(kind, hit);
+      return {
+        name: base.name || full.name,
+        id: base.id || full.id,
+        author: base.author || full.author,
+        dataVersion: base.dataVersion || full.dataVersion
+      };
+    },
+
+    _formatDungeonLinkedMissLabel(kind, linkedRef) {
+      const ref = this._normalizeDungeonLinkedMeta(kind, linkedRef);
+      const titleMap = { talent: '天赋', background: '背景', database: '静态数据库' };
+      const head = `${titleMap[kind] || '条目'}:${ref.name || '未命名'}（id:${ref.id || '-'}）`;
+      const authorText = ref.author ? `，作者:${ref.author}` : '';
+      const verText = ref.dataVersion ? `，版本:${ref.dataVersion}` : '';
+      return `${head}${authorText}${verText}`;
     },
 
     async _createDungeonEntry(v) {
@@ -26914,13 +27026,13 @@ if (avatar) {
           <div class="sm-card" style="width:100%; margin-top:10px;">
             <div class="sm-title">绑定默认条目</div>
             <div class="sm-overview" style="opacity:0.8; font-size:12px; margin-top:6px;">
-              说明：开局选择该副本后，会自动选择这些条目；下一步会校验归墟世界书是否存在对应条目（按 名字+id 双重匹配）。
+              说明：开局选择该副本后，会自动选择这些条目；会记录 name/id/author/dataVersion 便于共享大厅精确匹配。
             </div>
 
             <div class="sm-card" style="margin-top:10px; padding:12px;">
               <div class="sm-title">默认天赋（可多选）</div>
               <div class="sm-overview cw-db-muted-note">
-                说明：从世界书的【天赋】条目读取；保存时写入副本JSON：linked.talents = [{name,id}, ...]。
+                说明：从世界书的【天赋】条目读取；保存时写入副本JSON：linked.talents = [{name,id,author,dataVersion}, ...]。
               </div>
               <div class="sm-row" style="gap:8px; align-items:center; margin-top:8px; flex-wrap:wrap;">
                 <span class="sm-label" style="min-width:70px;">搜索</span>
@@ -26956,7 +27068,7 @@ if (avatar) {
             <div class="sm-card" style="margin-top:10px; padding:12px;">
               <div class="sm-title">默认静态数据库（可多选）</div>
               <div class="sm-overview cw-db-muted-note">
-                说明：从世界书的【静态数据库】条目读取；保存时写入副本JSON：linked.staticDbs = [{name,id}, ...]。
+                说明：从世界书的【静态数据库】条目读取；保存时写入副本JSON：linked.staticDbs = [{name,id,author,dataVersion}, ...]。
               </div>
               <div class="sm-row" style="gap:8px; align-items:center; margin-top:8px; flex-wrap:wrap;">
                 <span class="sm-label" style="min-width:70px;">搜索</span>
@@ -27096,17 +27208,7 @@ if (avatar) {
         btnDel.addEventListener('click', async () => {
           const uid = String(this._cwDungeonSelectedUid || '');
           if (!uid) return;
-          try {
-            const bookName = window.GuixuConstants?.LOREBOOK?.NAME;
-            if (!bookName || !window.GuixuAPI?.deleteLorebookEntries) return;
-            await window.GuixuAPI.deleteLorebookEntries(bookName, [Number(uid)]);
-            window.GuixuHelpers?.showTemporaryMessage?.('已删除该副本条目');
-            this._cwDungeonSelectedUid = '';
-            await this._loadDungeonsFromLorebookForWorkshop();
-            this._renderCreativeWorkshopPage();
-          } catch (e) {
-            console.warn('[创意工坊][副本] 删除失败：', e);
-          }
+          await this._deleteCreativeItems('dungeon', [uid], { fromSingleAction: true });
         });
       }
 
@@ -27209,11 +27311,15 @@ if (avatar) {
                 staticDatabases: !!document.getElementById('cw-dun-allow-custom-db')?.checked,
               },
               linked: {
-                background: parsePick(document.getElementById('cw-dun-link-bg')?.value),
-                // 默认天赋：从【天赋】条目读取，写入 name+id（多选）
-                talents: parseMultiFromChecks('input.cw-dun-link-talent[type="checkbox"]'),
-                // 默认静态库：从【静态数据库】条目读取，写入 name+id（多选）
-                staticDbs: parseMultiFromChecks('input.cw-dun-link-db[type="checkbox"]'),
+                background: this._enrichDungeonLinkedMeta('background', parsePick(document.getElementById('cw-dun-link-bg')?.value)),
+                // 默认天赋：从【天赋】条目读取，写入 name/id/author/dataVersion（多选）
+                talents: parseMultiFromChecks('input.cw-dun-link-talent[type="checkbox"]')
+                  .map((x) => this._enrichDungeonLinkedMeta('talent', x))
+                  .filter((x) => x.name && x.id),
+                // 默认静态库：从【静态数据库】条目读取，写入 name/id/author/dataVersion（多选）
+                staticDbs: parseMultiFromChecks('input.cw-dun-link-db[type="checkbox"]')
+                  .map((x) => this._enrichDungeonLinkedMeta('database', x))
+                  .filter((x) => x.name && x.id),
                 difficulty: String(document.getElementById('cw-dun-link-diff')?.value || 'normal'),
               }
             };
@@ -27361,20 +27467,23 @@ if (avatar) {
         const link = d.linked || {};
         const talents = Array.isArray(link.talents) ? link.talents : (link.talent ? [link.talent] : []);
         talents.forEach(checkTalent => {
-          if (!checkTalent || !checkTalent.name || !checkTalent.id) return;
-          const ok = (this._talentList || []).some(x => String(x.name) === String(checkTalent.name) && String(x.raw?.天赋id || x.id) === String(checkTalent.id));
-          if (!ok) miss.push(`【天赋】${checkTalent.name}（id: ${checkTalent.id}）`);
+          const ref = this._normalizeDungeonLinkedMeta('talent', checkTalent);
+          if (!ref.name || !ref.id) return;
+          const ok = !!this._findDungeonLinkedLocalItem('talent', ref);
+          if (!ok) miss.push(this._formatDungeonLinkedMissLabel('talent', ref));
         });
         const checkBg = link.background;
         if (checkBg && checkBg.name && checkBg.id) {
-          const ok = (this._bgList || []).some(x => String(x.name) === String(checkBg.name) && String(x.raw?.背景id || x.id) === String(checkBg.id));
-          if (!ok) miss.push(`【背景】${checkBg.name}（id: ${checkBg.id}）`);
+          const ref = this._normalizeDungeonLinkedMeta('background', checkBg);
+          const ok = !!this._findDungeonLinkedLocalItem('background', ref);
+          if (!ok) miss.push(this._formatDungeonLinkedMissLabel('background', ref));
         }
         const dbs = Array.isArray(link.staticDbs) ? link.staticDbs : (link.staticDb ? [link.staticDb] : []);
         dbs.forEach(checkDb => {
-          if (!checkDb || !checkDb.name || !checkDb.id) return;
-          const ok = (this._staticDbList || []).some(x => String(x.name) === String(checkDb.name) && String(x.id) === String(checkDb.id));
-          if (!ok) miss.push(`【静态数据库】${checkDb.name}（id: ${checkDb.id}）`);
+          const ref = this._normalizeDungeonLinkedMeta('database', checkDb);
+          if (!ref.name || !ref.id) return;
+          const ok = !!this._findDungeonLinkedLocalItem('database', ref);
+          if (!ok) miss.push(this._formatDungeonLinkedMissLabel('database', ref));
         });
       } catch (_) {}
       return miss;
@@ -27754,6 +27863,10 @@ if (avatar) {
           base.push(this._cwRenderEnumRow('品阶', '品阶', obj['品阶'], '品阶', this._CW_GRADES));
           base.push(this._cwRenderTextareaRow('description', '描述', obj.description, 'description', 4));
           base.push(this._cwRenderTextRow('功法属性', '功法属性', obj['功法属性'], '功法属性'));
+          this._cwNormalizeGongfaDirectLearnConfig(obj);
+          // 开局直学配置：用于“背景扩展种子 -> 生成开局 -> 主角.已学功法”同步
+          base.push(this._cwRenderBoolRow('direct-learn', '开局让主角直接学会', obj.auto_learn, 'auto_learn', '启用'));
+          base.push(this._cwRenderNumberRow('direct-learn-lv', '开局直学层数', obj.auto_learn_level, 'auto_learn_level', { min: 1 }));
           // 总层数：由“层级效果”自动计算，不允许手填
           const lv = obj['层级效果'];
           const lvCount = (lv && typeof lv === 'object') ? Object.keys(lv).filter(k => k !== '$meta').length : 0;
@@ -28590,6 +28703,18 @@ if (avatar) {
         <div class="attribute-item cw-db-edit-row">
           <span class="attribute-name cw-db-edit-label">${this._cwEscape(label)}</span>
           <input id="cw-${this._cwEscape(id)}" class="sm-input cw-db-obj-field cw-db-edit-input" data-path="${this._cwEscape(path)}" type="number"${min} value="${this._cwEscape(value ?? 0)}">
+        </div>
+      `;
+    },
+    // 复选开关行：统一用于可视化编辑器中的布尔值字段
+    _cwRenderBoolRow(id, label, checked, path, text = '开启') {
+      return `
+        <div class="attribute-item cw-db-edit-row">
+          <span class="attribute-name cw-db-edit-label">${this._cwEscape(label)}</span>
+          <label class="sm-field" style="gap:8px;">
+            <input id="cw-${this._cwEscape(id)}" class="cw-db-obj-field-bool" data-path="${this._cwEscape(path)}" type="checkbox" ${checked ? 'checked' : ''}>
+            <span class="sm-label" style="min-width:auto;">${this._cwEscape(text)}</span>
+          </label>
         </div>
       `;
     },
@@ -30016,6 +30141,8 @@ if (avatar) {
           '品阶': '凡品',
           description: '',
           '功法属性': '',
+          auto_learn: false,
+          auto_learn_level: 1,
           '总层数': 1,
           '修炼条件': {
             '根基要求': makeExt(),
@@ -30359,6 +30486,12 @@ if (avatar) {
           <tr class="cw-bind-detail-row" data-cw-bind-for="${this._cwEscape(uid)}">
             <td class="cw-bind-detail-cell" colspan="${colCount}">
               <div class="cw-bind-detail-list">${detailList}</div>
+              ${status.total ? `
+                <div class="cw-bind-detail-actions">
+                  <button type="button" class="interaction-btn btn-outline" data-cw-db-bound-import-all="${this._cwEscape(uid)}">全部导入</button>
+                  <button type="button" class="interaction-btn danger-btn" data-cw-db-bound-delete-all="${this._cwEscape(uid)}">全部删除</button>
+                </div>
+              ` : ''}
             </td>
           </tr>
         ` : '';
@@ -30556,17 +30689,7 @@ if (avatar) {
         btnDel.addEventListener('click', async () => {
           const uid = String(this._cwDbSelectedUid || '');
           if (!uid) return;
-          try {
-            const bookName = window.GuixuConstants?.LOREBOOK?.NAME;
-            if (!bookName || !window.GuixuAPI?.deleteLorebookEntries) return;
-            await window.GuixuAPI.deleteLorebookEntries(bookName, [Number(uid)]);
-            window.GuixuHelpers?.showTemporaryMessage?.('已删除该静态数据库条目');
-            this._cwDbSelectedUid = '';
-            await this._loadStaticDatabasesFromLorebookForWorkshop();
-            this._renderCreativeWorkshopPage();
-          } catch (e) {
-            console.warn('[创意工坊][静态数据库] 删除失败：', e);
-          }
+          await this._deleteCreativeItems('database', [uid], { fromSingleAction: true });
         });
       }
 
@@ -30586,6 +30709,130 @@ if (avatar) {
           this._renderCreativeWorkshopPage();
         };
         search.addEventListener('input', applySearch);
+      }
+
+      // 绑定详情区：全部导入
+      document.querySelectorAll('button[data-cw-db-bound-import-all]').forEach(btn => {
+        if (btn._bound) return;
+        btn._bound = true;
+        btn.addEventListener('click', async (e) => {
+          e.stopPropagation();
+          const uid = String(btn.getAttribute('data-cw-db-bound-import-all') || '').trim();
+          if (!uid) return;
+          await this._importAllBoundEntriesForStaticDb(uid);
+        });
+      });
+
+      // 绑定详情区：全部删除
+      document.querySelectorAll('button[data-cw-db-bound-delete-all]').forEach(btn => {
+        if (btn._bound) return;
+        btn._bound = true;
+        btn.addEventListener('click', async (e) => {
+          e.stopPropagation();
+          const uid = String(btn.getAttribute('data-cw-db-bound-delete-all') || '').trim();
+          if (!uid) return;
+          await this._deleteAllBoundEntriesForStaticDb(uid);
+        });
+      });
+    },
+
+    async _confirmWithCustomDialog(message) {
+      let ok = false;
+      if (window.GuixuMain && typeof window.GuixuMain.showCustomConfirm === 'function') {
+        ok = await new Promise(resolve => {
+          window.GuixuMain.showCustomConfirm(message, () => resolve(true), () => resolve(false));
+        });
+      } else {
+        ok = confirm(message);
+      }
+      return !!ok;
+    },
+
+    _findLorebookEntryByBoundMeta(boundEntry, allEntries) {
+      const list = Array.isArray(allEntries) ? allEntries : [];
+      const uidRaw = String(boundEntry?.uid ?? '').trim();
+      const uidNum = Number(uidRaw);
+      if (uidRaw && Number.isFinite(uidNum)) {
+        const byUid = list.find((entry) => Number(entry?.uid) === uidNum);
+        if (byUid) return byUid;
+      }
+      const name = String(boundEntry?.name || boundEntry?.comment || '').trim().toLowerCase();
+      if (!name) return null;
+      return list.find((entry) => {
+        const cmt = String(entry?.comment || entry?.name || '').trim().toLowerCase();
+        return cmt === name;
+      }) || null;
+    },
+
+    async _importAllBoundEntriesForStaticDb(dbUid) {
+      const uid = String(dbUid || '').trim();
+      if (!uid) return;
+      const entry = (this._cwDbList || []).find((x) => String(x?.entryUid || '') === uid) || null;
+      if (!entry) return;
+      const boundEntries = Array.isArray(entry?.raw?.boundWorldbook?.entries) ? entry.raw.boundWorldbook.entries : [];
+      if (!boundEntries.length) {
+        window.GuixuHelpers?.showTemporaryMessage?.('该静态数据库暂无可导入的绑定条目');
+        return;
+      }
+
+      try {
+        let success = 0;
+        let failed = 0;
+        for (const boundEntry of boundEntries) {
+          try {
+            await this._upsertWorldbookEntryFromBound(boundEntry);
+            success += 1;
+          } catch (e) {
+            failed += 1;
+            console.warn('[创意工坊][静态数据库] 批量导入绑定条目失败：', e);
+          }
+        }
+        try { await this._loadWorldbookEntriesForBinding().catch(() => {}); } catch (_) {}
+        this._renderCreativeWorkshopPage();
+        window.GuixuHelpers?.showTemporaryMessage?.(`绑定条目导入完成：成功 ${success}，失败 ${failed}`);
+      } catch (e) {
+        console.warn('[创意工坊][静态数据库] 全部导入失败：', e);
+        window.GuixuHelpers?.showTemporaryMessage?.('绑定条目导入失败');
+      }
+    },
+
+    async _deleteAllBoundEntriesForStaticDb(dbUid) {
+      const uid = String(dbUid || '').trim();
+      if (!uid) return;
+      const entry = (this._cwDbList || []).find((x) => String(x?.entryUid || '') === uid) || null;
+      if (!entry) return;
+      const boundEntries = Array.isArray(entry?.raw?.boundWorldbook?.entries) ? entry.raw.boundWorldbook.entries : [];
+      if (!boundEntries.length) {
+        window.GuixuHelpers?.showTemporaryMessage?.('该静态数据库暂无可删除的绑定条目');
+        return;
+      }
+
+      const sure = await this._confirmWithCustomDialog(`确认删除该静态数据库绑定的全部 ${boundEntries.length} 个世界书条目吗？此操作不可恢复。`);
+      if (!sure) return;
+
+      try {
+        const bookName = window.GuixuConstants?.LOREBOOK?.NAME;
+        if (!bookName || !window.GuixuAPI?.getLorebookEntries || !window.GuixuAPI?.deleteLorebookEntries) return;
+        const all = await window.GuixuAPI.getLorebookEntries(bookName);
+        const toDelete = new Set();
+        let skipped = 0;
+        boundEntries.forEach((boundEntry) => {
+          const target = this._findLorebookEntryByBoundMeta(boundEntry, all);
+          if (target?.uid != null) toDelete.add(Number(target.uid));
+          else skipped += 1;
+        });
+        const deleteList = Array.from(toDelete).filter((x) => Number.isFinite(Number(x)));
+        if (!deleteList.length) {
+          window.GuixuHelpers?.showTemporaryMessage?.('未匹配到可删除的本地世界书条目');
+          return;
+        }
+        await window.GuixuAPI.deleteLorebookEntries(bookName, deleteList);
+        try { await this._loadWorldbookEntriesForBinding().catch(() => {}); } catch (_) {}
+        this._renderCreativeWorkshopPage();
+        window.GuixuHelpers?.showTemporaryMessage?.(`绑定条目删除完成：成功 ${deleteList.length}${skipped ? `，未匹配 ${skipped}` : ''}`);
+      } catch (e) {
+        console.warn('[创意工坊][静态数据库] 全部删除绑定条目失败：', e);
+        window.GuixuHelpers?.showTemporaryMessage?.('绑定条目删除失败');
       }
     },
 
@@ -30963,10 +31210,10 @@ if (avatar) {
             } catch (_) {}
 
             if (this._cwDbFormMode === 'edit' && this._cwDbFormUid) {
-              await this._saveStaticDbEntry(this._cwDbFormUid, this._cwDbFormVals);
+              await this._saveStaticDbEntry(this._cwDbFormUid, this._cwDbFormVals, { useUiBinding: true });
               window.GuixuHelpers?.showTemporaryMessage?.('已保存修改');
             } else {
-              await this._createStaticDbEntry(this._cwDbFormVals);
+              await this._createStaticDbEntry(this._cwDbFormVals, { useUiBinding: true });
               window.GuixuHelpers?.showTemporaryMessage?.('已创建静态数据库条目');
             }
 
@@ -30990,7 +31237,7 @@ if (avatar) {
         name: String(e.comment || e.name || ''),
         content: String(e.content || ''),
         enabled: !!e.enabled,
-        type: String((e?.type || e?.strategy?.type || '')).toLowerCase() || 'selective',
+        type: this._resolveWorldbookTriggerType(e),
         position: String(e.position || 'before_character_definition'),
         depth: (e.depth == null ? null : Number(e.depth)),
         order: Number(e.order ?? 100),
@@ -31006,6 +31253,25 @@ if (avatar) {
       } catch (_) {
         this._cwDbBindSelectedUids = new Set();
       }
+    },
+
+    _resolveWorldbookTriggerType(entryLike) {
+      // 兼容不同来源字段：
+      // 1) TavernHelper 返回的 type / strategy.type
+      // 2) 绑定条目结构中的 triggerType
+      // 3) 旧结构中的 constant / selective 布尔值
+      const raw = String(entryLike?.type || entryLike?.triggerType || entryLike?.strategy?.type || '').trim().toLowerCase();
+      if (raw === 'constant' || raw === 'selective' || raw === 'vectorized') return raw;
+      if (entryLike?.constant === true) return 'constant';
+      if (entryLike?.selective === true) return 'selective';
+      return 'selective';
+    },
+
+    _buildWorldbookTriggerFlags(triggerType) {
+      const t = this._resolveWorldbookTriggerType({ type: triggerType });
+      if (t === 'constant') return { type: 'constant', selective: false, constant: true };
+      if (t === 'selective') return { type: 'selective', selective: true, constant: false };
+      return { type: 'vectorized', selective: false, constant: false };
     },
 
     _renderWorldbookBindList() {
@@ -31200,7 +31466,7 @@ if (avatar) {
       }
     },
 
-    async _createStaticDbEntry(v) {
+    async _createStaticDbEntry(v, options = {}) {
       const bookName = window.GuixuConstants?.LOREBOOK?.NAME;
       if (!bookName || !window.GuixuAPI?.createLorebookEntries) return;
       if (!v?.id) {
@@ -31216,7 +31482,7 @@ if (avatar) {
         if (!v.createdAt || !String(v.createdAt).trim()) v.createdAt = this._formatNowLocalToSecond();
       } catch (_) {}
       // 需求：保存后保持多行 JSON 便于人读（与天赋/背景一致）
-      const content = JSON.stringify(this._buildStaticDbJson(v), null, 2);
+      const content = JSON.stringify(this._buildStaticDbJson(v, options), null, 2);
       const entryData = {
         comment,
         content,
@@ -31231,7 +31497,7 @@ if (avatar) {
       await window.GuixuAPI.createLorebookEntries(bookName, [entryData]);
     },
 
-    async _saveStaticDbEntry(uid, v) {
+    async _saveStaticDbEntry(uid, v, options = {}) {
       const bookName = window.GuixuConstants?.LOREBOOK?.NAME;
       if (!bookName || !window.GuixuAPI?.setLorebookEntries) return;
       // 需求：若创建时间留空，则保存时自动补全（统一使用 YYYY-MM-DD HH:mm:ss）
@@ -31239,7 +31505,7 @@ if (avatar) {
         if (!v.createdAt || !String(v.createdAt).trim()) v.createdAt = this._formatNowLocalToSecond();
       } catch (_) {}
       // 需求：保存后保持多行 JSON 便于人读（与天赋/背景一致）
-      const content = JSON.stringify(this._buildStaticDbJson(v), null, 2);
+      const content = JSON.stringify(this._buildStaticDbJson(v, options), null, 2);
       const prefix = window.GuixuConstants?.LOREBOOK?.STATIC_DB_PREFIX || '【静态数据库】';
       const name = String(v?.name || '未命名静态数据库').trim() || '未命名静态数据库';
       const comment = `${prefix}${name}`;
@@ -31251,7 +31517,7 @@ if (avatar) {
       }]);
     },
 
-    _buildStaticDbJson(v) {
+    _buildStaticDbJson(v, options = {}) {
       // 组装静态数据库 JSON 根对象
       const obj = {
         $schema: 'guixu-static-database-v1',
@@ -31280,37 +31546,42 @@ if (avatar) {
       } catch (_) {}
 
       // 绑定世界书条目（需求三/四）
-      const boundEntries = [];
-      const selected = this._cwDbBindSelectedUids || new Set();
-      const remotePathMap = {};
-      try {
-        const oldEntries = Array.isArray(v?.boundWorldbook?.entries) ? v.boundWorldbook.entries : [];
+      // - 表单保存：按 UI 勾选结果重建 entries
+      // - 导入保存：保留导入 JSON 原始 entries，避免被清空
+      const oldEntries = Array.isArray(v?.boundWorldbook?.entries) ? v.boundWorldbook.entries : [];
+      const useUiBinding = options?.useUiBinding === true;
+      let boundEntries = [];
+      if (useUiBinding) {
+        const selected = this._cwDbBindSelectedUids || new Set();
+        const remotePathMap = {};
         oldEntries.forEach(e => {
           const uid = String(e?.uid ?? '');
           if (!uid) return;
           const rp = String(e?.remotePath || '').trim();
           if (rp) remotePathMap[uid] = rp;
         });
-      } catch (_) {}
-      (this._cwWbList || []).forEach(e => {
-        if (!selected.has(String(e.uid))) return;
-        boundEntries.push({
-          worldbookName: window.GuixuConstants?.LOREBOOK?.NAME || '归墟（拼好卡）',
-          uid: e.uid,
-          name: e.name,
-          content: e.content,
-          enabled: e.enabled,
-          triggerType: e.type,
-          position: e.position,
-          depth: e.depth,
-          order: e.order,
-          probability: e.probability,
-          // 共享大厅：云端存放路径（若已有则保留）
-          remotePath: String(remotePathMap[String(e.uid)] || '').trim()
+        (this._cwWbList || []).forEach(e => {
+          if (!selected.has(String(e.uid))) return;
+          boundEntries.push({
+            worldbookName: window.GuixuConstants?.LOREBOOK?.NAME || '归墟（拼好卡）',
+            uid: e.uid,
+            name: e.name,
+            content: e.content,
+            enabled: e.enabled,
+            triggerType: e.type,
+            position: e.position,
+            depth: e.depth,
+            order: e.order,
+            probability: e.probability,
+            // 共享大厅：云端存放路径（若已有则保留）
+            remotePath: String(remotePathMap[String(e.uid)] || '').trim()
+          });
         });
-      });
+      } else {
+        boundEntries = oldEntries.map((e) => this._cloneObj(e));
+      }
       obj.boundWorldbook = {
-        worldbookName: window.GuixuConstants?.LOREBOOK?.NAME || '归墟（拼好卡）',
+        worldbookName: String(v?.boundWorldbook?.worldbookName || window.GuixuConstants?.LOREBOOK?.NAME || '归墟（拼好卡）'),
         entries: boundEntries
       };
 
@@ -31750,8 +32021,16 @@ if (avatar) {
       if (btnStart && !btnStart._bound) {
         btnStart._bound = true;
         btnStart.addEventListener('click', async () => {
-          // 进入向导前，先刷新副本列表，确保新建【副本】能立即出现在“开始游玩→副本”页
-          try { await this._loadDungeonsFromLorebook(); } catch (_) {}
+          // 进入向导前，预刷新向导依赖数据，确保详情中的绑定存在性状态尽量实时
+          try {
+            await Promise.all([
+              this._loadDungeonsFromLorebook().catch(() => {}),
+              this._loadTalentsFromLorebook().catch(() => {}),
+              this._loadBackgroundsFromLorebook().catch(() => {}),
+              this._loadStaticDatabasesFromLorebook().catch(() => {}),
+              this._loadWorldbookEntriesForBinding().catch(() => {})
+            ]);
+          } catch (_) {}
           // 进入向导前，先记录“自定义副本默认状态”快照，供后续切回自定义副本时复原
           this._ensureWizardDefaultsSnapshot();
           // 进入分页向导
@@ -31991,6 +32270,24 @@ if (avatar) {
       return list.map((tag) => `<span class="wiz-tag-chip">${this._cwEscape(tag)}</span>`).join('');
     },
 
+    _isDungeonTalentLinkedEntryExists(linkedTalent) {
+      const ref = this._normalizeDungeonLinkedMeta('talent', linkedTalent);
+      if (!ref.name || !ref.id) return false;
+      return !!this._findDungeonLinkedLocalItem('talent', ref);
+    },
+
+    _isDungeonBackgroundLinkedEntryExists(linkedBg) {
+      const ref = this._normalizeDungeonLinkedMeta('background', linkedBg);
+      if (!ref.name || !ref.id) return false;
+      return !!this._findDungeonLinkedLocalItem('background', ref);
+    },
+
+    _isDungeonStaticDbLinkedEntryExists(linkedDb) {
+      const ref = this._normalizeDungeonLinkedMeta('database', linkedDb);
+      if (!ref.name || !ref.id) return false;
+      return !!this._findDungeonLinkedLocalItem('database', ref);
+    },
+
     _renderWizDungeonDetail(dungeon) {
       if (!dungeon) return '<div class="wiz-empty-tip">请在左侧选择一个副本查看详情。</div>';
       const isCustom = String(dungeon?.id || '') === '自定义副本';
@@ -32016,6 +32313,44 @@ if (avatar) {
       const diffText = (String(linked?.difficulty || 'normal') === 'easy')
         ? '简单'
         : (String(linked?.difficulty || 'normal') === 'hard' ? '困难' : '普通');
+      const talentHtml = talents.length
+        ? talents.map((t) => {
+            const exists = this._isDungeonTalentLinkedEntryExists(t);
+            const name = String(t?.name || '').trim() || '未命名天赋';
+            const id = String(t?.id || '').trim();
+            const text = id ? `${name}（id: ${id}）` : name;
+            return `
+              <div class="wiz-detail-list-item">
+                <span class="cw-bind-item ${exists ? 'ok' : 'miss'}">${this._cwEscape(text)}（${exists ? '已存在' : '缺失'}）</span>
+              </div>
+            `;
+          }).join('')
+        : '<div class="wiz-detail-list-item is-empty">（无）</div>';
+      const bgHtml = (() => {
+        if (!(bg?.id || bg?.name)) return '<div class="wiz-detail-list-item is-empty">（无）</div>';
+        const exists = this._isDungeonBackgroundLinkedEntryExists(bg);
+        const name = String(bg?.name || '').trim() || '未命名背景';
+        const id = String(bg?.id || '').trim();
+        const text = id ? `${name}（id: ${id}）` : name;
+        return `
+          <div class="wiz-detail-list-item">
+            <span class="cw-bind-item ${exists ? 'ok' : 'miss'}">${this._cwEscape(text)}（${exists ? '已存在' : '缺失'}）</span>
+          </div>
+        `;
+      })();
+      const staticDbHtml = staticDbs.length
+        ? staticDbs.map((s) => {
+            const exists = this._isDungeonStaticDbLinkedEntryExists(s);
+            const name = String(s?.name || '').trim() || '未命名静态数据库';
+            const id = String(s?.id || '').trim();
+            const text = id ? `${name}（id: ${id}）` : name;
+            return `
+              <div class="wiz-detail-list-item">
+                <span class="cw-bind-item ${exists ? 'ok' : 'miss'}">${this._cwEscape(text)}（${exists ? '已存在' : '缺失'}）</span>
+              </div>
+            `;
+          }).join('')
+        : '<div class="wiz-detail-list-item is-empty">（无）</div>';
 
       return `
         <div class="wiz-detail-card">
@@ -32055,15 +32390,15 @@ if (avatar) {
           ${this._renderWizMetaRows([{ label: '难度', value: diffText }])}
           <div class="wiz-detail-list">
             <div class="wiz-detail-list-title">天赋</div>
-            ${(talents.length ? talents : []).map((t) => `<div class="wiz-detail-list-item">${this._cwEscape(t?.name || '未命名天赋')}</div>`).join('') || '<div class="wiz-detail-list-item is-empty">（无）</div>'}
+            ${talentHtml}
           </div>
           <div class="wiz-detail-list">
             <div class="wiz-detail-list-title">背景</div>
-            ${(bg?.id || bg?.name) ? `<div class="wiz-detail-list-item">${this._cwEscape(bg?.name || '未命名背景')}</div>` : '<div class="wiz-detail-list-item is-empty">（无）</div>'}
+            ${bgHtml}
           </div>
           <div class="wiz-detail-list">
             <div class="wiz-detail-list-title">静态数据库</div>
-            ${(staticDbs.length ? staticDbs : []).map((s) => `<div class="wiz-detail-list-item">${this._cwEscape(s?.name || '未命名静态数据库')}</div>`).join('') || '<div class="wiz-detail-list-item is-empty">（无）</div>'}
+            ${staticDbHtml}
           </div>
         </div>
       `;
@@ -32197,13 +32532,18 @@ if (avatar) {
     _renderWizStaticDbBoundEntries(raw) {
       const entries = Array.isArray(raw?.boundWorldbook?.entries) ? raw.boundWorldbook.entries : [];
       if (!entries.length) return '<div class="wiz-detail-list-item is-empty">（未绑定世界书条目）</div>';
+      const wbIndex = this._getCwWorldbookIndex();
       return entries.map((e) => {
         const name = String(e?.name || '').trim() || '未命名条目';
-        const position = String(e?.position || '').trim() || '-';
-        const depth = (e?.depth == null) ? '-' : String(e.depth);
-        const order = (e?.order == null) ? '-' : String(e.order);
-        const probability = (e?.probability == null) ? '-' : String(e.probability);
-        return `<div class="wiz-detail-list-item">${this._cwEscape(name)}（位置:${this._cwEscape(position)}，深度:${this._cwEscape(depth)}，顺序:${this._cwEscape(order)}，概率:${this._cwEscape(probability)}）</div>`;
+        const uid = String(e?.uid ?? '').trim();
+        const keyName = String(e?.name || e?.comment || '').trim().toLowerCase();
+        const exists = (!!uid && wbIndex.byUid.has(uid)) || (!!keyName && wbIndex.byName.has(keyName));
+        const head = uid ? `${name}（uid:${uid}）` : name;
+        return `
+          <div class="wiz-detail-list-item">
+            <span class="cw-bind-item ${exists ? 'ok' : 'miss'}">${this._cwEscape(head)}（${exists ? '已存在' : '缺失'}）</span>
+          </div>
+        `;
       }).join('');
     },
 
@@ -32799,22 +33139,6 @@ if (avatar) {
             await this._loadStaticDatabasesFromLorebook().catch(() => {});
           }
 
-          // 需求四：当玩家“选择副本后点击下一步”时，检查副本绑定条目是否齐全；缺失则弹框提示
-          if (this._stepIndex === 0 && this._dungeon !== '自定义副本') {
-            try {
-              const entry = (this._staticDungeonList || []).find(x => String(x.id) === String(this._dungeon)) || null;
-              const miss = entry ? this._collectMissingEntriesForDungeon(entry.raw || {}) : [];
-              if (miss.length) {
-                const msg = `检测到该副本所需的世界书条目缺失：\n\n${miss.map(x => '- ' + x).join('\n')}\n\n请先在“创意工坊”或世界书中补齐这些条目后再继续。`;
-                if (window.GuixuMain && typeof window.GuixuMain.showCustomConfirm === 'function') {
-                  window.GuixuMain.showCustomConfirm(msg, () => {}, () => {});
-                } else {
-                  alert(msg);
-                }
-                return;
-              }
-            } catch (_) {}
-          }
           if (this._stepIndex < this._steps.length - 1) {
             this._stepIndex++;
             this._renderWizard();
@@ -34491,6 +34815,17 @@ async _loadBackgroundsFromLorebook() {
       return ['灵根定义列表', '物品列表', '功法定义列表', '神通列表'];
     },
 
+    // 统一功法“开局直学”字段（仅英文参数）：
+    // - auto_learn / auto_learn_level
+    // - 缺失时补默认值，默认不主动学会
+    _cwNormalizeGongfaDirectLearnConfig(obj) {
+      const row = (obj && typeof obj === 'object' && !Array.isArray(obj)) ? obj : {};
+      row.auto_learn = (typeof row.auto_learn === 'boolean') ? row.auto_learn : false;
+      const lvRaw = Number(row.auto_learn_level);
+      row.auto_learn_level = (Number.isFinite(lvRaw) && lvRaw > 0) ? Math.floor(lvRaw) : 1;
+      return row;
+    },
+
     // 从任意对象中提取并规整“背景扩展种子”结构（仅保留对象值，忽略非法值）
     _cwExtractBackgroundSeedParts(source) {
       const out = {};
@@ -34507,6 +34842,7 @@ async _loadBackgroundsFromLorebook() {
             if (!normId) return;
             const row = this._cloneObj(item);
             row.id = normId;
+            if (kind === '功法定义列表') this._cwNormalizeGongfaDirectLearnConfig(row);
             dict[normId] = row;
           });
           out[kind] = dict;
@@ -34938,6 +35274,8 @@ async _loadBackgroundsFromLorebook() {
         if (hasSeed) {
           const gainedLinggen = this._ensureInitObject(player, '已获灵根', () => ({ '$meta': { 'extensible': true } }));
           this._ensureExtensibleMeta(gainedLinggen, true);
+          const learnedGongfa = this._ensureInitObject(player, '已学功法', () => ({ '$meta': { 'extensible': true } }));
+          this._ensureExtensibleMeta(learnedGongfa, true);
           const bag = this._ensureInitObject(player, '背包列表', () => ({}));
           const slots = this._ensureInitObject(bag, 'slots', () => ({ '$meta': { 'extensible': true } }));
           this._ensureExtensibleMeta(slots, true);
@@ -34992,11 +35330,40 @@ async _loadBackgroundsFromLorebook() {
               if (!normId) return;
               const cloned = this._cloneObj(rawObj);
               cloned.id = normId;
+              if (kind === '功法定义列表') this._cwNormalizeGongfaDirectLearnConfig(cloned);
               // 冲突策略：背景定义覆盖已有同 ID 对象
               targetDict[normId] = cloned;
 
               if (kind === '灵根定义列表') gainedLinggen[normId] = true;
               if (kind === '物品列表') addBagItemOnce(normId);
+              if (kind === '功法定义列表') {
+                // 若配置为“开局直接学会”，则把功法同步写入“主角.已学功法”
+                const shouldLearn = !!cloned.auto_learn;
+                if (shouldLearn) {
+                  const levels = (cloned['层级效果'] && typeof cloned['层级效果'] === 'object')
+                    ? Object.keys(cloned['层级效果']).filter(k => k !== '$meta').length
+                    : 0;
+                  const totalRaw = Number(cloned['总层数']);
+                  const maxLevel = (Number.isFinite(totalRaw) && totalRaw > 0)
+                    ? Math.floor(totalRaw)
+                    : Math.max(1, levels || 1);
+                  const configuredRaw = Number(cloned.auto_learn_level);
+                  const configured = (Number.isFinite(configuredRaw) && configuredRaw > 0)
+                    ? Math.floor(configuredRaw)
+                    : 1;
+                  const finalLevel = Math.min(maxLevel, Math.max(1, configured));
+                  const oldItem = (learnedGongfa[normId] && typeof learnedGongfa[normId] === 'object' && !Array.isArray(learnedGongfa[normId]))
+                    ? learnedGongfa[normId]
+                    : {};
+                  learnedGongfa[normId] = {
+                    ...oldItem,
+                    '当前层数': finalLevel,
+                    '当前层级点数': 0,
+                    '是否主修': (typeof oldItem['是否主修'] === 'boolean') ? oldItem['是否主修'] : false,
+                    '是否辅修': (typeof oldItem['是否辅修'] === 'boolean') ? oldItem['是否辅修'] : false
+                  };
+                }
+              }
             });
           });
         }
@@ -35590,7 +35957,6 @@ async _loadBackgroundsFromLorebook() {
     },
 
     _getDungeonBoundStatus(item, idx) {
-      const index = idx || this._getDungeonBoundIndex();
       const raw = (item && typeof item.raw === 'object') ? item.raw : {};
       const linked = (raw?.linked && typeof raw.linked === 'object') ? raw.linked : {};
       const talents = Array.isArray(linked.talents) ? linked.talents : [];
@@ -35598,34 +35964,24 @@ async _loadBackgroundsFromLorebook() {
       const bg = linked.background || {};
       const items = [];
       let missing = 0;
-      const norm = (v) => String(v || '').trim().toLowerCase();
       talents.forEach(t => {
-        const tid = String(t?.id || '').trim();
-        const tname = String(t?.name || '').trim();
-        const label = `天赋：${tname || tid || '未命名天赋'}`;
-        let exists = false;
-        if (tid && index.talentIds.has(norm(tid))) exists = true;
-        else if (tname && index.talentNames.has(norm(tname))) exists = true;
+        const ref = this._normalizeDungeonLinkedMeta('talent', t);
+        const label = this._formatDungeonLinkedMissLabel('talent', ref);
+        const exists = this._isDungeonTalentLinkedEntryExists(ref);
         if (!exists) missing += 1;
         items.push({ label, exists });
       });
       if (bg && (bg.id || bg.name)) {
-        const bid = String(bg?.id || '').trim();
-        const bname = String(bg?.name || '').trim();
-        const label = `背景：${bname || bid || '未命名背景'}`;
-        let exists = false;
-        if (bid && index.bgIds.has(norm(bid))) exists = true;
-        else if (bname && index.bgNames.has(norm(bname))) exists = true;
+        const ref = this._normalizeDungeonLinkedMeta('background', bg);
+        const label = this._formatDungeonLinkedMissLabel('background', ref);
+        const exists = this._isDungeonBackgroundLinkedEntryExists(ref);
         if (!exists) missing += 1;
         items.push({ label, exists });
       }
       staticDbs.forEach(s => {
-        const sid = String(s?.id || '').trim();
-        const sname = String(s?.name || '').trim();
-        const label = `静态数据库：${sname || sid || '未命名静态数据库'}`;
-        let exists = false;
-        if (sid && index.dbIds.has(norm(sid))) exists = true;
-        else if (sname && index.dbNames.has(norm(sname))) exists = true;
+        const ref = this._normalizeDungeonLinkedMeta('database', s);
+        const label = this._formatDungeonLinkedMissLabel('database', ref);
+        const exists = this._isDungeonStaticDbLinkedEntryExists(ref);
         if (!exists) missing += 1;
         items.push({ label, exists });
       });
@@ -36516,6 +36872,72 @@ async _loadBackgroundsFromLorebook() {
       return input;
     },
 
+    _getCreativeImportAcceptByKind(kind) {
+      if (kind === 'dungeon') return '.zip,application/zip,application/x-zip-compressed';
+      return '.json,application/json';
+    },
+
+    _isCreativeDungeonZipFile(file) {
+      const name = String(file?.name || '').toLowerCase();
+      const mime = String(file?.type || '').toLowerCase();
+      return name.endsWith('.zip') || mime === 'application/zip' || mime === 'application/x-zip-compressed';
+    },
+
+    _getJsZipCtor() {
+      return (typeof window !== 'undefined' && typeof window.JSZip === 'function') ? window.JSZip : null;
+    },
+
+    async _saveCreativeBlob(fileName, blob, typeMeta = {}) {
+      const dataBlob = (blob instanceof Blob) ? blob : new Blob([blob || ''], { type: 'application/octet-stream' });
+      const mime = String(typeMeta?.mime || dataBlob.type || 'application/octet-stream').trim() || 'application/octet-stream';
+      const ext = String(typeMeta?.ext || '').trim();
+      const description = String(typeMeta?.description || '文件').trim() || '文件';
+      // 优先使用原生保存面板，让用户选择导出路径
+      if (typeof window.showSaveFilePicker === 'function') {
+        try {
+          const opts = { suggestedName: fileName };
+          if (ext) {
+            opts.types = [{
+              description,
+              accept: { [mime]: [ext] }
+            }];
+          }
+          const handle = await window.showSaveFilePicker(opts);
+          const writable = await handle.createWritable();
+          await writable.write(dataBlob);
+          await writable.close();
+          return { ok: true, cancelled: false };
+        } catch (e) {
+          if (String(e?.name || '') === 'AbortError') return { ok: false, cancelled: true };
+          console.warn('[创意工坊] 保存文件失败：', e);
+          return { ok: false, cancelled: false };
+        }
+      }
+      try {
+        const url = URL.createObjectURL(dataBlob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = fileName;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        URL.revokeObjectURL(url);
+        return { ok: true, cancelled: false };
+      } catch (e) {
+        console.warn('[创意工坊] 导出失败：', e);
+        return { ok: false, cancelled: false };
+      }
+    },
+
+    async _saveCreativeJsonText(fileName, text) {
+      const data = String(text || '');
+      return this._saveCreativeBlob(
+        fileName,
+        new Blob([data], { type: 'application/json' }),
+        { description: 'JSON 文件', mime: 'application/json', ext: '.json' }
+      );
+    },
+
     _getCreativeSelectedEntry(kind) {
       if (kind === 'talent') return (this._talentList || []).find(t => String(t.id) === String(this._cwSelectedTalentId || '')) || null;
       if (kind === 'background') return (this._bgList || []).find(b => String(b.id) === String(this._cwSelectedBgId || '')) || null;
@@ -36530,36 +36952,283 @@ async _loadBackgroundsFromLorebook() {
       return `${kind}_${safeName}_${rawDate || 'export'}.json`;
     },
 
-    _exportCreativeItem(kind) {
+    _buildCreativeDungeonBundleZipName(name) {
+      const rawDate = String(this._formatNowLocalToSecond() || '').split(' ')[0] || '';
+      const safeName = this._makeSafeFileName(String(name || 'dungeon'), 'dungeon');
+      return `dungeon_bundle_${safeName}_${rawDate || 'export'}.zip`;
+    },
+
+    async _collectDungeonBundleLinkedItems(dungeonRaw) {
+      await Promise.all([
+        this._loadTalentsFromLorebook().catch(() => {}),
+        this._loadBackgroundsFromLorebook().catch(() => {}),
+        this._loadStaticDatabasesFromLorebookForWorkshop().catch(() => {})
+      ]);
+
+      const linked = (dungeonRaw?.linked && typeof dungeonRaw.linked === 'object') ? dungeonRaw.linked : {};
+      const talents = Array.isArray(linked.talents) ? linked.talents : [];
+      const staticDbs = Array.isArray(linked.staticDbs) ? linked.staticDbs : [];
+      const bg = (linked?.background && typeof linked.background === 'object') ? linked.background : {};
+      const out = [];
+      const miss = [];
+      const seen = new Set();
+
+      const pushOne = (kind, ref) => {
+        const linkedMeta = this._normalizeDungeonLinkedMeta(kind, ref);
+        if (!linkedMeta.name || !linkedMeta.id) return;
+        const dedupeKey = `${kind}::${linkedMeta.name}::${linkedMeta.id}::${linkedMeta.author}::${linkedMeta.dataVersion}`;
+        if (seen.has(dedupeKey)) return;
+        seen.add(dedupeKey);
+        const hit = this._findDungeonLinkedLocalItem(kind, linkedMeta);
+        if (!hit) {
+          miss.push(this._formatDungeonLinkedMissLabel(kind, linkedMeta));
+          return;
+        }
+        const hitMeta = this._normalizeDungeonLinkedMeta(kind, hit);
+        const folder = (kind === 'talent') ? 'talents' : ((kind === 'background') ? 'backgrounds' : 'static-databases');
+        const base = this._makeSafeFileName(`${hitMeta.name}_${hitMeta.id}`, kind);
+        out.push({
+          kind,
+          meta: hitMeta,
+          file: `linked/${folder}/${base}.json`,
+          raw: this._cloneObj(hit?.raw || {})
+        });
+      };
+
+      talents.forEach(t => pushOne('talent', t));
+      if (bg && (bg.name || bg.id)) pushOne('background', bg);
+      staticDbs.forEach(s => pushOne('database', s));
+      return { items: out, miss };
+    },
+
+    async _exportCreativeDungeonBundle(entry) {
+      if (!this._getJsZipCtor()) {
+        window.GuixuHelpers?.showTemporaryMessage?.('压缩能力未加载，无法导出副本整包');
+        return;
+      }
+      const raw = (entry?.raw && typeof entry.raw === 'object') ? this._cloneObj(entry.raw) : {};
+      try {
+        const linked = await this._collectDungeonBundleLinkedItems(raw);
+        const built = await this._buildDungeonBundleZipBlob(raw, linked.items, entry);
+        const fileName = this._buildCreativeDungeonBundleZipName(String(entry?.name || raw?.name || '副本').trim());
+        const ret = await this._saveCreativeBlob(
+          fileName,
+          built.blob,
+          { description: 'ZIP 压缩包', mime: 'application/zip', ext: '.zip' }
+        );
+        if (ret.cancelled) return;
+        if (ret.ok) {
+          window.GuixuHelpers?.showTemporaryMessage?.(`副本整包已导出：${fileName}${linked.miss.length ? `（缺失 ${linked.miss.length} 个绑定条目）` : ''}`);
+        } else {
+          window.GuixuHelpers?.showTemporaryMessage?.('副本整包导出失败');
+        }
+      } catch (e) {
+        console.warn('[创意工坊][副本] ZIP 导出失败：', e);
+        window.GuixuHelpers?.showTemporaryMessage?.('副本整包导出失败');
+      }
+    },
+
+    async _buildDungeonBundleZipBlob(dungeonRaw, linkedItems, entryMeta) {
+      const JSZipCtor = this._getJsZipCtor();
+      if (!JSZipCtor) throw new Error('压缩能力未加载');
+      const raw = (dungeonRaw && typeof dungeonRaw === 'object') ? this._cloneObj(dungeonRaw) : {};
+      const rows = Array.isArray(linkedItems) ? linkedItems : [];
+      const manifest = {
+        $schema: 'guixu-dungeon-bundle-v1',
+        exportedAt: this._formatNowLocalToSecond(),
+        dungeon: {
+          file: 'dungeon.json',
+          name: String(raw?.name || entryMeta?.name || '未命名副本'),
+          id: String(raw?.id || entryMeta?.id || ''),
+          author: String(raw?.author || entryMeta?.author || ''),
+          dataVersion: String(raw?.version || entryMeta?.version || '')
+        },
+        linked: rows.map(x => ({
+          kind: x?.kind || '',
+          file: x?.file || '',
+          name: x?.meta?.name || '',
+          id: x?.meta?.id || '',
+          author: x?.meta?.author || '',
+          dataVersion: x?.meta?.dataVersion || ''
+        }))
+      };
+      const zip = new JSZipCtor();
+      zip.file('guixu-dungeon-bundle.json', JSON.stringify(manifest, null, 2));
+      zip.file('dungeon.json', JSON.stringify(raw, null, 2));
+      rows.forEach((row) => {
+        const rel = String(row?.file || '').trim();
+        if (!rel) return;
+        zip.file(rel, JSON.stringify(row?.raw || {}, null, 2));
+      });
+      const blob = await zip.generateAsync({ type: 'blob', compression: 'DEFLATE', compressionOptions: { level: 6 } });
+      return { blob, manifest };
+    },
+
+    async _readRequiredDungeonBundleZipJson(zip, relPath, label) {
+      const path = String(relPath || '').trim();
+      if (!path) throw new Error(`${label || '文件'}路径无效`);
+      const fileRef = zip?.file(path);
+      if (!fileRef) throw new Error(`缺少 ${label || path}`);
+      let text = '';
+      try {
+        text = await fileRef.async('string');
+      } catch (_) {
+        throw new Error(`读取 ${label || path} 失败`);
+      }
+      try {
+        return JSON.parse(String(text || '').trim() || '{}');
+      } catch (_) {
+        throw new Error(`${label || path} JSON 解析失败`);
+      }
+    },
+
+    async _readDungeonBundleZipJson(zip, relPath) {
+      const path = String(relPath || '').trim();
+      if (!path) return null;
+      const fileRef = zip?.file(path);
+      if (!fileRef) return null;
+      try {
+        const text = await fileRef.async('string');
+        return JSON.parse(String(text || '').trim() || '{}');
+      } catch (_) {
+        return null;
+      }
+    },
+
+    async _readDungeonBundleFromZip(file) {
+      const JSZipCtor = this._getJsZipCtor();
+      if (!JSZipCtor) throw new Error('压缩能力未加载');
+      if (!file) throw new Error('未选择 ZIP 文件');
+      const zip = await JSZipCtor.loadAsync(await file.arrayBuffer());
+      const manifest = await this._readRequiredDungeonBundleZipJson(zip, 'guixu-dungeon-bundle.json', '副本整包清单 guixu-dungeon-bundle.json');
+      if (String(manifest?.$schema || '').trim() !== 'guixu-dungeon-bundle-v1') {
+        throw new Error('ZIP 清单格式不匹配，无法导入');
+      }
+      const dungeonFile = String(manifest?.dungeon?.file || 'dungeon.json').trim() || 'dungeon.json';
+      const dungeon = await this._readRequiredDungeonBundleZipJson(zip, dungeonFile, `副本主文件 ${dungeonFile}`);
+      return { zip, manifest, dungeon };
+    },
+
+    _extractStaticDbBoundEntries(raw) {
+      const bound = raw?.boundWorldbook;
+      return Array.isArray(bound?.entries) ? bound.entries : [];
+    },
+
+    _hasStaticDbBoundEntries(raw) {
+      return this._extractStaticDbBoundEntries(raw).length > 0;
+    },
+
+    async _importBoundEntriesToLocal(boundEntries, options = {}) {
+      const list = Array.isArray(boundEntries) ? boundEntries : [];
+      let success = 0;
+      let failed = 0;
+      for (const boundEntry of list) {
+        try {
+          await this._upsertWorldbookEntryFromBound(boundEntry);
+          success += 1;
+        } catch (e) {
+          failed += 1;
+          console.warn('[创意工坊] 导入绑定世界书条目失败：', e);
+        }
+      }
+      if (!options?.skipReload) {
+        try { await this._loadWorldbookEntriesForBinding().catch(() => {}); } catch (_) {}
+      }
+      return { success, failed };
+    },
+
+    async _exportCreativeItem(kind) {
       const entry = this._getCreativeSelectedEntry(kind);
       if (!entry) {
         window.GuixuHelpers?.showTemporaryMessage?.('请先选择条目');
+        return;
+      }
+      if (kind === 'dungeon') {
+        await this._exportCreativeDungeonBundle(entry);
         return;
       }
       const raw = (entry.raw && typeof entry.raw === 'object') ? entry.raw : {};
       const name = String(entry.name || raw.name || raw.天赋 || raw.背景 || kind || '条目').trim();
       const data = JSON.stringify(raw, null, 2);
       const fileName = this._buildCreativeExportFileName(kind, name);
+      const ret = await this._saveCreativeJsonText(fileName, data);
+      if (ret.cancelled) return;
+      if (ret.ok) window.GuixuHelpers?.showTemporaryMessage?.('已导出到本地');
+      else window.GuixuHelpers?.showTemporaryMessage?.('导出失败');
+    },
+
+    async _importCreativeDungeonBundle(file) {
+      if (!this._getJsZipCtor()) {
+        window.GuixuHelpers?.showTemporaryMessage?.('压缩能力未加载，无法导入副本整包');
+        return false;
+      }
+      if (!this._isCreativeDungeonZipFile(file)) {
+        window.GuixuHelpers?.showTemporaryMessage?.('副本导入仅支持 ZIP 压缩包');
+        return false;
+      }
       try {
-        const blob = new Blob([data], { type: 'application/json' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = fileName;
-        document.body.appendChild(a);
-        a.click();
-        a.remove();
-        URL.revokeObjectURL(url);
-        window.GuixuHelpers?.showTemporaryMessage?.('已导出到本地');
+        const firstSure = await this._confirmWithCustomDialog('确认导入该副本整包到本地酒馆吗？');
+        if (!firstSure) return false;
+        const bundle = await this._readDungeonBundleFromZip(file);
+        const linked = Array.isArray(bundle?.manifest?.linked) ? bundle.manifest.linked : [];
+        let shouldImportLinked = false;
+        const linkedKinds = linked.filter((x) => ['talent', 'background', 'database'].includes(String(x?.kind || '').trim()));
+        if (linkedKinds.length) {
+          shouldImportLinked = await this._confirmWithCustomDialog(`检测到该副本整包绑定了 ${linkedKinds.length} 个条目（天赋/背景/静态数据库）。\n是否同时导入这些绑定条目？`);
+        }
+        let success = 0;
+        let failed = 0;
+        if (shouldImportLinked) {
+          const sortWeight = { talent: 1, background: 2, database: 3 };
+          linked.sort((a, b) => (sortWeight[a?.kind] || 9) - (sortWeight[b?.kind] || 9));
+          for (const row of linked) {
+            const kind = String(row?.kind || '').trim();
+            if (!['talent', 'background', 'database'].includes(kind)) continue;
+            const obj = await this._readDungeonBundleZipJson(bundle.zip, String(row?.file || ''));
+            if (!obj) { failed += 1; continue; }
+            const ok = await this._importCreativeJsonObject(kind, obj, {
+              forceOverwrite: true,
+              silent: true,
+              skipReload: true,
+              skipRender: true
+            });
+            if (ok) success += 1;
+            else failed += 1;
+          }
+        }
+        const dungeonOk = await this._importCreativeJsonObject('dungeon', bundle.dungeon, {
+          forceOverwrite: true,
+          silent: true,
+          skipReload: true,
+          skipRender: true
+        });
+        if (dungeonOk) success += 1;
+        else failed += 1;
+        await Promise.all([
+          this._loadTalentsFromLorebook().catch(()=>{}),
+          this._loadBackgroundsFromLorebook().catch(()=>{}),
+          this._loadStaticDatabasesFromLorebookForWorkshop().catch(()=>{}),
+          this._loadDungeonsFromLorebookForWorkshop().catch(()=>{})
+        ]);
+        this._renderCreativeWorkshopPage();
+        window.GuixuHelpers?.showTemporaryMessage?.(`副本整包导入完成：成功 ${success}${failed ? `，失败 ${failed}` : ''}`);
+        return true;
       } catch (e) {
-        console.warn('[创意工坊] 导出失败：', e);
-        window.GuixuHelpers?.showTemporaryMessage?.('导出失败');
+        console.warn('[创意工坊][副本] ZIP 导入失败：', e);
+        const msg = String(e?.message || '').trim() || '副本 ZIP 导入失败';
+        window.GuixuHelpers?.showTemporaryMessage?.(msg);
+        return false;
       }
     },
 
-    _importCreativeItem(kind) {
+    async _importCreativeItem(kind) {
+      if (kind === 'dungeon' && !this._getJsZipCtor()) {
+        window.GuixuHelpers?.showTemporaryMessage?.('压缩能力未加载，无法导入副本整包');
+        return;
+      }
       const input = this._getCreativeImportInput();
       input.dataset.cwKind = kind;
+      input.accept = this._getCreativeImportAcceptByKind(kind);
       input.value = '';
       input.click();
     },
@@ -36573,22 +37242,14 @@ async _loadBackgroundsFromLorebook() {
       return false;
     },
 
-    async _handleCreativeImportFile(e) {
-      const input = e?.target;
-      const kind = String(input?.dataset?.cwKind || '').trim();
-      const file = input?.files?.[0];
-      if (!kind || !file) return;
-      let obj = null;
-      try {
-        const text = await file.text();
-        obj = JSON.parse(String(text || '').trim() || '{}');
-      } catch (err) {
-        window.GuixuHelpers?.showTemporaryMessage?.('导入失败：文件格式无效或解析错误');
-        return;
-      }
+    async _importCreativeJsonObject(kind, obj, options = {}) {
+      const forceOverwrite = !!options?.forceOverwrite;
+      const silent = !!options?.silent;
+      const skipReload = !!options?.skipReload;
+      const skipRender = !!options?.skipRender;
       if (!this._isCreativeImportMatch(kind, obj)) {
-        window.GuixuHelpers?.showTemporaryMessage?.('文件格式不匹配，无法导入到当前类型');
-        return;
+        if (!silent) window.GuixuHelpers?.showTemporaryMessage?.('文件格式不匹配，无法导入到当前类型');
+        return false;
       }
 
       if (kind === 'talent' || kind === 'background') {
@@ -36616,25 +37277,19 @@ async _loadBackgroundsFromLorebook() {
         const list = isTalent ? (this._talentList || []) : (this._bgList || []);
         const existing = list.find(x => String(x.id) === id) || null;
         if (existing && existing.entryUid) {
-          let ok = false;
-          const msg = '已存在同ID条目，是否覆盖？';
-          if (window.GuixuMain && typeof window.GuixuMain.showCustomConfirm === 'function') {
-            ok = await new Promise(resolve => {
-              window.GuixuMain.showCustomConfirm(msg, () => resolve(true), () => resolve(false));
-            });
-          } else {
-            ok = confirm(msg);
-          }
-          if (!ok) return;
+          const ok = forceOverwrite ? true : await this._confirmWithCustomDialog('已存在同ID条目，是否覆盖？');
+          if (!ok) return false;
           await this._saveWorldbookEntry(kind, existing.entryUid, values);
         } else {
           await this._createWorldbookEntry(kind, values);
         }
-        if (isTalent) await this._loadTalentsFromLorebook().catch(()=>{});
-        else await this._loadBackgroundsFromLorebook().catch(()=>{});
-        window.GuixuHelpers?.showTemporaryMessage?.('已导入并保存');
-        this._renderCreativeWorkshopPage();
-        return;
+        if (!skipReload) {
+          if (isTalent) await this._loadTalentsFromLorebook().catch(()=>{});
+          else await this._loadBackgroundsFromLorebook().catch(()=>{});
+        }
+        if (!silent) window.GuixuHelpers?.showTemporaryMessage?.('已导入并保存');
+        if (!skipRender) this._renderCreativeWorkshopPage();
+        return true;
       }
 
       if (kind === 'database') {
@@ -36643,24 +37298,16 @@ async _loadBackgroundsFromLorebook() {
         const values = this._extractDbFormVals(obj, { name, id, author: obj.author, description: obj.description });
         const existing = (this._cwDbList || []).find(d => String(d.id) === id) || null;
         if (existing && existing.entryUid) {
-          let ok = false;
-          const msg = '已存在同ID条目，是否覆盖？';
-          if (window.GuixuMain && typeof window.GuixuMain.showCustomConfirm === 'function') {
-            ok = await new Promise(resolve => {
-              window.GuixuMain.showCustomConfirm(msg, () => resolve(true), () => resolve(false));
-            });
-          } else {
-            ok = confirm(msg);
-          }
-          if (!ok) return;
-          await this._saveStaticDbEntry(existing.entryUid, values);
+          const ok = forceOverwrite ? true : await this._confirmWithCustomDialog('已存在同ID条目，是否覆盖？');
+          if (!ok) return false;
+          await this._saveStaticDbEntry(existing.entryUid, values, { useUiBinding: false });
         } else {
-          await this._createStaticDbEntry(values);
+          await this._createStaticDbEntry(values, { useUiBinding: false });
         }
-        await this._loadStaticDatabasesFromLorebookForWorkshop().catch(()=>{});
-        window.GuixuHelpers?.showTemporaryMessage?.('已导入并保存');
-        this._renderCreativeWorkshopPage();
-        return;
+        if (!skipReload) await this._loadStaticDatabasesFromLorebookForWorkshop().catch(()=>{});
+        if (!silent) window.GuixuHelpers?.showTemporaryMessage?.('已导入并保存');
+        if (!skipRender) this._renderCreativeWorkshopPage();
+        return true;
       }
 
       if (kind === 'dungeon') {
@@ -36669,23 +37316,242 @@ async _loadBackgroundsFromLorebook() {
         const values = this._extractDungeonFormVals(obj, { name, id, author: obj.author, description: obj.description, version: obj.version, createdAt: obj.createdAt, uploadedAt: obj.uploadedAt, tags: obj.tags });
         const existing = (this._cwDungeonList || []).find(d => String(d.id) === id) || null;
         if (existing && existing.entryUid) {
-          let ok = false;
-          const msg = '已存在同ID条目，是否覆盖？';
-          if (window.GuixuMain && typeof window.GuixuMain.showCustomConfirm === 'function') {
-            ok = await new Promise(resolve => {
-              window.GuixuMain.showCustomConfirm(msg, () => resolve(true), () => resolve(false));
-            });
-          } else {
-            ok = confirm(msg);
-          }
-          if (!ok) return;
+          const ok = forceOverwrite ? true : await this._confirmWithCustomDialog('已存在同ID条目，是否覆盖？');
+          if (!ok) return false;
           await this._saveDungeonEntry(existing.entryUid, values);
         } else {
           await this._createDungeonEntry(values);
         }
-        await this._loadDungeonsFromLorebookForWorkshop().catch(()=>{});
-        window.GuixuHelpers?.showTemporaryMessage?.('已导入并保存');
+        if (!skipReload) await this._loadDungeonsFromLorebookForWorkshop().catch(()=>{});
+        if (!silent) window.GuixuHelpers?.showTemporaryMessage?.('已导入并保存');
+        if (!skipRender) this._renderCreativeWorkshopPage();
+        return true;
+      }
+      return false;
+    },
+
+    async _handleCreativeImportFile(e) {
+      const input = e?.target;
+      const kind = String(input?.dataset?.cwKind || '').trim();
+      const file = input?.files?.[0];
+      if (!kind || !file) return;
+      if (kind === 'dungeon') {
+        if (!this._isCreativeDungeonZipFile(file)) {
+          window.GuixuHelpers?.showTemporaryMessage?.('副本导入仅支持 ZIP 压缩包');
+          return;
+        }
+        await this._importCreativeDungeonBundle(file);
+        return;
+      }
+      let obj = null;
+      try {
+        const text = await file.text();
+        obj = JSON.parse(String(text || '').trim() || '{}');
+      } catch (err) {
+        window.GuixuHelpers?.showTemporaryMessage?.('导入失败：文件格式无效或解析错误');
+        return;
+      }
+      // 导入前第一确认（静态数据库/副本）
+      if (kind === 'database' || kind === 'dungeon') {
+        const titleMap = { database: '静态数据库', dungeon: '副本' };
+        const firstSure = await this._confirmWithCustomDialog(`确认导入该${titleMap[kind] || '条目'}到本地酒馆吗？`);
+        if (!firstSure) return;
+      }
+      const imported = await this._importCreativeJsonObject(kind, obj, {
+        forceOverwrite: false,
+        silent: false,
+        skipReload: false,
+        skipRender: false
+      });
+      if (!imported) return;
+      if (kind === 'database') {
+        const boundEntries = this._extractStaticDbBoundEntries(obj);
+        if (boundEntries.length) {
+          const withBound = await this._confirmWithCustomDialog(`检测到该静态数据库绑定了 ${boundEntries.length} 个世界书条目。\n是否同时导入这些绑定条目？`);
+          if (withBound) {
+            const ret = await this._importBoundEntriesToLocal(boundEntries);
+            window.GuixuHelpers?.showTemporaryMessage?.(`绑定条目导入完成：成功 ${ret.success}${ret.failed ? `，失败 ${ret.failed}` : ''}`);
+            this._renderCreativeWorkshopPage();
+          }
+        }
+      }
+    },
+
+    _resolveCreativeDeleteMainUids(kind, ids) {
+      const out = new Set();
+      const list = Array.isArray(ids) ? ids : [];
+      if (kind === 'talent') {
+        (this._talentList || []).forEach((t) => {
+          if (!list.includes(String(t?.id || ''))) return;
+          const uidNum = Number(t?.entryUid);
+          if (Number.isFinite(uidNum)) out.add(uidNum);
+        });
+        return out;
+      }
+      if (kind === 'background') {
+        (this._bgList || []).forEach((b) => {
+          if (!list.includes(String(b?.id || ''))) return;
+          const uidNum = Number(b?.entryUid);
+          if (Number.isFinite(uidNum)) out.add(uidNum);
+        });
+        return out;
+      }
+      list.forEach((uid) => {
+        const uidNum = Number(uid);
+        if (Number.isFinite(uidNum)) out.add(uidNum);
+      });
+      return out;
+    },
+
+    _getCreativeEntriesByIds(kind, ids) {
+      const list = Array.isArray(ids) ? ids.map(x => String(x || '').trim()).filter(Boolean) : [];
+      if (kind === 'database') {
+        return (this._cwDbList || []).filter((x) => list.includes(String(x?.entryUid || '')));
+      }
+      if (kind === 'dungeon') {
+        return (this._cwDungeonList || []).filter((x) => list.includes(String(x?.entryUid || '')));
+      }
+      return [];
+    },
+
+    _collectStaticDbBoundDeleteUidsFromEntries(dbEntries, allLoreEntries) {
+      const out = new Set();
+      const rows = Array.isArray(dbEntries) ? dbEntries : [];
+      rows.forEach((entry) => {
+        const boundEntries = this._extractStaticDbBoundEntries(entry?.raw || {});
+        boundEntries.forEach((boundEntry) => {
+          const target = this._findLorebookEntryByBoundMeta(boundEntry, allLoreEntries);
+          const uidNum = Number(target?.uid);
+          if (Number.isFinite(uidNum)) out.add(uidNum);
+        });
+      });
+      return out;
+    },
+
+    _collectDungeonLinkedDeleteUidsFromEntries(dungeonEntries, allLoreEntries) {
+      const out = new Set();
+      const list = Array.isArray(dungeonEntries) ? dungeonEntries : [];
+      list.forEach((entry) => {
+        const raw = (entry?.raw && typeof entry.raw === 'object') ? entry.raw : {};
+        const linked = (raw?.linked && typeof raw.linked === 'object') ? raw.linked : {};
+        const talents = Array.isArray(linked?.talents) ? linked.talents : [];
+        const staticDbs = Array.isArray(linked?.staticDbs) ? linked.staticDbs : [];
+        const bg = (linked?.background && typeof linked.background === 'object') ? linked.background : {};
+        talents.forEach((ref) => {
+          const local = this._findDungeonLinkedLocalItem('talent', ref);
+          const uidNum = Number(local?.entryUid);
+          if (Number.isFinite(uidNum)) out.add(uidNum);
+        });
+        if (bg && (bg.id || bg.name)) {
+          const localBg = this._findDungeonLinkedLocalItem('background', bg);
+          const uidNum = Number(localBg?.entryUid);
+          if (Number.isFinite(uidNum)) out.add(uidNum);
+        }
+        staticDbs.forEach((ref) => {
+          const localDb = this._findDungeonLinkedLocalItem('database', ref);
+          const dbUidNum = Number(localDb?.entryUid);
+          if (Number.isFinite(dbUidNum)) out.add(dbUidNum);
+          // 递归处理：副本关联的静态数据库若绑定世界书条目，也作为可联动删除目标
+          const dbBoundEntries = this._extractStaticDbBoundEntries(localDb?.raw || {});
+          dbBoundEntries.forEach((boundEntry) => {
+            const target = this._findLorebookEntryByBoundMeta(boundEntry, allLoreEntries);
+            const uidNum = Number(target?.uid);
+            if (Number.isFinite(uidNum)) out.add(uidNum);
+          });
+        });
+      });
+      return out;
+    },
+
+    async _deleteCreativeItems(kind, ids, options = {}) {
+      const list = Array.isArray(ids) ? ids.map(x => String(x || '').trim()).filter(Boolean) : [];
+      if (!list.length) return;
+      const isSingle = !!options?.fromSingleAction || list.length === 1;
+      const firstMsg = isSingle
+        ? '确定要删除该条目吗？该操作不可恢复。'
+        : `确定要批量删除选中的 ${list.length} 个条目吗？该操作不可恢复。`;
+      const firstSure = await this._confirmWithCustomDialog(firstMsg);
+      if (!firstSure) return;
+      try {
+        const bookName = window.GuixuConstants?.LOREBOOK?.NAME;
+        if (!bookName || !window.GuixuAPI?.deleteLorebookEntries) return;
+        const canReadEntries = !!window.GuixuAPI?.getLorebookEntries;
+        const mainUids = this._resolveCreativeDeleteMainUids(kind, list);
+        if (!mainUids.size) {
+          window.GuixuHelpers?.showTemporaryMessage?.('未匹配到可删除条目');
+          return;
+        }
+        let withLinkedDelete = false;
+        let linkedUids = new Set();
+        if (kind === 'database') {
+          if (!canReadEntries) {
+            window.GuixuHelpers?.showTemporaryMessage?.('当前环境无法读取本地条目，无法执行关联删除检查');
+            return;
+          }
+          const dbEntries = this._getCreativeEntriesByIds('database', list);
+          if (dbEntries.length) {
+            const allLoreEntries = await window.GuixuAPI.getLorebookEntries(bookName);
+            const rawLinked = this._collectStaticDbBoundDeleteUidsFromEntries(dbEntries, allLoreEntries);
+            linkedUids = new Set(Array.from(rawLinked).filter((uidNum) => !mainUids.has(uidNum)));
+            if (linkedUids.size) {
+              withLinkedDelete = await this._confirmWithCustomDialog(`检测到本地酒馆中存在 ${linkedUids.size} 个该静态数据库绑定的世界书条目。\n是否同时删除这些关联条目？`);
+            }
+          }
+        } else if (kind === 'dungeon') {
+          if (!canReadEntries) {
+            window.GuixuHelpers?.showTemporaryMessage?.('当前环境无法读取本地条目，无法执行关联删除检查');
+            return;
+          }
+          await Promise.all([
+            this._loadTalentsFromLorebook().catch(()=>{}),
+            this._loadBackgroundsFromLorebook().catch(()=>{}),
+            this._loadStaticDatabasesFromLorebookForWorkshop().catch(()=>{})
+          ]);
+          const dungeonEntries = this._getCreativeEntriesByIds('dungeon', list);
+          if (dungeonEntries.length) {
+            const allLoreEntries = await window.GuixuAPI.getLorebookEntries(bookName);
+            const rawLinked = this._collectDungeonLinkedDeleteUidsFromEntries(dungeonEntries, allLoreEntries);
+            linkedUids = new Set(Array.from(rawLinked).filter((uidNum) => !mainUids.has(uidNum)));
+            if (linkedUids.size) {
+              withLinkedDelete = await this._confirmWithCustomDialog(`检测到本地酒馆中存在 ${linkedUids.size} 个该副本关联的世界书条目。\n是否同时删除这些关联条目？`);
+            }
+          }
+        }
+
+        const deleteSet = new Set(mainUids);
+        if (withLinkedDelete) {
+          linkedUids.forEach((uidNum) => deleteSet.add(uidNum));
+        }
+        await window.GuixuAPI.deleteLorebookEntries(bookName, Array.from(deleteSet));
+
+        const set = this._getCwMultiSet(kind);
+        set.clear();
+        if (kind === 'talent' && list.includes(String(this._cwSelectedTalentId || ''))) this._cwSelectedTalentId = '';
+        if (kind === 'background' && list.includes(String(this._cwSelectedBgId || ''))) this._cwSelectedBgId = '';
+        if (kind === 'database' && list.includes(String(this._cwDbSelectedUid || ''))) this._cwDbSelectedUid = '';
+        if (kind === 'dungeon' && list.includes(String(this._cwDungeonSelectedUid || ''))) this._cwDungeonSelectedUid = '';
+
+        if (kind === 'talent') {
+          await this._loadTalentsFromLorebook().catch(()=>{});
+        } else if (kind === 'background') {
+          await this._loadBackgroundsFromLorebook().catch(()=>{});
+        } else if (kind === 'database' || kind === 'dungeon') {
+          await Promise.all([
+            this._loadTalentsFromLorebook().catch(()=>{}),
+            this._loadBackgroundsFromLorebook().catch(()=>{}),
+            this._loadStaticDatabasesFromLorebookForWorkshop().catch(()=>{}),
+            this._loadDungeonsFromLorebookForWorkshop().catch(()=>{}),
+            this._loadWorldbookEntriesForBinding().catch(()=>{})
+          ]);
+        }
+
         this._renderCreativeWorkshopPage();
+        const linkedDeletedCount = withLinkedDelete ? linkedUids.size : 0;
+        const mainDeletedCount = mainUids.size;
+        window.GuixuHelpers?.showTemporaryMessage?.(`已删除条目：主条目 ${mainDeletedCount}${linkedDeletedCount ? `，关联条目 ${linkedDeletedCount}` : ''}`);
+      } catch (e) {
+        console.warn('[创意工坊] 删除失败：', e);
+        window.GuixuHelpers?.showTemporaryMessage?.('删除失败');
       }
     },
 
@@ -36693,49 +37559,7 @@ async _loadBackgroundsFromLorebook() {
       const set = this._getCwMultiSet(kind);
       const ids = Array.from(set || []).map(x => String(x || '').trim()).filter(Boolean);
       if (!ids.length) return;
-      let sure = false;
-      const msg = `确定要批量删除选中的 ${ids.length} 个条目吗？该操作不可恢复。`;
-      if (window.GuixuMain && typeof window.GuixuMain.showCustomConfirm === 'function') {
-        sure = await new Promise(resolve => {
-          window.GuixuMain.showCustomConfirm(msg, () => resolve(true), () => resolve(false));
-        });
-      } else {
-        sure = confirm(msg);
-      }
-      if (!sure) return;
-      try {
-        const bookName = window.GuixuConstants?.LOREBOOK?.NAME;
-        if (!bookName || !window.GuixuAPI?.deleteLorebookEntries) return;
-        const uids = [];
-        if (kind === 'talent') {
-          (this._talentList || []).forEach(t => {
-            if (ids.includes(String(t.id)) && t.entryUid) uids.push(Number(t.entryUid));
-          });
-        } else if (kind === 'background') {
-          (this._bgList || []).forEach(b => {
-            if (ids.includes(String(b.id)) && b.entryUid) uids.push(Number(b.entryUid));
-          });
-        } else if (kind === 'database' || kind === 'dungeon') {
-          ids.forEach(uid => { if (uid) uids.push(Number(uid)); });
-        }
-        if (uids.length) {
-          await window.GuixuAPI.deleteLorebookEntries(bookName, uids);
-        }
-        set.clear();
-        if (kind === 'talent' && ids.includes(String(this._cwSelectedTalentId || ''))) this._cwSelectedTalentId = '';
-        if (kind === 'background' && ids.includes(String(this._cwSelectedBgId || ''))) this._cwSelectedBgId = '';
-        if (kind === 'database' && ids.includes(String(this._cwDbSelectedUid || ''))) this._cwDbSelectedUid = '';
-        if (kind === 'dungeon' && ids.includes(String(this._cwDungeonSelectedUid || ''))) this._cwDungeonSelectedUid = '';
-        if (kind === 'talent') await this._loadTalentsFromLorebook().catch(()=>{});
-        else if (kind === 'background') await this._loadBackgroundsFromLorebook().catch(()=>{});
-        else if (kind === 'database') await this._loadStaticDatabasesFromLorebookForWorkshop().catch(()=>{});
-        else if (kind === 'dungeon') await this._loadDungeonsFromLorebookForWorkshop().catch(()=>{});
-        this._renderCreativeWorkshopPage();
-        window.GuixuHelpers?.showTemporaryMessage?.('已批量删除条目');
-      } catch (e) {
-        console.warn('[创意工坊] 批量删除失败：', e);
-        window.GuixuHelpers?.showTemporaryMessage?.('批量删除失败');
-      }
+      await this._deleteCreativeItems(kind, ids, { fromSingleAction: false });
     },
 
     // 向导四页（副本/天赋/背景/静态库）移动端“列表/详情”标签切换
@@ -37519,23 +38343,45 @@ async _loadBackgroundsFromLorebook() {
       if (!sure) return;
 
       try {
-        if (kind === 'database') {
-          const path = String(item.path || '');
-          const parts = path.split('/');
-          if (parts[0] === 'static-data' && parts.length >= 3) {
-            const folder = parts[1];
-            const targets = await this._collectRemoteFilesInFolder(`static-data/${folder}`, token);
-            for (const p of targets) {
-              await repo.deleteFile(p, token, `delete ${p}`);
-            }
-          } else if (path) {
-            await repo.deleteFile(path, token, `delete ${path}`);
-          }
-        } else {
-          const path = String(item.path || '');
-          if (path) await repo.deleteFile(path, token, `delete ${path}`);
+        const mainPaths = new Set();
+        await this._appendShareDeletePathsByKind(kind, String(item?.path || ''), token, mainPaths);
+        if (!mainPaths.size) {
+          window.GuixuHelpers?.showTemporaryMessage?.('未找到可删除的云端路径');
+          return;
         }
-        window.GuixuHelpers?.showTemporaryMessage?.('已删除云端条目');
+
+        let linkedPaths = new Set();
+        let linkedMiss = [];
+        let withLinkedDelete = false;
+        if (kind === 'dungeon') {
+          const payload = (item?.raw && typeof item.raw === 'object') ? item.raw : {};
+          if (this._hasDungeonLinkedEntries(payload)) {
+            await Promise.all([
+              this._loadShareRemoteList('talent', true).catch(()=>{}),
+              this._loadShareRemoteList('background', true).catch(()=>{}),
+              this._loadShareRemoteList('database', true).catch(()=>{})
+            ]);
+            const linkedDeleteTargets = await this._collectDungeonLinkedRemoteDeleteTargets(payload, token);
+            const matchedCount = linkedDeleteTargets.paths.size;
+            linkedMiss = linkedDeleteTargets.miss;
+            if (matchedCount > 0) {
+              withLinkedDelete = await this._confirmWithCustomDialog(`检测到云端存在 ${matchedCount} 个该副本关联的世界书条目。\n是否同时删除这些关联条目？`);
+              if (withLinkedDelete) linkedPaths = linkedDeleteTargets.paths;
+            }
+          }
+        }
+
+        const allPaths = new Set(mainPaths);
+        linkedPaths.forEach(p => allPaths.add(p));
+        const result = await this._deleteShareRemotePathSet(allPaths, token);
+        const mainDeleted = Array.from(mainPaths).filter(p => result.deletedPaths.has(p)).length;
+        const linkedDeleted = Array.from(linkedPaths).filter(p => result.deletedPaths.has(p)).length;
+        const failedCount = result.failedPaths.size;
+        if (kind === 'dungeon' && withLinkedDelete) {
+          window.GuixuHelpers?.showTemporaryMessage?.(`已删除云端条目：副本 ${mainDeleted} 个，联动 ${linkedDeleted} 个${linkedMiss.length ? `，未命中 ${linkedMiss.length} 个` : ''}${failedCount ? `，失败 ${failedCount} 个` : ''}`);
+        } else {
+          window.GuixuHelpers?.showTemporaryMessage?.(`已删除云端条目${failedCount ? `（失败 ${failedCount} 个）` : ''}`);
+        }
         await this._loadShareRemoteList(kind, true).catch(()=>{});
         this._renderShareLobbyPage();
       } catch (e) {
@@ -37568,30 +38414,55 @@ async _loadBackgroundsFromLorebook() {
       if (!sure) return;
 
       try {
-        if (kind === 'database') {
-          const folders = new Set();
-          const deletePaths = new Set();
-          list.forEach(path => {
-            const parts = String(path || '').split('/');
-            if (parts[0] === 'static-data' && parts.length >= 3) {
-              folders.add(parts[1]);
-            } else if (path) {
-              deletePaths.add(path);
+        const mainPaths = new Set();
+        for (const path of list) {
+          await this._appendShareDeletePathsByKind(kind, path, token, mainPaths);
+        }
+        if (!mainPaths.size) {
+          window.GuixuHelpers?.showTemporaryMessage?.('未找到可删除的云端路径');
+          return;
+        }
+
+        let linkedPaths = new Set();
+        let linkedMissCount = 0;
+        let withLinkedDelete = false;
+        if (kind === 'dungeon') {
+          const remoteList = this._shareRemoteCache?.dungeon || [];
+          const selectedItems = list.map((id) => (
+            remoteList.find(x => String(x?.path || x?.id || '') === String(id))
+          )).filter(Boolean);
+          const hasLinkedDungeon = selectedItems.some((it) => this._hasDungeonLinkedEntries((it?.raw && typeof it.raw === 'object') ? it.raw : {}));
+          if (hasLinkedDungeon) {
+            await Promise.all([
+              this._loadShareRemoteList('talent', true).catch(()=>{}),
+              this._loadShareRemoteList('background', true).catch(()=>{}),
+              this._loadShareRemoteList('database', true).catch(()=>{})
+            ]);
+            for (const dungeonItem of selectedItems) {
+              const payload = (dungeonItem?.raw && typeof dungeonItem.raw === 'object') ? dungeonItem.raw : {};
+              if (!this._hasDungeonLinkedEntries(payload)) continue;
+              const linkedDeleteTargets = await this._collectDungeonLinkedRemoteDeleteTargets(payload, token);
+              linkedDeleteTargets.paths.forEach(p => linkedPaths.add(p));
+              linkedMissCount += linkedDeleteTargets.miss.length;
             }
-          });
-          for (const folder of Array.from(folders)) {
-            const targets = await this._collectRemoteFilesInFolder(`static-data/${folder}`, token);
-            (targets || []).forEach(p => deletePaths.add(p));
-          }
-          for (const p of Array.from(deletePaths)) {
-            await repo.deleteFile(p, token, `delete ${p}`);
-          }
-        } else {
-          for (const p of list) {
-            await repo.deleteFile(p, token, `delete ${p}`);
+            if (linkedPaths.size > 0) {
+              withLinkedDelete = await this._confirmWithCustomDialog(`检测到云端存在 ${linkedPaths.size} 个与所选副本关联的世界书条目。\n是否同时删除这些关联条目？`);
+              if (!withLinkedDelete) linkedPaths = new Set();
+            }
           }
         }
-        window.GuixuHelpers?.showTemporaryMessage?.('已批量删除云端条目');
+
+        const allPaths = new Set(mainPaths);
+        linkedPaths.forEach(p => allPaths.add(p));
+        const result = await this._deleteShareRemotePathSet(allPaths, token);
+        const mainDeleted = Array.from(mainPaths).filter(p => result.deletedPaths.has(p)).length;
+        const linkedDeleted = Array.from(linkedPaths).filter(p => result.deletedPaths.has(p)).length;
+        const failedCount = result.failedPaths.size;
+        if (kind === 'dungeon' && withLinkedDelete) {
+          window.GuixuHelpers?.showTemporaryMessage?.(`已批量删除：副本 ${mainDeleted} 条，联动 ${linkedDeleted} 条${linkedMissCount ? `，未命中 ${linkedMissCount} 条` : ''}${failedCount ? `，失败 ${failedCount} 条` : ''}`);
+        } else {
+          window.GuixuHelpers?.showTemporaryMessage?.(`已批量删除云端条目${failedCount ? `（失败 ${failedCount} 条）` : ''}`);
+        }
         const set = this._getShareMultiSet(kind, 'remote');
         set.clear();
         await this._loadShareRemoteList(kind, true).catch(()=>{});
@@ -37600,6 +38471,69 @@ async _loadBackgroundsFromLorebook() {
         console.warn('[共享大厅] 批量删除云端条目失败：', e);
         window.GuixuHelpers?.showTemporaryMessage?.('批量删除失败');
       }
+    },
+
+    async _appendShareDeletePathsByKind(kind, pathValue, token, targetSet) {
+      const path = String(pathValue || '').trim();
+      if (!path || !targetSet) return;
+      if (kind !== 'database') {
+        targetSet.add(path);
+        return;
+      }
+      const parts = path.split('/');
+      if (parts[0] === 'static-data' && parts.length >= 3) {
+        const folder = String(parts[1] || '').trim();
+        if (!folder) return;
+        const targets = await this._collectRemoteFilesInFolder(`static-data/${folder}`, token);
+        (targets || []).forEach((p) => targetSet.add(String(p || '')));
+        return;
+      }
+      targetSet.add(path);
+    },
+
+    async _collectDungeonLinkedRemoteDeleteTargets(payload, token) {
+      const linked = (payload && typeof payload.linked === 'object') ? payload.linked : {};
+      const talents = Array.isArray(linked?.talents) ? linked.talents : [];
+      const staticDbs = Array.isArray(linked?.staticDbs) ? linked.staticDbs : [];
+      const bg = (linked?.background && typeof linked.background === 'object') ? linked.background : {};
+      const paths = new Set();
+      const miss = [];
+      const seen = new Set();
+      const addByRef = async (kind, ref) => {
+        const meta = this._normalizeDungeonLinkedMeta(kind, ref);
+        if (!meta.name || !meta.id) return;
+        const dedupeKey = `${kind}::${String(meta.name).toLowerCase()}::${String(meta.id).toLowerCase()}::${String(meta.author).toLowerCase()}::${String(meta.dataVersion).toLowerCase()}`;
+        if (seen.has(dedupeKey)) return;
+        seen.add(dedupeKey);
+        const remoteItem = this._findDungeonLinkedRemoteItem(kind, meta);
+        if (!remoteItem) {
+          miss.push(this._formatDungeonLinkedMissLabel(kind, meta));
+          return;
+        }
+        await this._appendShareDeletePathsByKind(kind, String(remoteItem?.path || ''), token, paths);
+      };
+      for (const t of talents) await addByRef('talent', t);
+      if (bg && (bg.id || bg.name)) await addByRef('background', bg);
+      for (const s of staticDbs) await addByRef('database', s);
+      return { paths, miss };
+    },
+
+    async _deleteShareRemotePathSet(pathSet, token) {
+      const repo = window.GuixuCommunityRepo;
+      const deletedPaths = new Set();
+      const failedPaths = new Set();
+      if (!repo) return { deletedPaths, failedPaths };
+      const list = Array.from(pathSet || []).map(x => String(x || '').trim()).filter(Boolean);
+      for (const path of list) {
+        try {
+          await repo.deleteFile(path, token, `delete ${path}`);
+          deletedPaths.add(path);
+        } catch (e) {
+          failedPaths.add(path);
+          console.warn('[共享大厅] 删除云端路径失败：', path, e);
+        }
+      }
+      return { deletedPaths, failedPaths };
     },
 
     async _collectRemoteFilesInFolder(folder, token) {
@@ -37651,6 +38585,33 @@ async _loadBackgroundsFromLorebook() {
         if (kind === 'dungeon') return (this._cwDungeonList || []).find(d => String(d?.entryUid || d?.id || '') === id) || null;
         return null;
       };
+
+      let dungeonBatchUploadLinked = false;
+      if (kind === 'dungeon') {
+        await this._loadStaticDatabasesFromLorebookForWorkshop().catch(()=>{});
+        const payloadsWithLinked = [];
+        list.forEach((id) => {
+          const item = findItem(id);
+          if (!item) return;
+          const payload = this._prepareDungeonUploadJson(item);
+          if (this._hasShareRemoteDuplicate(kind, payload)) return;
+          if (!this._hasDungeonLinkedEntries(payload)) return;
+          payloadsWithLinked.push(payload);
+        });
+        if (payloadsWithLinked.length) {
+          dungeonBatchUploadLinked = await this._confirmWithCustomDialog(`检测到选中的副本中有 ${payloadsWithLinked.length} 条存在绑定条目。\n是否同步上传这些绑定条目到云端仓库？`);
+          if (dungeonBatchUploadLinked) {
+            const issues = [];
+            payloadsWithLinked.forEach((payload) => {
+              issues.push(...this._collectDungeonNestedStaticDbPathIssues(payload));
+            });
+            if (issues.length) {
+              this._showDungeonNestedPathIssueMessage(issues);
+              return;
+            }
+          }
+        }
+      }
 
       let success = 0;
       let skipped = 0;
@@ -37710,7 +38671,13 @@ async _loadBackgroundsFromLorebook() {
             const name = String(payload?.name || item.name || item.id || '副本');
             const fileBase = this._buildUploadFileBase(name, payload.uploadedAt);
             await this._uploadJsonToCommunity('dungeon', payload, token, fileBase);
-            await this._uploadDungeonLinkedItems(payload, token);
+            if (dungeonBatchUploadLinked) {
+              await this._uploadDungeonLinkedItems(payload, token, {
+                includeStaticDbBoundEntries: true,
+                skipStaticDbBoundConfirm: true,
+                skipStaticDbPathValidation: true
+              });
+            }
           }
           success += 1;
         } catch (e) {
@@ -37812,11 +38779,30 @@ async _loadBackgroundsFromLorebook() {
           window.GuixuHelpers?.showTemporaryMessage?.('云端已存在相同版本，已跳过上传');
           return;
         }
+        let shouldUploadLinked = false;
+        if (this._hasDungeonLinkedEntries(payload)) {
+          const linkedSure = await this._confirmWithCustomDialog('检测到该副本绑定了静态数据库/天赋/背景。\n是否同步上传这些绑定条目到云端仓库？');
+          if (linkedSure) {
+            await this._loadStaticDatabasesFromLorebookForWorkshop().catch(()=>{});
+            const issues = this._collectDungeonNestedStaticDbPathIssues(payload);
+            if (issues.length) {
+              this._showDungeonNestedPathIssueMessage(issues);
+              return;
+            }
+            shouldUploadLinked = true;
+          }
+        }
         await this._writeShareUploadedAtToLocalEntry(item.entryUid, payload);
         const name = String(payload?.name || item.name || item.id || '副本');
         const fileBase = this._buildUploadFileBase(name, payload.uploadedAt);
         await this._uploadJsonToCommunity('dungeon', payload, token, fileBase);
-        await this._uploadDungeonLinkedItems(payload, token);
+        if (shouldUploadLinked) {
+          await this._uploadDungeonLinkedItems(payload, token, {
+            includeStaticDbBoundEntries: true,
+            skipStaticDbBoundConfirm: true,
+            skipStaticDbPathValidation: true
+          });
+        }
         window.GuixuHelpers?.showTemporaryMessage?.('已上传副本到云端');
       }
 
@@ -37908,12 +38894,65 @@ async _loadBackgroundsFromLorebook() {
       return payload;
     },
 
+    _hasDungeonLinkedEntries(payload) {
+      const linked = (payload && typeof payload.linked === 'object') ? payload.linked : {};
+      const talents = Array.isArray(linked?.talents) ? linked.talents : [];
+      const staticDbs = Array.isArray(linked?.staticDbs) ? linked.staticDbs : [];
+      const bg = (linked?.background && typeof linked.background === 'object') ? linked.background : {};
+      return !!(talents.length || staticDbs.length || bg?.id || bg?.name);
+    },
+
     _countInvalidStaticDbBoundPaths(payload) {
       const bound = payload?.boundWorldbook;
       const entries = Array.isArray(bound?.entries) ? bound.entries : [];
       if (!entries.length) return 0;
       const dbName = String(payload?.name || '').trim() || '未命名静态数据库';
       return entries.filter(e => !this._isValidShareSubPath(e?.remotePath, dbName)).length;
+    },
+
+    _collectInvalidStaticDbBoundPathDetails(payload) {
+      const bound = payload?.boundWorldbook;
+      const entries = Array.isArray(bound?.entries) ? bound.entries : [];
+      const dbName = String(payload?.name || '').trim() || '未命名静态数据库';
+      const dbId = String(payload?.id || '').trim();
+      const details = [];
+      entries.forEach((entry) => {
+        if (this._isValidShareSubPath(entry?.remotePath, dbName)) return;
+        const entryName = String(entry?.name || entry?.comment || entry?.uid || '').trim() || '未命名条目';
+        const entryUid = String(entry?.uid ?? '').trim();
+        details.push({ dbName, dbId, entryName, entryUid });
+      });
+      return details;
+    },
+
+    _collectDungeonNestedStaticDbPathIssues(payload) {
+      const linked = (payload && typeof payload.linked === 'object') ? payload.linked : {};
+      const staticDbs = Array.isArray(linked?.staticDbs) ? linked.staticDbs : [];
+      const issues = [];
+      const seen = new Set();
+      staticDbs.forEach((s) => {
+        const ref = this._normalizeDungeonLinkedMeta('database', s);
+        const key = `${ref.name}::${ref.id}::${ref.author}::${ref.dataVersion}`;
+        if (seen.has(key)) return;
+        seen.add(key);
+        const localDb = this._findDungeonLinkedLocalItem('database', ref);
+        if (!localDb) return;
+        const dbPayload = this._prepareDatabaseUploadJson(localDb);
+        issues.push(...this._collectInvalidStaticDbBoundPathDetails(dbPayload));
+      });
+      return issues;
+    },
+
+    _showDungeonNestedPathIssueMessage(issues) {
+      const list = Array.isArray(issues) ? issues : [];
+      if (!list.length) return;
+      const preview = list.slice(0, 6).map((x) => {
+        const dbHead = x?.dbId ? `${x.dbName}（id:${x.dbId}）` : x?.dbName;
+        const entryHead = x?.entryUid ? `${x.entryName}（uid:${x.entryUid}）` : x?.entryName;
+        return `静态数据库【${dbHead || '未命名静态数据库'}】的绑定条目【${entryHead || '未命名条目'}】`;
+      }).join('；');
+      const tail = list.length > 6 ? `（共 ${list.length} 项）` : '';
+      window.GuixuHelpers?.showTemporaryMessage?.(`检测到${preview}${tail}未设置远程仓库存放路径，已阻止本次副本上传`);
     },
 
     async _uploadJsonToCommunity(folder, payload, token, baseName) {
@@ -37926,27 +38965,31 @@ async _loadBackgroundsFromLorebook() {
       await repo.putFile(path, text, token, `update ${folder}/${name}.json`);
     },
 
-    async _maybeUploadStaticDbBoundEntries(dbPayload, token) {
+    async _maybeUploadStaticDbBoundEntries(dbPayload, token, options = {}) {
       const bound = dbPayload?.boundWorldbook;
       const entries = Array.isArray(bound?.entries) ? bound.entries : [];
       if (!entries.length) return;
+      const forceUpload = !!options?.forceUpload;
+      const skipPathValidation = !!options?.skipPathValidation;
 
       const invalid = entries.filter(e => !this._isValidShareSubPath(e?.remotePath, dbPayload?.name));
-      if (invalid.length) {
+      if (!skipPathValidation && invalid.length) {
         window.GuixuHelpers?.showTemporaryMessage?.('存在未设置或不合法的远程存放路径，请先为每个绑定条目选择“数据库名/子目录”路径后再上传。');
         return;
       }
 
-      let ok = false;
-      const msg = '检测到该静态数据库绑定了世界书条目。\n是否同步上传这些绑定条目到云端？';
-      if (window.GuixuMain && typeof window.GuixuMain.showCustomConfirm === 'function') {
-        ok = await new Promise(resolve => {
-          window.GuixuMain.showCustomConfirm(msg, () => resolve(true), () => resolve(false));
-        });
-      } else {
-        ok = confirm(msg);
+      if (!forceUpload) {
+        let ok = false;
+        const msg = '检测到该静态数据库绑定了世界书条目。\n是否同步上传这些绑定条目到云端？';
+        if (window.GuixuMain && typeof window.GuixuMain.showCustomConfirm === 'function') {
+          ok = await new Promise(resolve => {
+            window.GuixuMain.showCustomConfirm(msg, () => resolve(true), () => resolve(false));
+          });
+        } else {
+          ok = confirm(msg);
+        }
+        if (!ok) return;
       }
-      if (!ok) return;
 
       const dbName = String(dbPayload?.name || '').trim() || '未命名静态数据库';
       const total = entries.length;
@@ -38080,50 +39123,53 @@ async _loadBackgroundsFromLorebook() {
       const total = talents.length + staticDbs.length + ((bg && (bg.id || bg.name)) ? 1 : 0);
       let done = 0;
       for (const t of talents) {
-        const tid = String(t?.id || '').trim();
-        if (!tid) continue;
-        const remote = (this._shareRemoteCache?.talent || []).find(x => String(x.id) === tid) || null;
+        const tref = this._normalizeDungeonLinkedMeta('talent', t);
+        if (!tref.name || !tref.id) continue;
+        const remote = this._findDungeonLinkedRemoteItem('talent', tref);
         done += 1;
         this._showShareProgress(`下载绑定条目中… ${done}/${total}`);
         if (remote) await this._upsertLorebookEntryFromJson('【天赋】', remote.raw, remote.raw?.天赋 || remote.name, '天赋id');
-        else miss.talents.push(tid);
+        else miss.talents.push(this._formatDungeonLinkedMissLabel('talent', tref));
       }
       if (bg && (bg.id || bg.name)) {
-        const bid = String(bg.id || '').trim();
-        const remoteBg = (this._shareRemoteCache?.background || []).find(x => (bid && String(x.id) === bid) || (!bid && String(x.name) === String(bg.name))) || null;
+        const bref = this._normalizeDungeonLinkedMeta('background', bg);
+        const remoteBg = this._findDungeonLinkedRemoteItem('background', bref);
         done += 1;
         this._showShareProgress(`下载绑定条目中… ${done}/${total}`);
         if (remoteBg) await this._upsertLorebookEntryFromJson('【背景】', remoteBg.raw, remoteBg.raw?.背景 || remoteBg.name, '背景id');
-        else miss.backgrounds.push(bid || String(bg.name || ''));
+        else miss.backgrounds.push(this._formatDungeonLinkedMissLabel('background', bref));
       }
       for (const s of staticDbs) {
-        const sid = String(s?.id || '').trim();
-        if (!sid) continue;
-        const remoteDb = (this._shareRemoteCache?.database || []).find(x => String(x.id) === sid) || null;
+        const sref = this._normalizeDungeonLinkedMeta('database', s);
+        if (!sref.name || !sref.id) continue;
+        const remoteDb = this._findDungeonLinkedRemoteItem('database', sref);
         if (remoteDb) {
           done += 1;
           this._showShareProgress(`下载绑定条目中… ${done}/${total}`);
           await this._upsertLorebookEntryFromJson(window.GuixuConstants?.LOREBOOK?.STATIC_DB_PREFIX || '【静态数据库】', remoteDb.raw, remoteDb.raw?.name || remoteDb.name, 'id');
           await this._maybeDownloadStaticDbBoundEntries(remoteDb.raw);
-        } else miss.staticDbs.push(sid);
+        } else miss.staticDbs.push(this._formatDungeonLinkedMissLabel('database', sref));
       }
       this._hideShareProgress();
       try {
         const missList = []
-          .concat(miss.talents.map(x => `天赋: ${x}`))
-          .concat(miss.backgrounds.map(x => `背景: ${x}`))
-          .concat(miss.staticDbs.map(x => `静态数据库: ${x}`));
+          .concat(miss.talents)
+          .concat(miss.backgrounds)
+          .concat(miss.staticDbs);
         if (missList.length) {
           window.GuixuHelpers?.showTemporaryMessage?.(`部分绑定条目未在云端找到：${missList.join('、')}`);
         }
       } catch (_) {}
     },
 
-    async _uploadDungeonLinkedItems(payload, token) {
+    async _uploadDungeonLinkedItems(payload, token, options = {}) {
       const linked = (payload && typeof payload.linked === 'object') ? payload.linked : {};
       const talents = Array.isArray(linked.talents) ? linked.talents : [];
       const staticDbs = Array.isArray(linked.staticDbs) ? linked.staticDbs : [];
       const bg = linked.background || {};
+      const includeStaticDbBoundEntries = options?.includeStaticDbBoundEntries !== false;
+      const skipStaticDbBoundConfirm = !!options?.skipStaticDbBoundConfirm;
+      const skipStaticDbPathValidation = !!options?.skipStaticDbPathValidation;
 
       if (talents.length) await this._loadShareRemoteList('talent', true).catch(()=>{});
       if (bg && (bg.id || bg.name)) await this._loadShareRemoteList('background', true).catch(()=>{});
@@ -38138,10 +39184,10 @@ async _loadBackgroundsFromLorebook() {
       let done = 0;
       let skipped = 0;
       for (const t of talents) {
-        const tid = String(t?.id || '').trim();
-        if (!tid) continue;
-        const local = (this._talentList || []).find(x => String(x.id) === tid) || null;
-        if (!local) { miss.talents.push(tid); continue; }
+        const tref = this._normalizeDungeonLinkedMeta('talent', t);
+        if (!tref.name || !tref.id) continue;
+        const local = this._findDungeonLinkedLocalItem('talent', tref);
+        if (!local) { miss.talents.push(this._formatDungeonLinkedMissLabel('talent', tref)); continue; }
         const data = this._prepareTalentUploadJson(local);
         if (this._hasShareRemoteDuplicate('talent', data)) {
           skipped += 1;
@@ -38156,8 +39202,8 @@ async _loadBackgroundsFromLorebook() {
         await this._uploadJsonToCommunity('talents', data, token, fileBase);
       }
       if (bg && (bg.id || bg.name)) {
-        const bid = String(bg.id || '').trim();
-        const localBg = (this._bgList || []).find(x => (bid && String(x.id) === bid) || (!bid && String(x.name) === String(bg.name))) || null;
+        const bref = this._normalizeDungeonLinkedMeta('background', bg);
+        const localBg = this._findDungeonLinkedLocalItem('background', bref);
         if (localBg) {
           const data = this._prepareBackgroundUploadJson(localBg);
           if (this._hasShareRemoteDuplicate('background', data)) {
@@ -38171,13 +39217,15 @@ async _loadBackgroundsFromLorebook() {
             this._showShareProgress(`上传绑定条目中… ${done}/${total}`);
             await this._uploadJsonToCommunity('backgrounds', data, token, fileBase);
           }
-        } else miss.backgrounds.push(bid || String(bg.name || ''));
+        } else miss.backgrounds.push(this._formatDungeonLinkedMissLabel('background', bref));
       }
       for (const s of staticDbs) {
-        const sid = String(s?.id || '').trim();
-        if (!sid) continue;
-        const localDb = (this._cwDbList || []).find(x => String(x.id) === sid) || null;
-        if (!localDb) { miss.staticDbs.push(sid); continue; }
+        const sref = this._normalizeDungeonLinkedMeta('database', s);
+        const localDb = this._findDungeonLinkedLocalItem('database', sref);
+        if (!localDb) {
+          miss.staticDbs.push(this._formatDungeonLinkedMissLabel('database', sref));
+          continue;
+        }
         const data = this._prepareDatabaseUploadJson(localDb);
         if (this._hasShareRemoteDuplicate('database', data)) {
           skipped += 1;
@@ -38191,7 +39239,12 @@ async _loadBackgroundsFromLorebook() {
         done += 1;
         this._showShareProgress(`上传绑定条目中… ${done}/${total}`);
         await this._uploadJsonToCommunity(`static-data/${dirName}`, data, token, fileBase);
-        await this._maybeUploadStaticDbBoundEntries(data, token);
+        if (includeStaticDbBoundEntries) {
+          await this._maybeUploadStaticDbBoundEntries(data, token, {
+            forceUpload: skipStaticDbBoundConfirm,
+            skipPathValidation: skipStaticDbPathValidation
+          });
+        }
       }
       this._hideShareProgress();
       if (skipped > 0) {
@@ -38199,9 +39252,9 @@ async _loadBackgroundsFromLorebook() {
       }
       try {
         const missList = []
-          .concat(miss.talents.map(x => `天赋: ${x}`))
-          .concat(miss.backgrounds.map(x => `背景: ${x}`))
-          .concat(miss.staticDbs.map(x => `静态数据库: ${x}`));
+          .concat(miss.talents)
+          .concat(miss.backgrounds)
+          .concat(miss.staticDbs);
         if (missList.length) {
           window.GuixuHelpers?.showTemporaryMessage?.(`部分绑定条目未在本地找到：${missList.join('、')}`);
         }
@@ -38253,22 +39306,41 @@ async _loadBackgroundsFromLorebook() {
       if (!bookName || !window.GuixuAPI?.getLorebookEntries) return;
       const name = String(boundObj?.name || boundObj?.comment || boundObj?.uid || '').trim() || '未命名条目';
       const content = String(boundObj?.content ?? '').replace(/\r/g, '');
+      const typeFlags = this._buildWorldbookTriggerFlags(this._resolveWorldbookTriggerType(boundObj));
+      const depthVal = (boundObj?.depth == null || String(boundObj?.depth).trim() === '')
+        ? null
+        : Number(boundObj.depth);
+      const basePayload = {
+        comment: name,
+        keys: [name],
+        content,
+        enabled: !!boundObj?.enabled,
+        type: typeFlags.type,
+        selective: typeFlags.selective,
+        constant: typeFlags.constant,
+        position: String(boundObj?.position || 'before_character_definition'),
+        depth: Number.isFinite(depthVal) ? depthVal : null,
+        order: Number(boundObj?.order ?? 100),
+        probability: Number(boundObj?.probability ?? 100)
+      };
 
       const all = await window.GuixuAPI.getLorebookEntries(bookName);
-      const target = (all || []).find(e => String(e.comment || '').trim() === name) || null;
+      const uidNum = Number(boundObj?.uid);
+      let target = null;
+      if (Number.isFinite(uidNum)) {
+        target = (all || []).find(e => Number(e?.uid) === uidNum) || null;
+      }
+      if (!target) {
+        target = (all || []).find(e => String(e.comment || '').trim() === name) || null;
+      }
       if (target && target.uid && window.GuixuAPI?.setLorebookEntries) {
-        await window.GuixuAPI.setLorebookEntries(bookName, [{ uid: Number(target.uid), content }]);
+        await window.GuixuAPI.setLorebookEntries(bookName, [{
+          uid: Number(target.uid),
+          ...basePayload
+        }]);
       } else if (window.GuixuAPI?.createLorebookEntries) {
         await window.GuixuAPI.createLorebookEntries(bookName, [{
-          comment: name,
-          content,
-          keys: [name],
-          enabled: !!boundObj?.enabled,
-          selective: String(boundObj?.triggerType || '').toLowerCase() === 'selective',
-          constant: String(boundObj?.triggerType || '').toLowerCase() === 'constant',
-          position: String(boundObj?.position || 'before_character_definition'),
-          order: Number(boundObj?.order ?? 100),
-          probability: Number(boundObj?.probability ?? 100)
+          ...basePayload
         }]);
       }
     },
