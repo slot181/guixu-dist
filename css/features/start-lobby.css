@@ -1214,6 +1214,196 @@ tr.cw-db-tr:hover{
   opacity: 0.75;
 }
 
+/* 开局概览：专属布局（保持与向导视觉体系一致） */
+.start-lobby-overlay .wiz-overview-shell{
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.start-lobby-overlay .wiz-overview-hero{
+  position: relative;
+  border-color: rgba(var(--gx-accent-rgb, 201,170,113), 0.3);
+  background:
+    linear-gradient(135deg, rgba(var(--gx-accent-rgb, 201,170,113), 0.12), rgba(var(--gx-accent-rgb, 201,170,113), 0.03)),
+    rgba(var(--gx-mask-rgb, 26,26,46), 0.3);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.06), 0 8px 24px rgba(0,0,0,0.18);
+}
+
+.start-lobby-overlay .wiz-overview-hero-head{
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.start-lobby-overlay .wiz-overview-hero-main{
+  min-width: 0;
+}
+
+.start-lobby-overlay .wiz-overview-kicker{
+  font-size: 11px;
+  letter-spacing: 2px;
+  color: rgba(var(--gx-accent-rgb, 201,170,113), 0.82);
+  opacity: 0.92;
+}
+
+.start-lobby-overlay .wiz-overview-dungeon-name{
+  margin-top: 2px;
+  font-size: 22px;
+  line-height: 1.32;
+  font-weight: 700;
+  color: var(--gx-accent);
+  text-shadow: 0 4px 14px rgba(0,0,0,0.28);
+  overflow-wrap: anywhere;
+}
+
+.start-lobby-overlay .wiz-overview-dungeon-meta{
+  margin-top: 4px;
+  font-size: 12px;
+  line-height: 1.6;
+  opacity: 0.9;
+  overflow-wrap: anywhere;
+}
+
+.start-lobby-overlay .wiz-overview-badges{
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 6px;
+}
+
+.start-lobby-overlay .wiz-overview-badge{
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
+  padding: 2px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(var(--gx-accent-rgb, 201,170,113), 0.34);
+  background: rgba(var(--gx-mask-rgb, 26,26,46), 0.35);
+  color: var(--guixu-story-default-color, #DEDEE6);
+  font-size: 12px;
+  line-height: 1.4;
+  white-space: nowrap;
+  letter-spacing: 0.4px;
+  font-weight: 600;
+}
+
+.start-lobby-overlay .wiz-overview-badge.is-easy{
+  border-color: rgba(123, 217, 166, 0.5);
+  color: rgba(157, 236, 194, 0.95);
+}
+
+.start-lobby-overlay .wiz-overview-badge.is-normal{
+  border-color: rgba(var(--gx-accent-rgb, 201,170,113), 0.52);
+  color: rgba(var(--gx-accent-rgb, 201,170,113), 0.98);
+}
+
+.start-lobby-overlay .wiz-overview-badge.is-hard{
+  border-color: rgba(241, 132, 132, 0.56);
+  color: rgba(255, 162, 162, 0.96);
+}
+
+.start-lobby-overlay .wiz-overview-stat-grid{
+  margin-top: 10px;
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.start-lobby-overlay .wiz-overview-metric{
+  min-width: 0;
+  border: 1px solid rgba(var(--gx-accent-rgb, 201,170,113), 0.24);
+  border-radius: 8px;
+  background: rgba(var(--gx-mask-rgb, 26,26,46), 0.34);
+  padding: 8px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.start-lobby-overlay .wiz-overview-metric-label{
+  font-size: 11px;
+  line-height: 1.3;
+  opacity: 0.85;
+}
+
+.start-lobby-overlay .wiz-overview-metric-value{
+  font-size: 18px;
+  line-height: 1.2;
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  color: var(--gx-accent);
+}
+
+.start-lobby-overlay .wiz-overview-desc{
+  margin-top: 10px;
+  font-size: 12px;
+  line-height: 1.72;
+  opacity: 0.9;
+  overflow-wrap: anywhere;
+}
+
+.start-lobby-overlay .wiz-overview-grid{
+  display: grid;
+  gap: 10px;
+  align-items: stretch;
+}
+
+.start-lobby-overlay .wiz-overview-grid-2{
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-auto-rows: minmax(0, 1fr);
+}
+
+.start-lobby-overlay .wiz-overview-card{
+  min-width: 0;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+/* 修复：全局 `.wiz-detail-card + .wiz-detail-card` 会让双列网格中的第2张卡片整体下沉 */
+.start-lobby-overlay .wiz-overview-grid > .wiz-detail-card + .wiz-detail-card{
+  margin-top: 0;
+}
+
+.start-lobby-overlay .wiz-overview-card .sm-title{
+  flex: 0 0 auto;
+}
+
+.start-lobby-overlay .wiz-overview-card > .wiz-detail-list,
+.start-lobby-overlay .wiz-overview-card > .wiz-overview-attr-list{
+  flex: 1 1 auto;
+}
+
+.start-lobby-overlay .wiz-overview-list{
+  gap: 6px;
+}
+
+.start-lobby-overlay .wiz-overview-list .wiz-detail-list-item{
+  border: 1px solid rgba(var(--gx-accent-rgb, 201,170,113), 0.16);
+  border-radius: 7px;
+  background: rgba(var(--gx-mask-rgb, 26,26,46), 0.18);
+  padding: 6px 8px;
+}
+
+.start-lobby-overlay .wiz-overview-list .wiz-detail-list-item.is-empty{
+  border-style: dashed;
+}
+
+.start-lobby-overlay .wiz-overview-attr-list{
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.start-lobby-overlay .wiz-overview-attr-list .wiz-detail-row{
+  border: 1px solid rgba(var(--gx-accent-rgb, 201,170,113), 0.16);
+  border-radius: 7px;
+  background: rgba(var(--gx-mask-rgb, 26,26,46), 0.18);
+  padding: 5px 8px;
+}
+
 .start-lobby-overlay .wiz-expand-list{
   display: flex;
   flex-direction: column;
@@ -1290,6 +1480,26 @@ tr.cw-db-tr:hover{
   .start-lobby-overlay .wiz-detail-row .sm-overview-label{
     flex: 0 0 92px;
     min-width: 92px;
+  }
+  .start-lobby-overlay .wiz-overview-hero-head{
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .start-lobby-overlay .wiz-overview-badges{
+    justify-content: flex-start;
+  }
+  .start-lobby-overlay .wiz-overview-dungeon-name{
+    font-size: 19px;
+  }
+  .start-lobby-overlay .wiz-overview-stat-grid{
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  .start-lobby-overlay .wiz-overview-grid-2{
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .start-lobby-overlay .wiz-overview-attr-list .wiz-detail-row .sm-overview-label{
+    flex: 0 0 84px;
+    min-width: 84px;
   }
 }
 
@@ -1472,6 +1682,50 @@ tr.cw-db-tr:hover{
   border-color: rgba(var(--gx-accent-rgb, 201,170,113), 0.42);
   background: rgba(var(--gx-accent-rgb, 201,170,113), 0.14);
   color: var(--gx-accent);
+}
+
+:is(.start-lobby-overlay.theme-peony, .start-lobby-overlay.guixu-theme-scope.theme-peony) .wizard-body .wiz-overview-hero{
+  border-color: rgba(var(--gx-accent-rgb, 201,170,113), 0.42);
+  background:
+    linear-gradient(135deg, rgba(var(--gx-accent-rgb, 201,170,113), 0.18), rgba(var(--gx-accent-rgb, 201,170,113), 0.06)),
+    var(--gx-surface-2);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.48), 0 10px 22px rgba(0,0,0,0.16);
+}
+
+:is(.start-lobby-overlay.theme-peony, .start-lobby-overlay.guixu-theme-scope.theme-peony) .wizard-body .wiz-overview-badge{
+  background: linear-gradient(180deg, rgba(255, 251, 248, 0.92), rgba(246, 236, 229, 0.86));
+  border-color: rgba(191, 146, 133, 0.56);
+  color: #8b5660;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.68);
+}
+
+:is(.start-lobby-overlay.theme-peony, .start-lobby-overlay.guixu-theme-scope.theme-peony) .wizard-body .wiz-overview-badge.is-easy{
+  border-color: rgba(138, 177, 156, 0.66);
+  background: linear-gradient(180deg, rgba(245, 254, 250, 0.95), rgba(233, 246, 239, 0.9));
+  color: #5f7b6e;
+}
+
+:is(.start-lobby-overlay.theme-peony, .start-lobby-overlay.guixu-theme-scope.theme-peony) .wizard-body .wiz-overview-badge.is-normal{
+  border-color: rgba(193, 149, 123, 0.72);
+  background: linear-gradient(180deg, rgba(255, 250, 244, 0.95), rgba(246, 231, 217, 0.9));
+  color: #8c585f;
+}
+
+:is(.start-lobby-overlay.theme-peony, .start-lobby-overlay.guixu-theme-scope.theme-peony) .wizard-body .wiz-overview-badge.is-hard{
+  border-color: rgba(201, 129, 141, 0.76);
+  background: linear-gradient(180deg, rgba(255, 244, 246, 0.95), rgba(247, 225, 232, 0.9));
+  color: #9f5968;
+}
+
+:is(.start-lobby-overlay.theme-peony, .start-lobby-overlay.guixu-theme-scope.theme-peony) .wizard-body .wiz-overview-metric{
+  background: rgba(255,255,255,0.46);
+  border-color: rgba(var(--gx-accent-rgb, 201,170,113), 0.38);
+}
+
+:is(.start-lobby-overlay.theme-peony, .start-lobby-overlay.guixu-theme-scope.theme-peony) .wizard-body .wiz-overview-list .wiz-detail-list-item,
+:is(.start-lobby-overlay.theme-peony, .start-lobby-overlay.guixu-theme-scope.theme-peony) .wizard-body .wiz-overview-attr-list .wiz-detail-row{
+  background: rgba(255,255,255,0.36);
+  border-color: rgba(var(--gx-accent-rgb, 201,170,113), 0.3);
 }
 
 @media (max-width: 899px){
@@ -2163,6 +2417,7 @@ tr.cw-db-tr:hover{
   margin-top: 10px;
 }
 .cw-bind-item.ok { color: rgba(139, 214, 162, 0.95); }
+.cw-bind-item.warn { color: rgba(235, 180, 90, 0.95); }
 .cw-bind-item.miss { color: rgba(240, 128, 128, 0.95); }
 .cw-bind-empty { opacity: 0.7; }
 
@@ -2378,6 +2633,22 @@ tr.cw-db-tr:hover{
   opacity: 0.78;
   line-height: 1.6;
 }
+.start-lobby-overlay .wiz-alloc-desc-row{
+  justify-content: flex-start;
+  align-items: flex-start;
+  gap: 8px;
+}
+.start-lobby-overlay .wiz-alloc-desc-row .sm-overview-label{
+  flex: 0 0 72px;
+  min-width: 72px;
+}
+.start-lobby-overlay .wiz-alloc-desc-text{
+  flex: 1 1 auto;
+  text-align: left;
+  line-height: 1.6;
+  white-space: normal;
+  word-break: break-word;
+}
 
 @media (max-width: 899px){
   /* 移动端属性分配表：固定列宽，避免数字折行成竖排 */
@@ -2411,6 +2682,10 @@ tr.cw-db-tr:hover{
   }
   .start-lobby-overlay #wiz-alloc-reset-btn{
     grid-column: 1 / -1;
+  }
+  .start-lobby-overlay .wiz-alloc-desc-row .sm-overview-label{
+    flex: 0 0 82px;
+    min-width: 82px;
   }
 }
 

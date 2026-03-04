@@ -233,11 +233,140 @@
   line-height: 1.6;
 }
 
+/* 当前楼层变量变化面板（位于正文下方、行动选项上方） */
+#guixu-mvu-delta-panel {
+  margin-top: 8px;
+  padding-top: 0;
+}
+#guixu-mvu-delta-panel > summary {
+  list-style: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  user-select: none;
+}
+#guixu-mvu-delta-panel > summary::-webkit-details-marker {
+  display: none;
+}
+#guixu-mvu-delta-panel .mvu-delta-head {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+#guixu-mvu-delta-panel .mvu-delta-title {
+  font-size: 12px;
+  color: var(--guixu-guideline-text-color, #8b7355);
+}
+#guixu-mvu-delta-panel .mvu-delta-caret {
+  color: var(--gx-accent, #c9aa71);
+  font-size: 12px;
+  line-height: 1;
+  transition: transform 0.16s ease;
+  transform-origin: center;
+}
+#guixu-mvu-delta-panel[open] .mvu-delta-caret {
+  transform: rotate(90deg);
+}
+#guixu-mvu-delta-panel .mvu-delta-count {
+  font-size: 11px;
+  color: var(--gx-accent, #c9aa71);
+  padding: 1px 8px;
+  border-radius: 999px;
+  border: 1px solid rgba(var(--gx-accent-rgb, 201, 170, 113), 0.35);
+  background: rgba(var(--gx-mask-rgb, 15, 15, 35), 0.32);
+}
+#guixu-mvu-delta-panel .mvu-delta-body {
+  margin-top: 8px;
+  padding: 10px;
+  border-radius: 10px;
+  border: 1px solid rgba(var(--gx-accent-rgb, 201, 170, 113), 0.3);
+  background: rgba(var(--gx-mask-rgb, 15, 15, 35), var(--guixu-thinking-bg-opacity, 0.3));
+  backdrop-filter: blur(1px);
+}
+#guixu-mvu-delta-panel .mvu-delta-node + .mvu-delta-node,
+#guixu-mvu-delta-panel .mvu-delta-node + .mvu-delta-leaf,
+#guixu-mvu-delta-panel .mvu-delta-leaf + .mvu-delta-node,
+#guixu-mvu-delta-panel .mvu-delta-leaf + .mvu-delta-leaf {
+  margin-top: 6px;
+}
+#guixu-mvu-delta-panel .mvu-delta-node > summary {
+  list-style: none;
+  cursor: pointer;
+  font-size: 12px;
+  color: var(--gx-accent, #c9aa71);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+#guixu-mvu-delta-panel .mvu-delta-node > summary::-webkit-details-marker {
+  display: none;
+}
+#guixu-mvu-delta-panel .mvu-delta-node > summary::before {
+  content: "▸";
+  opacity: 0.8;
+  transition: transform 0.15s ease;
+}
+#guixu-mvu-delta-panel .mvu-delta-node[open] > summary::before {
+  transform: rotate(90deg);
+}
+#guixu-mvu-delta-panel .mvu-delta-children {
+  margin-top: 6px;
+  margin-left: 10px;
+  padding-left: 8px;
+  border-left: 1px dashed rgba(var(--gx-accent-rgb, 201, 170, 113), 0.22);
+}
+#guixu-mvu-delta-panel .mvu-delta-leaf {
+  display: grid;
+  grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr);
+  gap: 8px;
+  align-items: start;
+}
+#guixu-mvu-delta-panel .mvu-delta-leaf-path {
+  font-size: 11px;
+  line-height: 1.5;
+  color: var(--gx-placeholder-color, #8b7355);
+  word-break: break-word;
+}
+#guixu-mvu-delta-panel .mvu-delta-leaf-value {
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--guixu-story-default-color, #e0dcd1);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+#guixu-mvu-delta-panel .mvu-delta-old {
+  color: rgba(224, 220, 209, 0.7);
+  text-decoration: line-through;
+  text-decoration-thickness: 1px;
+}
+#guixu-mvu-delta-panel .mvu-delta-arrow {
+  color: rgba(var(--gx-accent-rgb, 201, 170, 113), 0.7);
+}
+#guixu-mvu-delta-panel .mvu-delta-new {
+  color: var(--gx-accent, #c9aa71);
+  font-weight: 700;
+}
+#guixu-mvu-delta-panel .mvu-delta-reason {
+  color: var(--guixu-story-color, #9CA3AF);
+}
+#guixu-mvu-delta-panel .mvu-delta-plain {
+  color: var(--guixu-story-default-color, #e0dcd1);
+}
+#guixu-mvu-delta-panel .mvu-delta-truncated {
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px dashed rgba(var(--gx-accent-rgb, 201, 170, 113), 0.25);
+  font-size: 11px;
+  color: var(--gx-placeholder-color, #8b7355);
+}
+
 /* 行动方针容器与标签（与 JS 注入保持一致） */
 #guixu-action-guidelines {
   margin-top: 8px;
-  border-top: 1px solid rgba(var(--gx-accent-rgb, 201, 170, 113), 0.3);
-  padding-top: 6px;
+  border-top: none;
+  padding-top: 0;
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -246,8 +375,57 @@
   font-size: 12px;
   color: var(--guixu-guideline-text-color, #8b7355);
 }
+#guixu-action-guidelines .action-guideline-item {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 34px;
+  gap: 8px;
+  align-items: stretch;
+}
+#guixu-action-guidelines .action-guideline-item .action-guideline-btn {
+  margin: 0;
+}
+#guixu-action-guidelines .action-guideline-copy-btn {
+  width: 34px !important;
+  min-width: 34px !important;
+  min-height: 32px;
+  padding: 0 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  flex: 0 0 auto !important;
+  white-space: nowrap !important;
+}
+#guixu-action-guidelines .action-guideline-copy-btn i {
+  font-size: 12px;
+  line-height: 1;
+}
+#guixu-action-guidelines .action-guideline-copy-btn:hover {
+  transform: translateY(-1px);
+}
 
 /* 新增：用户偏好隐藏“行动选项”（仅隐藏正文下方操作按钮区，不影响其他面板） */
 .guixu-root-container.hide-guidelines #guixu-action-guidelines {
   display: none !important;
+}
+
+/* 移动端：变量变化面板与复制图标按钮保持可读、可点 */
+.guixu-root-container.mobile-view #guixu-mvu-delta-panel .mvu-delta-body {
+  padding: 8px;
+}
+.guixu-root-container.mobile-view #guixu-mvu-delta-panel .mvu-delta-children {
+  margin-left: 8px;
+  padding-left: 6px;
+}
+.guixu-root-container.mobile-view #guixu-mvu-delta-panel .mvu-delta-leaf {
+  grid-template-columns: 1fr;
+  gap: 2px;
+}
+.guixu-root-container.mobile-view #guixu-action-guidelines .action-guideline-item {
+  grid-template-columns: minmax(0, 1fr) 36px;
+}
+.guixu-root-container.mobile-view #guixu-action-guidelines .action-guideline-copy-btn {
+  width: 36px !important;
+  min-width: 36px !important;
+  min-height: 36px;
+  flex-grow: 0 !important;
 }
